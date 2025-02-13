@@ -1,8 +1,7 @@
 ﻿// wwwroot/js/participants.js
 
-// Токен больше не передается через скрипт – он хранится в куках
+// Токен не передается (хранится в куках)
 
-// Получаем текущий ID проекта из скрытого поля внутри модального окна
 function getCurrentProjectId() {
     const modalEl = document.getElementById('projectModal');
     if (!modalEl) {
@@ -17,7 +16,6 @@ function getCurrentProjectId() {
     return projectIdEl.value;
 }
 
-// Функция загрузки групп участников для проекта через API
 async function loadParticipantGroups(projectId) {
     console.log("Loading participant groups for project ID:", projectId);
     try {
@@ -36,7 +34,6 @@ async function loadParticipantGroups(projectId) {
     }
 }
 
-// Функция отрисовки групп и участников в таблице
 function renderParticipantGroups(groups) {
     const tbody = document.getElementById("participantsTableBody");
     if (!tbody) {
@@ -44,21 +41,17 @@ function renderParticipantGroups(groups) {
         return;
     }
     tbody.innerHTML = "";
-
     if (!groups || groups.length === 0) {
         const tr = document.createElement("tr");
         tr.innerHTML = `<td colspan="7">No participant groups found.</td>`;
         tbody.appendChild(tr);
         return;
     }
-
     groups.forEach(group => {
-        // Добавляем строку-заголовок группы
         const headerRow = document.createElement("tr");
         headerRow.classList.add("group-header");
         headerRow.innerHTML = `<td colspan="7">${group.groupName}</td>`;
         tbody.appendChild(headerRow);
-
         if (group.participants && group.participants.length > 0) {
             group.participants.forEach(participant => {
                 const dateAdded = participant.dateAdded ? new Date(participant.dateAdded).toLocaleDateString() : "-";
@@ -86,7 +79,64 @@ function renderParticipantGroups(groups) {
     });
 }
 
-// Функция создания группы через API
+function initParticipantsTab() {
+    const projectId = getCurrentProjectId();
+    if (!projectId) {
+        console.warn("Project ID is not defined. Participants tab will be empty.");
+        return;
+    }
+    loadParticipantGroups(projectId);
+}
+
+function initNestedModalEvents() {
+    const addGroupButton = document.getElementById('addGroupButton');
+    if (addGroupButton) {
+        addGroupButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            const addGroupModalEl = document.getElementById('addGroupModal');
+            if (addGroupModalEl) {
+                new bootstrap.Modal(addGroupModalEl, { backdrop: 'static', keyboard: false }).show();
+                const saveGroupBtn = document.getElementById('saveGroupBtn');
+                if (saveGroupBtn) {
+                    saveGroupBtn.onclick = createGroup;
+                } else {
+                    console.error("Save Group button not found.");
+                }
+            }
+        });
+    } else {
+        console.error("Add Group button not found.");
+    }
+
+    const deleteGroupButton = document.getElementById('deleteGroupButton');
+    if (deleteGroupButton) {
+        deleteGroupButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            const deleteGroupModalEl = document.getElementById('deleteGroupModal');
+            if (deleteGroupModalEl) {
+                new bootstrap.Modal(deleteGroupModalEl, { backdrop: 'static', keyboard: false }).show();
+                const confirmDeleteGroupsBtn = document.getElementById('confirmDeleteGroupsBtn');
+                if (confirmDeleteGroupsBtn) {
+                    confirmDeleteGroupsBtn.onclick = deleteGroups;
+                } else {
+                    console.error("Confirm Delete Groups button not found.");
+                }
+            }
+        });
+    } else {
+        console.error("Delete Group button not found.");
+    }
+}
+
+document.addEventListener('shown.bs.tab', function (event) {
+    if (event.target && event.target.id === 'participants-tab') {
+        initParticipantsTab();
+        initNestedModalEvents();
+    }
+});
+
+window.initParticipantsTab = initParticipantsTab;
+
 async function createGroup() {
     const groupNameInput = document.getElementById('groupName');
     if (!groupNameInput || !groupNameInput.value.trim()) {
@@ -107,10 +157,8 @@ async function createGroup() {
         });
         if (response.ok) {
             alert("Group created successfully!");
-            // Закрываем модальное окно Add Group
             const addGroupModal = bootstrap.Modal.getInstance(document.getElementById('addGroupModal'));
             if (addGroupModal) addGroupModal.hide();
-            // Обновляем список групп
             loadParticipantGroups(projectId);
         } else {
             const error = await response.text();
@@ -122,9 +170,7 @@ async function createGroup() {
     }
 }
 
-// Функция удаления группы через API (например, для пустых групп)
 async function deleteGroups() {
-    // Предполагается, что в контейнере emptyGroupsContainer находятся чекбоксы с value равным имени группы
     const container = document.getElementById('emptyGroupsContainer');
     const checkboxes = container.querySelectorAll('input.delete-group-checkbox:checked');
     if (checkboxes.length === 0) {
@@ -136,7 +182,6 @@ async function deleteGroups() {
         alert("Project ID not found.");
         return;
     }
-    // Собираем список групп для удаления
     const groupsToDelete = Array.from(checkboxes).map(cb => cb.value);
     try {
         const response = await fetch(`https://localhost:7200/api/Projects/${projectId}/Groups`, {
@@ -146,10 +191,8 @@ async function deleteGroups() {
         });
         if (response.ok) {
             alert("Selected groups deleted successfully!");
-            // Закрываем модальное окно Delete Group
             const deleteGroupModal = bootstrap.Modal.getInstance(document.getElementById('deleteGroupModal'));
             if (deleteGroupModal) deleteGroupModal.hide();
-            // Обновляем список групп
             loadParticipantGroups(projectId);
         } else {
             const error = await response.text();
@@ -160,39 +203,3 @@ async function deleteGroups() {
         alert("Error deleting groups. See console for details.");
     }
 }
-
-// Функция инициализации вкладки Participants
-function initParticipantsTab() {
-    const projectId = getCurrentProjectId();
-    if (!projectId) {
-        console.warn("Project ID is not defined. Participants tab will be empty.");
-        return;
-    }
-    loadParticipantGroups(projectId);
-}
-
-// Обработчик события переключения вкладок – при открытии вкладки Participants
-document.addEventListener('shown.bs.tab', function (event) {
-    if (event.target && event.target.id === 'participants-tab') {
-        initParticipantsTab();
-    }
-});
-
-// Назначаем обработчик для кнопки Save Group
-document.addEventListener('DOMContentLoaded', function () {
-    const saveGroupBtn = document.getElementById('saveGroupBtn');
-    if (saveGroupBtn) {
-        saveGroupBtn.addEventListener('click', createGroup);
-    } else {
-        console.error("Save Group button not found.");
-    }
-    // Назначьте аналогично обработчик для удаления группы
-    const confirmDeleteGroupsBtn = document.getElementById('confirmDeleteGroupsBtn');
-    if (confirmDeleteGroupsBtn) {
-        confirmDeleteGroupsBtn.addEventListener('click', deleteGroups);
-    } else {
-        console.error("Confirm Delete Groups button not found.");
-    }
-});
-
-window.initParticipantsTab = initParticipantsTab;

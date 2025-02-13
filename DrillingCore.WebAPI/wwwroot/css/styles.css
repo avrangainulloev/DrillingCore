@@ -57,7 +57,6 @@ body {
     background-color: #d9edf7;
 }
 
-
 /* Устанавливаем z-index для стандартного backdrop */
 .modal-backdrop.show {
     z-index: 1040;

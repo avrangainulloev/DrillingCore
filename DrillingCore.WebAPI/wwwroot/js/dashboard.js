@@ -2,12 +2,9 @@
 
 const yourJwtToken = "YOUR_JWT_TOKEN_HERE"; // Для разработки; в продакшене токен хранится в куках
 
-// Функция загрузки проектов через API
 async function loadProjects() {
     try {
-        const response = await fetch('https://localhost:7200/api/Projects?limit=30', {
-            headers: { 'Authorization': 'Bearer ' + yourJwtToken }
-        });
+        const response = await fetch('https://localhost:7200/api/Projects?limit=30');
         if (response.ok) {
             const projects = await response.json();
             const tbody = document.querySelector('#projectsTableBody');
@@ -34,7 +31,6 @@ async function loadProjects() {
     }
 }
 
-// Функция переключения содержимого
 function loadContent(section) {
     const contentArea = document.getElementById('contentArea');
     if (section === 'projects') {
@@ -67,7 +63,6 @@ function loadContent(section) {
     }
 }
 
-// Функция загрузки модального окна (HTML из отдельного файла)
 async function loadProjectModal() {
     try {
         const response = await fetch('modals/projectModal.html');

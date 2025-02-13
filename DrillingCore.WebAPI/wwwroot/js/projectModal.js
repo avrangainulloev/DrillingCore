@@ -1,16 +1,11 @@
 ﻿// wwwroot/js/projectModal.js
 
-// Функция загрузки данных проекта для редактирования
 async function loadProjectData(projectId) {
     console.log("Loading project data for ID:", projectId);
     try {
-        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}`, {
-            headers: { 'Authorization': 'Bearer ' + window.yourJwtToken }
-        });
+        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}`);
         if (response.ok) {
             const project = await response.json();
-
-            // Получаем элементы формы
             const idEl = document.getElementById('projectId');
             const nameEl = document.getElementById('projectName');
             const startDateEl = document.getElementById('startDate');
@@ -24,7 +19,6 @@ async function loadProjectData(projectId) {
                 return;
             }
 
-            // Заполняем поля формы
             idEl.value = project.id;
             nameEl.value = project.name;
             startDateEl.value = project.startDate ? project.startDate.split('T')[0] : "";
@@ -42,7 +36,6 @@ async function loadProjectData(projectId) {
     }
 }
 
-// Функция открытия модального окна для создания/редактирования проекта
 async function openProjectModal(projectId) {
     if (projectId) {
         await loadProjectData(projectId);
@@ -64,7 +57,6 @@ async function openProjectModal(projectId) {
     }
 }
 
-// Функция отправки формы (создание или обновление проекта)
 async function submitProject() {
     const projectId = document.getElementById('projectId').value;
     const projectData = {
@@ -82,10 +74,7 @@ async function submitProject() {
     try {
         const response = await fetch(url, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + window.yourJwtToken
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(projectData)
         });
         if (response.ok) {
@@ -104,7 +93,6 @@ async function submitProject() {
     }
 }
 
-// Функция закрытия модального окна
 function closeProjectModal() {
     const modalEl = document.getElementById('projectModal');
     if (modalEl) {
