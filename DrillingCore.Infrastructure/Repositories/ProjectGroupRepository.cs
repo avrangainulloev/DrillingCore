@@ -18,6 +18,15 @@ namespace DrillingCore.Infrastructure.Persistence
 
         public async Task AddAsync(ProjectGroup group)
         {
+            // Проверяем, существует ли уже группа с таким же именем в данном проекте
+            bool exists = await _context.ProjectGroups
+                .AnyAsync(g => g.ProjectId == group.ProjectId && g.GroupName == group.GroupName);
+
+            if (exists)
+            {
+                throw new InvalidOperationException("A group with the same name already exists for this project.");
+            }
+
             _context.ProjectGroups.Add(group);
             await _context.SaveChangesAsync();
         }

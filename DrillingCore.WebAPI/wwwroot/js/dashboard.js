@@ -4,7 +4,9 @@ const yourJwtToken = "YOUR_JWT_TOKEN_HERE"; // Для разработки; в �
 
 async function loadProjects() {
     try {
-        const response = await fetch('https://localhost:7200/api/Projects?limit=30');
+        const response = await fetch('https://localhost:7200/api/Projects?limit=30', {
+            headers: { 'Authorization': 'Bearer ' + yourJwtToken }
+        });
         if (response.ok) {
             const projects = await response.json();
             const tbody = document.querySelector('#projectsTableBody');

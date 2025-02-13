@@ -10,7 +10,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* При необходимости можно задать z-index для модальных окон */
+        /* При необходимости можно настроить z-index для модальных окон */
         .modal-backdrop.show {
             z-index: 1040;
         }
@@ -36,6 +36,7 @@
 
         <!-- Content Area -->
         <div class="content" id="contentArea">
+            <!-- По умолчанию загружается раздел Projects -->
             <h1>Projects</h1>
             <button class="btn btn-primary mb-3" onclick="openProjectModal()">Create Project</button>
             <table class="table table-striped">
@@ -50,7 +51,7 @@
                     </tr>
                 </thead>
                 <tbody id="projectsTableBody">
-                    <!-- Данные проектов подгружаются через dashboard.js -->
+                    <!-- Проекты загружаются через dashboard.js -->
                 </tbody>
             </table>
         </div>
@@ -61,6 +62,6 @@
     <!-- Скрипты -->
     <script src="js/dashboard.js" defer></script>
     <script src="js/projectModal.js" defer></script>
-    <script src="js/participants.js"></script>
+    <script src="js/participants.js" defer></script>
 </body>
 </html>

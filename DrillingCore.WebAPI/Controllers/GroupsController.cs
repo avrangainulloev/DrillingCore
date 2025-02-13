@@ -36,8 +36,17 @@ namespace DrillingCore.WebAPI.Controllers
             {
                 return BadRequest("Project ID mismatch");
             }
-            int newId = await _mediator.Send(command);
+
+            try
+            {
+                int newId = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetGroups), new { projectId = projectId }, new { id = newId });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Если группа уже существует, возвращаем 409 Conflict с сообщением об ошибке
+                return Conflict(ex.Message);
+            }
         }
 
         // Можно добавить POST для создания новой группы, если требуется.

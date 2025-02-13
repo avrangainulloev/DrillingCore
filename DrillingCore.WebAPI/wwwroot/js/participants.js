@@ -1,7 +1,8 @@
 ﻿// wwwroot/js/participants.js
 
-// Токен не передается (хранится в куках)
+// Токен не передаётся – он хранится в куках
 
+// Получаем текущий ID проекта из скрытого поля внутри модального окна
 function getCurrentProjectId() {
     const modalEl = document.getElementById('projectModal');
     if (!modalEl) {
@@ -16,6 +17,7 @@ function getCurrentProjectId() {
     return projectIdEl.value;
 }
 
+// Загрузка групп участников для проекта через API
 async function loadParticipantGroups(projectId) {
     console.log("Loading participant groups for project ID:", projectId);
     try {
@@ -24,6 +26,9 @@ async function loadParticipantGroups(projectId) {
             const groups = await response.json();
             console.log("Loaded participant groups:", groups);
             renderParticipantGroups(groups);
+            updateEmptyGroupsList();
+            // Сохраняем группы глобально для использования в удалении (если требуется)
+            window.projectGroupsArray = groups;
         } else {
             alert("Error fetching participant groups: " + response.statusText);
             console.error("Response status:", response.status);
@@ -34,6 +39,7 @@ async function loadParticipantGroups(projectId) {
     }
 }
 
+// Отрисовка групп и участников в таблице
 function renderParticipantGroups(groups) {
     const tbody = document.getElementById("participantsTableBody");
     if (!tbody) {
@@ -48,6 +54,7 @@ function renderParticipantGroups(groups) {
         return;
     }
     groups.forEach(group => {
+        // Строка-заголовок группы
         const headerRow = document.createElement("tr");
         headerRow.classList.add("group-header");
         headerRow.innerHTML = `<td colspan="7">${group.groupName}</td>`;
@@ -77,8 +84,50 @@ function renderParticipantGroups(groups) {
             tbody.appendChild(tr);
         }
     });
+    attachParticipantSearchHandler();
 }
 
+// Обработчик поиска участников по имени (фильтрация)
+function attachParticipantSearchHandler() {
+    const searchInput = document.getElementById('participantSearchInput');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const tbody = document.getElementById("participantsTableBody");
+        const rows = tbody.getElementsByTagName("tr");
+        for (let row of rows) {
+            if (row.classList.contains('group-header')) continue;
+            const fullNameCell = row.cells[1];
+            if (fullNameCell) {
+                const txtValue = fullNameCell.textContent || fullNameCell.innerText;
+                row.style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+            }
+        }
+    });
+}
+
+// Обновление списка пустых групп для модального окна удаления
+function updateEmptyGroupsList() {
+    const container = document.getElementById('emptyGroupsContainer');
+    if (!container) {
+        console.error("Element with id 'emptyGroupsContainer' not found.");
+        return;
+    }
+    container.innerHTML = "";
+    if (window.projectGroupsArray && window.projectGroupsArray.length > 0) {
+        window.projectGroupsArray.forEach(group => {
+            if (!group.participants || group.participants.length === 0) {
+                const div = document.createElement("div");
+                div.classList.add("form-check");
+                div.innerHTML = `<input class="form-check-input delete-group-checkbox" type="checkbox" value="${group.groupName}" id="deleteGroup_${group.groupName}">
+                                   <label class="form-check-label" for="deleteGroup_${group.groupName}">${group.groupName}</label>`;
+                container.appendChild(div);
+            }
+        });
+    }
+}
+
+// Инициализация вкладки Participants
 function initParticipantsTab() {
     const projectId = getCurrentProjectId();
     if (!projectId) {
@@ -88,7 +137,9 @@ function initParticipantsTab() {
     loadParticipantGroups(projectId);
 }
 
+// Инициализация вложённых модальных окон (Add Group и Delete Group)
 function initNestedModalEvents() {
+    // Кнопка "Add Group"
     const addGroupButton = document.getElementById('addGroupButton');
     if (addGroupButton) {
         addGroupButton.addEventListener('click', function (e) {
@@ -107,7 +158,7 @@ function initNestedModalEvents() {
     } else {
         console.error("Add Group button not found.");
     }
-
+    // Кнопка "Delete Group"
     const deleteGroupButton = document.getElementById('deleteGroupButton');
     if (deleteGroupButton) {
         deleteGroupButton.addEventListener('click', function (e) {
@@ -128,6 +179,7 @@ function initNestedModalEvents() {
     }
 }
 
+// При переключении на вкладку Participants – инициализируем вкладку и вложённые модальные окна
 document.addEventListener('shown.bs.tab', function (event) {
     if (event.target && event.target.id === 'participants-tab') {
         initParticipantsTab();
@@ -137,16 +189,17 @@ document.addEventListener('shown.bs.tab', function (event) {
 
 window.initParticipantsTab = initParticipantsTab;
 
+// Функция создания группы через API
 async function createGroup() {
     const groupNameInput = document.getElementById('groupName');
     if (!groupNameInput || !groupNameInput.value.trim()) {
-        alert("Please enter a group name.");
+        displayGroupError("Please enter a group name.");
         return;
     }
     const groupName = groupNameInput.value.trim();
     const projectId = getCurrentProjectId();
     if (!projectId) {
-        alert("Project ID not found.");
+        displayGroupError("Project ID not found.");
         return;
     }
     try {
@@ -156,20 +209,39 @@ async function createGroup() {
             body: JSON.stringify({ projectId: parseInt(projectId), groupName: groupName })
         });
         if (response.ok) {
-            alert("Group created successfully!");
-            const addGroupModal = bootstrap.Modal.getInstance(document.getElementById('addGroupModal'));
-            if (addGroupModal) addGroupModal.hide();
+            // Если успешно, закрываем модальное окно и обновляем список групп
+            const addGroupModalEl = document.getElementById('addGroupModal');
+            const modalInstance = bootstrap.Modal.getInstance(addGroupModalEl);
+            if (modalInstance) modalInstance.hide();
             loadParticipantGroups(projectId);
+        } else if (response.status === 409) {
+            // Если группа уже существует, выводим сообщение
+            displayGroupError("A group with this name already exists.");
         } else {
             const error = await response.text();
-            alert("Error creating group: " + error);
+            displayGroupError("Error creating group: " + error);
         }
     } catch (error) {
         console.error("Error creating group:", error);
-        alert("Error creating group. See console for details.");
+        displayGroupError("Error creating group. See console for details.");
     }
 }
 
+// Функция для вывода сообщения об ошибке в модальном окне Add Group
+function displayGroupError(message) {
+    const container = document.getElementById('groupErrorContainer');
+    if (container) {
+        container.innerHTML = `<div class="alert alert-danger" role="alert">${message}</div>`;
+        // Скрыть сообщение через 5 секунд
+        setTimeout(() => { container.innerHTML = ""; }, 10000);
+    } else {
+        alert(message);
+    }
+}
+
+ 
+
+// Функция удаления групп через API
 async function deleteGroups() {
     const container = document.getElementById('emptyGroupsContainer');
     const checkboxes = container.querySelectorAll('input.delete-group-checkbox:checked');
@@ -191,8 +263,11 @@ async function deleteGroups() {
         });
         if (response.ok) {
             alert("Selected groups deleted successfully!");
-            const deleteGroupModal = bootstrap.Modal.getInstance(document.getElementById('deleteGroupModal'));
-            if (deleteGroupModal) deleteGroupModal.hide();
+            const deleteGroupModalEl = document.getElementById('deleteGroupModal');
+            if (deleteGroupModalEl) {
+                const modalInstance = bootstrap.Modal.getInstance(deleteGroupModalEl);
+                if (modalInstance) modalInstance.hide();
+            }
             loadParticipantGroups(projectId);
         } else {
             const error = await response.text();
@@ -203,3 +278,17 @@ async function deleteGroups() {
         alert("Error deleting groups. See console for details.");
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('template-btn')) {
+            const template = e.target.getAttribute('data-template');
+            const groupNameField = document.getElementById('groupName');
+            if (groupNameField) {
+                groupNameField.value = template;
+            } else {
+                console.error("Element with id 'groupName' not found.");
+            }
+        }
+    });
+});
