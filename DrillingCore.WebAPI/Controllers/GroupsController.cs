@@ -1,4 +1,6 @@
 ﻿using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Groups.Commands;
+using DrillingCore.Application.Groups.Queries;
 using DrillingCore.Application.Projects.Groups.Commands;
 using DrillingCore.Application.Projects.Participants.Queries;
 using MediatR;
@@ -40,7 +42,7 @@ namespace DrillingCore.WebAPI.Controllers
             try
             {
                 int newId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetGroups), new { projectId = projectId }, new { id = newId });
+                return CreatedAtAction(nameof(GetGroups), new { projectId = projectId }, new { id = newId });
             }
             catch (InvalidOperationException ex)
             {
@@ -49,6 +51,26 @@ namespace DrillingCore.WebAPI.Controllers
             }
         }
 
-        // Можно добавить POST для создания новой группы, если требуется.
+        // GET: api/Projects/{projectId}/Groups/emptygroups
+        [HttpGet("emptygroups")]
+        public async Task<IActionResult> GetEmptyGroups(int projectId)
+        {
+            var query = new GetEmptyGroupsQuery(projectId);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        // DELETE: api/Projects/{projectId}/Groups/emptygroups
+        [HttpDelete("emptygroups")]
+        public async Task<IActionResult> DeleteEmptyGroups(int projectId, [FromBody] DeleteEmptyGroupsCommand command)
+            {
+            if (projectId != command.ProjectId)
+            {
+                return BadRequest("ProjectId in URL and body do not match.");
+            }
+
+            await _mediator.Send(command);
+            return Ok("Selected groups deleted successfully.");
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Presentation/Controllers/ProjectsController.cs
 using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Groups.Queries;
 using DrillingCore.Application.Projects;
 using DrillingCore.Application.Projects.Commands;
 using DrillingCore.Application.Projects.Queries;
@@ -65,5 +66,7 @@ namespace DrillingCore.WebAPI.Controllers
             await _mediator.Send(new UpdateProjectCommand { ProjectDto = projectDto });
             return NoContent();
         }
+
+
     }
 }
