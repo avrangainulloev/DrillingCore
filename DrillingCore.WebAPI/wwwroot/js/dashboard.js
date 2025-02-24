@@ -1,6 +1,7 @@
 ﻿// wwwroot/js/dashboard.js
 
-const yourJwtToken = "YOUR_JWT_TOKEN_HERE"; // Для разработки; в продакшене токен хранится в куках
+// Для разработки можно захардкодить токен, но в продакшене сервер будет работать через куки
+const yourJwtToken = "YOUR_JWT_TOKEN_HERE";
 
 async function loadProjects() {
     try {
@@ -57,7 +58,47 @@ function loadContent(section) {
     } else if (section === 'equipment') {
         contentArea.innerHTML = '<h1>Equipment</h1><p>This is the equipment section.</p>';
     } else if (section === 'users') {
-        contentArea.innerHTML = '<h1>Users</h1><p>This is the users section.</p>';
+        // HTML для раздела "Users" загружается здесь. Он вызывает функцию loadUsers() из users.js
+        contentArea.innerHTML = `
+      <h1>Users</h1>
+      <!-- Панель фильтрации и поиска -->
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name, username, or email">
+        </div>
+        <div class="col-md-4">
+          <select id="roleFilter" class="form-select">
+            <option value="">All Roles</option>
+            <option value="-1">Administrator</option>
+            <option value="-2">ProjectManager</option>
+            <option value="-3">Helper</option>
+          </select>
+        </div>
+        <div class="col-md-4 text-end">
+          <button class="btn btn-primary" onclick="openUserModal()">Add User</button>
+        </div>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <!-- Пользователи будут загружаться через users.js -->
+        </tbody>
+      </table>
+    `;
+        loadUsers(); // Функция из users.js
+        // Вешаем события для фильтрации и поиска
+        document.getElementById('userSearchInput').addEventListener('input', loadUsers);
+        document.getElementById('roleFilter').addEventListener('change', loadUsers);
     } else if (section === 'forms') {
         contentArea.innerHTML = '<h1>Forms</h1><p>This is the forms section.</p>';
     } else if (section === 'reports') {
@@ -83,3 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loadContent('projects');
     loadProjectModal();
 });
+
+// Экспорт JWT-токена в глобальную область, если потребуется (например, для старых вызовов)
+window.yourJwtToken = yourJwtToken;
+window.loadContent = loadContent;

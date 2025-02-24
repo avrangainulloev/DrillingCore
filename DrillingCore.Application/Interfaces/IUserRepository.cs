@@ -1,5 +1,7 @@
-﻿using DrillingCore.Application.DTOs;
+﻿// IUserRepository.cs
+using DrillingCore.Application.DTOs;
 using DrillingCore.Core.Entities;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DrillingCore.Application.Interfaces
@@ -9,6 +11,8 @@ namespace DrillingCore.Application.Interfaces
         Task<User?> AuthenticateAsync(LoginRequest request);
         Task<User?> GetByIdAsync(int id);
         Task AddAsync(User user);
-        // Дополнительные методы по необходимости (например, получение пользователя по email)
+
+        // Новый метод для получения пользователей с фильтрацией
+        Task<IEnumerable<User>> GetUsersAsync(string searchTerm, int? roleId);
     }
 }

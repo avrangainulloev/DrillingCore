@@ -1,11 +1,16 @@
 ﻿// wwwroot/js/projectModal.js
 
+// Функция загрузки данных проекта для редактирования
 async function loadProjectData(projectId) {
     console.log("Loading project data for ID:", projectId);
     try {
-        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}`);
+        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}`, {
+            headers: { 'Authorization': 'Bearer ' + window.yourJwtToken }
+        });
         if (response.ok) {
             const project = await response.json();
+
+            // Получаем элементы формы
             const idEl = document.getElementById('projectId');
             const nameEl = document.getElementById('projectName');
             const startDateEl = document.getElementById('startDate');
@@ -19,6 +24,7 @@ async function loadProjectData(projectId) {
                 return;
             }
 
+            // Заполняем поля формы
             idEl.value = project.id;
             nameEl.value = project.name;
             startDateEl.value = project.startDate ? project.startDate.split('T')[0] : "";
@@ -36,6 +42,7 @@ async function loadProjectData(projectId) {
     }
 }
 
+// Функция открытия модального окна для создания/редактирования проекта
 async function openProjectModal(projectId) {
     if (projectId) {
         await loadProjectData(projectId);
@@ -49,6 +56,16 @@ async function openProjectModal(projectId) {
         document.getElementById('projectId').value = "";
         document.getElementById('projectModalLabel').textContent = "Create New Project";
     }
+
+    // Сброс активной вкладки на "Project Information"
+    const projectInfoTab = document.getElementById('project-info-tab');
+    if (projectInfoTab) {
+        // Активируем вкладку с помощью Bootstrap API
+        const tab = new bootstrap.Tab(projectInfoTab);
+        tab.show();
+    }
+
+    // Открываем модальное окно
     const modalEl = document.getElementById('projectModal');
     if (modalEl) {
         new bootstrap.Modal(modalEl).show();
@@ -74,7 +91,10 @@ async function submitProject() {
     try {
         const response = await fetch(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + window.yourJwtToken
+            },
             body: JSON.stringify(projectData)
         });
         if (response.ok) {

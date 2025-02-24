@@ -3,12 +3,10 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <!-- Заголовок меняется динамически -->
                 <h5 class="modal-title" id="projectModalLabel">Create New Project</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Навигация по вкладкам -->
                 <ul class="nav nav-tabs" id="createProjectTabs" role="tablist">
                     <li class="nav-item">
                         <button class="nav-link active" id="project-info-tab" data-bs-toggle="tab" data-bs-target="#project-info" type="button" role="tab">Project Information</button>
@@ -20,11 +18,8 @@
                         <button class="nav-link" id="form-settings-tab" data-bs-toggle="tab" data-bs-target="#form-settings" type="button" role="tab">Form Settings</button>
                     </li>
                 </ul>
-                <!-- Содержимое вкладок -->
                 <div class="tab-content pt-3" id="createProjectTabsContent">
-                    <!-- Project Information -->
                     <div class="tab-pane fade show active" id="project-info" role="tabpanel">
-                        <!-- Скрытое поле для хранения ID проекта (если редактирование) -->
                         <input type="hidden" id="projectId" value="">
                         <form id="projectInfoForm">
                             <div class="mb-3">
@@ -51,37 +46,28 @@
                             </div>
                         </form>
                     </div>
-                    <!-- Participants -->
                     <div class="tab-pane fade" id="participants" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <button class="btn btn-primary me-2" id="addGroupButton">Add Group</button>
-                                <button class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#addParticipantModal">Add Participant</button>
-                                <button class="btn btn-danger me-2" id="removeParticipantsBtn">Remove Selected Participants</button>
-                                <button class="btn btn-warning" id="deleteGroupButton">Delete Group</button>
-                            </div>
-                            <div>
-                                <input type="text" class="form-control" id="participantSearchInput" placeholder="Search participants...">
-                            </div>
+                        <div class="d-flex justify-content-end mb-3">
+                            <button class="btn btn-primary me-2" id="addGroupButton">Add Group</button>
+                            <button class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#addParticipantModal">Add Participant</button>
+                            <button class="btn btn-danger me-2" id="removeParticipantsBtn">Remove Selected Participants</button>
+                            <button class="btn btn-warning" id="deleteGroupButton">Delete Group</button>
                         </div>
-                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Group</th>
-                                        <th>Full Name</th>
-                                        <th>Mobile</th>
-                                        <th>Date Added</th>
-                                        <th>End Date</th>
-                                        <th>Actions</th>
-                                        <th>Select</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="participantsTableBody"></tbody>
-                            </table>
-                        </div>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Group</th>
+                                    <th>Full Name</th>
+                                    <th>Mobile</th>
+                                    <th>Date Added</th>
+                                    <th>End Date</th>
+                                    <th>Actions</th>
+                                    <th>Select</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantsTableBody"></tbody>
+                        </table>
                     </div>
-                    <!-- Form Settings -->
                     <div class="tab-pane fade" id="form-settings" role="tabpanel">
                         <form id="formSettingsForm">
                             <div class="mb-3">
@@ -103,33 +89,31 @@
                         <div class="mt-4">
                             <h5>Recipients</h5>
                             <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addRecipientModal">Add Recipient</button>
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="recipientsTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Full Name</th>
-                                            <th>Email</th>
-                                            <th>Company</th>
-                                            <th>Sending Conditions</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
+                            <table class="table table-bordered" id="recipientsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Company</th>
+                                        <th>Sending Conditions</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer text-end">
                 <button class="btn btn-success" onclick="submitProject()">Save Project</button>
-                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>
+                <button class="btn btn-secondary" onclick="window.location.href='projects.html'">Cancel</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Nested Modals (отдельно вне основного модального окна) -->
+<!-- Nested modals for groups -->
 <!-- Modal: Add Group -->
 <div class="modal fade nested-modal" id="addGroupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -139,8 +123,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Контейнер для вывода сообщений -->
-                <div id="groupErrorContainer"></div>
                 <form id="addGroupForm">
                     <div class="mb-3">
                         <label for="groupName" class="form-label">Group Name</label>
@@ -188,4 +170,38 @@
     </div>
 </div>
 
-<!-- Остальные вложенные модальные окна (Add Participant, Finish Participant, Finish Equipment, Edit Equipment, Add Recipient, Edit Recipient Forms) остаются без изменений -->
+<!-- Modal: Add Participant -->
+<div class="modal fade nested-modal" id="addParticipantModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addParticipantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addParticipantModalLabel">Add Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="selectGroup" class="form-label">Select Group</label>
+                    <select class="form-select" id="selectGroup"></select>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="userSearchInput" placeholder="Search available users...">
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Full Name</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="availableUsersTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="addSelectedParticipantsBtn">Add Selected Participants</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

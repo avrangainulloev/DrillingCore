@@ -1,6 +1,6 @@
 ﻿using DrillingCore.Core.Entities;
 using Microsoft.EntityFrameworkCore;
-
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Persistence
 {
     public class DrillingCoreDbContext : DbContext
@@ -12,6 +12,7 @@ namespace DrillingCore.Infrastructure.Persistence
 
         public DbSet<Project> Projects { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         public DbSet<ProjectGroup> ProjectGroups { get; set; }
         public DbSet<Participant> Participants { get; set; }
@@ -20,16 +21,46 @@ namespace DrillingCore.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Пример seed-данных: создаём пользователя "admin" (пароль = "admin")
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    Username = "admin",
-                    PasswordHash = "admin", // НЕ ИСПОЛЬЗУЙТЕ в продакшене!
-                    Role = "Administrator"
-                }
-            );
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("Roles");
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Id).UseIdentityByDefaultColumn();
+
+                entity.HasData(
+                    new Role { Id = -1, Name = "Administrator" },
+                    new Role { Id = -2, Name = "Driller" },
+                    new Role { Id = -3, Name = "ProjectManager" }
+                );
+            });
+
+            // Пример User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("Users");
+                entity.HasKey(u => u.Id);
+                entity.Property(u => u.Id).UseIdentityByDefaultColumn();
+
+                // связь
+                entity.HasOne(u => u.Role)
+                      .WithMany()
+                      .HasForeignKey(u => u.RoleId);
+
+                entity.HasData(
+                    new User
+                    {
+                        Id = 1,
+                        Username = "admin",
+                        PasswordHash = "admin",
+                        RoleId = -1, // должно совпадать с Role { Id = -1 }
+                        FullName = "Administrator",
+                        Email = "admin@example.com",
+                        Mobile = "1234567890"
+                    }
+                );
+            });
+
 
             // Пример для свойства StartDate
             modelBuilder.Entity<Project>()

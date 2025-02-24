@@ -1,6 +1,6 @@
 ﻿// wwwroot/js/participants.js
 
-// Токен не передается через скрипт – он хранится в куках
+// Токен не передается через скрипт – он хранится в куки
 
 // Получаем текущий ID проекта из скрытого поля внутри модального окна
 function getCurrentProjectId() {
@@ -44,18 +44,21 @@ function renderParticipantGroups(groups) {
         return;
     }
     tbody.innerHTML = "";
+
     if (!groups || groups.length === 0) {
         const tr = document.createElement("tr");
         tr.innerHTML = `<td colspan="7">No participant groups found.</td>`;
         tbody.appendChild(tr);
         return;
     }
+
     groups.forEach(group => {
         // Добавляем строку-заголовок группы
         const headerRow = document.createElement("tr");
         headerRow.classList.add("group-header");
         headerRow.innerHTML = `<td colspan="7">${group.groupName}</td>`;
         tbody.appendChild(headerRow);
+
         if (group.participants && group.participants.length > 0) {
             group.participants.forEach(participant => {
                 const dateAdded = participant.dateAdded ? new Date(participant.dateAdded).toLocaleDateString() : "-";
@@ -83,10 +86,10 @@ function renderParticipantGroups(groups) {
     });
 }
 
-// Функция загрузки списка пустых групп для удаления
+// Функция загрузки списка пустых групп для удаления (используется URL /emptygroups)
 async function loadEmptyGroups(projectId) {
     try {
-        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}/groups/emptygroups`);
+        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}/Groups/emptygroups`);
         if (response.ok) {
             const emptyGroups = await response.json();
             renderEmptyGroups(emptyGroups);
@@ -111,7 +114,7 @@ function renderEmptyGroups(groups) {
         return;
     }
     groups.forEach(group => {
-        // Создаем чекбокс для каждой пустой группы
+        // Для каждой пустой группы создаём чекбокс
         const div = document.createElement("div");
         div.classList.add("form-check");
         div.innerHTML = `<input class="form-check-input delete-group-checkbox" type="checkbox" value="${group.groupName}" id="deleteGroup_${group.groupName}">
@@ -133,23 +136,26 @@ async function deleteGroups() {
         alert("Project ID not found.");
         return;
     }
+    // Собираем список имен групп для удаления
     const groupsToDelete = Array.from(checkboxes).map(cb => cb.value);
     try {
         const response = await fetch(`https://localhost:7200/api/Projects/${projectId}/Groups/emptygroups`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
+            // Передаём в теле и projectId, и список групп
             body: JSON.stringify({ projectId: parseInt(projectId), groups: groupsToDelete })
         });
         if (response.ok) {
-            showToast("Selected groups deleted successfully!", "success");
-            const deleteGroupModalEl = document.getElementById('deleteGroupModal');
-            const deleteGroupModal = bootstrap.Modal.getInstance(deleteGroupModalEl);
+            alert("Selected groups deleted successfully!");
+            // Закрываем модальное окно удаления группы
+            const deleteGroupModal = bootstrap.Modal.getInstance(document.getElementById('deleteGroupModal'));
             if (deleteGroupModal) deleteGroupModal.hide();
+            // Обновляем списки
             loadEmptyGroups(projectId);
             loadParticipantGroups(projectId);
         } else {
             const error = await response.text();
-            showToast("Error deleting groups: " + error, "error");
+            alert("Error deleting groups: " + error);
         }
     } catch (error) {
         console.error("Error deleting groups:", error);
@@ -157,7 +163,48 @@ async function deleteGroups() {
     }
 }
 
-// Функция инициализации вкладки Participants
+
+// Функция создания группы через API
+async function createGroup() {
+    const groupNameInput = document.getElementById('groupName');
+    if (!groupNameInput || !groupNameInput.value.trim()) {
+        alert("Please enter a group name.");
+        return;
+    }
+    const groupName = groupNameInput.value.trim();
+    const projectId = getCurrentProjectId();
+    if (!projectId) {
+        alert("Project ID not found.");
+        return;
+    }
+    try {
+        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}/Groups`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectId: parseInt(projectId), groupName: groupName })
+        });
+        if (response.ok) {
+            alert("Group created successfully!");
+            const addGroupModal = bootstrap.Modal.getInstance(document.getElementById('addGroupModal'));
+            if (addGroupModal) addGroupModal.hide();
+            loadParticipantGroups(projectId);
+            loadEmptyGroups(projectId);
+        } else {
+            const error = await response.text();
+            // Если сервер возвращает конфликт, выводим красивое сообщение
+            if (response.status === 409) {
+                alert("A group with the same name already exists for this project.");
+            } else {
+                alert("Error creating group: " + error);
+            }
+        }
+    } catch (error) {
+        console.error("Error creating group:", error);
+        alert("Error creating group. See console for details.");
+    }
+}
+
+// Инициализация вкладки Participants
 function initParticipantsTab() {
     const projectId = getCurrentProjectId();
     if (!projectId) {
@@ -167,7 +214,7 @@ function initParticipantsTab() {
     loadParticipantGroups(projectId);
 }
 
-// Функция для инициализации вложенных модальных окон (например, для добавления и удаления групп)
+// Инициализация вложенных модальных окон (для добавления/удаления групп)
 function initNestedModalEvents() {
     // Обработчик для кнопки "Add Group"
     const addGroupButton = document.getElementById('addGroupButton');
@@ -177,8 +224,17 @@ function initNestedModalEvents() {
             const addGroupModalEl = document.getElementById('addGroupModal');
             if (addGroupModalEl) {
                 new bootstrap.Modal(addGroupModalEl, { backdrop: 'static', keyboard: false }).show();
-                // При открытии модального окна для группы привяжем обработчики для шаблонных кнопок
-                attachTemplateListeners();
+                // Назначаем обработчик для кнопок шаблонов внутри модального окна
+                const templateButtons = addGroupModalEl.querySelectorAll('.template-btn');
+                templateButtons.forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const template = this.getAttribute('data-template');
+                        const groupNameInput = document.getElementById('groupName');
+                        if (groupNameInput) {
+                            groupNameInput.value = template;
+                        }
+                    });
+                });
                 const saveGroupBtn = document.getElementById('saveGroupBtn');
                 if (saveGroupBtn) {
                     saveGroupBtn.onclick = createGroup;
@@ -190,6 +246,7 @@ function initNestedModalEvents() {
     } else {
         console.error("Add Group button not found.");
     }
+
     // Обработчик для кнопки "Delete Group"
     const deleteGroupButton = document.getElementById('deleteGroupButton');
     if (deleteGroupButton) {
@@ -217,22 +274,6 @@ function initNestedModalEvents() {
     }
 }
 
-// Функция для привязки обработчиков шаблонных кнопок (template-btn) в модальном окне Add Group
-function attachTemplateListeners() {
-    const templateButtons = document.querySelectorAll('#addGroupModal .template-btn');
-    templateButtons.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const groupNameField = document.getElementById('groupName');
-            if (groupNameField) {
-                groupNameField.value = this.getAttribute('data-template');
-            } else {
-                console.error("Group name field not found.");
-            }
-        });
-    });
-}
-
-// Обработчик события переключения вкладок – при открытии вкладки Participants
 document.addEventListener('shown.bs.tab', function (event) {
     if (event.target && event.target.id === 'participants-tab') {
         initParticipantsTab();
@@ -241,61 +282,3 @@ document.addEventListener('shown.bs.tab', function (event) {
 });
 
 window.initParticipantsTab = initParticipantsTab;
-
-// Функция создания группы через API
-async function createGroup() {
-    const groupNameInput = document.getElementById('groupName');
-    if (!groupNameInput || !groupNameInput.value.trim()) {
-        alert("Please enter a group name.");
-        return;
-    }
-    const groupName = groupNameInput.value.trim();
-    const projectId = getCurrentProjectId();
-    if (!projectId) {
-        alert("Project ID not found.");
-        return;
-    }
-    try {
-        const response = await fetch(`https://localhost:7200/api/Projects/${projectId}/Groups`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectId: parseInt(projectId), groupName: groupName })
-        });
-        if (response.ok) {
-            showToast("Group created successfully!", "success");
-            const addGroupModalEl = document.getElementById('addGroupModal');
-            const modalInstance = bootstrap.Modal.getInstance(addGroupModalEl);
-            if (modalInstance) modalInstance.hide();
-            loadParticipantGroups(projectId);
-            loadEmptyGroups(projectId);
-        } else {
-            const error = await response.text();
-            showToast("Error creating group: " + error, "error");
-        }
-    } catch (error) {
-        console.error("Error creating group:", error);
-        alert("Error creating group. See console for details.");
-    }
-}
-
-// Функция для вывода уведомлений (toast)
-function showToast(message, type) {
-    const toast = document.createElement("div");
-    toast.className = "toast align-items-center text-white bg-" + (type === "error" ? "danger" : "success") + " border-0";
-    toast.setAttribute("role", "alert");
-    toast.setAttribute("aria-live", "assertive");
-    toast.setAttribute("aria-atomic", "true");
-    toast.style.position = "fixed";
-    toast.style.top = "20px";
-    toast.style.right = "20px";
-    toast.innerHTML = `<div class="d-flex">
-        <div class="toast-body">
-            ${message}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>`;
-    document.body.appendChild(toast);
-    const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
-    bsToast.show();
-    setTimeout(() => { document.body.removeChild(toast); }, 6000);
-}

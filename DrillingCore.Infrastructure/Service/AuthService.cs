@@ -57,7 +57,7 @@ namespace DrillingCore.Infrastructure.Services
                 IsAuthenticated = true,
                 Token = string.Empty, // Токен не передаётся во фронтенд
                 Username = user.Username,
-                Role = user.Role
+                Role = user.Role.Name
             };
         }
     }

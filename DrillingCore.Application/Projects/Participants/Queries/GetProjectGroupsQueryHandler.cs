@@ -38,7 +38,7 @@ namespace DrillingCore.Application.Projects.Participants.Queries
                     FullName = p.User?.FullName,
                     Mobile = p.User?.Mobile,
                     Email = p.User?.Email,
-                    Role = p.User?.Role
+                    Role = p.User?.Role.Name
                 }).ToList()
             });
             return groupDtos;

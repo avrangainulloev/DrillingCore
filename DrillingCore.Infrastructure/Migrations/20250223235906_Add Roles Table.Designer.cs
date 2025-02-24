@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Migrations
 {
     [DbContext(typeof(DrillingCoreDbContext))]
-    [Migration("20250212213209_Project groups")]
-    partial class Projectgroups
+    [Migration("20250223235906_Add Roles Table")]
+    partial class AddRolesTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,9 +42,6 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<int?>("GroupId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ProjectGroupId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
@@ -53,7 +50,9 @@ namespace DrillingCore.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectGroupId");
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Participants");
                 });
@@ -108,6 +107,39 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.ToTable("ProjectGroups");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            Name = "Administrator"
+                        },
+                        new
+                        {
+                            Id = -2,
+                            Name = "Driller"
+                        },
+                        new
+                        {
+                            Id = -3,
+                            Name = "ProjectManager"
+                        });
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -116,25 +148,44 @@ namespace DrillingCore.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mobile")
+                        .HasColumnType("text");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
-                    b.Property<string>("Role")
-                        .HasColumnType("text");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RoleId1")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Username")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("RoleId1");
+
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
                         {
                             Id = 1,
+                            Email = "admin@example.com",
+                            FullName = "Administrator",
+                            Mobile = "1234567890",
                             PasswordHash = "admin",
-                            Role = "Administrator",
+                            RoleId = -1,
                             Username = "admin"
                         });
                 });
@@ -143,12 +194,40 @@ namespace DrillingCore.Infrastructure.Migrations
                 {
                     b.HasOne("DrillingCore.Core.Entities.ProjectGroup", null)
                         .WithMany("Participants")
-                        .HasForeignKey("ProjectGroupId");
+                        .HasForeignKey("GroupId");
+
+                    b.HasOne("DrillingCore.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.User", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.Role", null)
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId1");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectGroup", b =>
                 {
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }
