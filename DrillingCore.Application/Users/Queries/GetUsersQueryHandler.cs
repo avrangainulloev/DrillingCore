@@ -30,7 +30,9 @@ namespace DrillingCore.Application.Users.Queries
                 Email = u.Email,
                 Mobile = u.Mobile,
                 RoleId = u.RoleId,
-                RoleName = u.Role?.Name ?? string.Empty
+                RoleName = u.Role?.Name ?? string.Empty,
+                IsActive = u.IsActive
+
             });
         }
     }

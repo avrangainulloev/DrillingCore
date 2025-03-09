@@ -1,5 +1,6 @@
 ﻿// UserRepository.cs
 using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Exceptions;
 using DrillingCore.Application.Interfaces;
 using DrillingCore.Core.Entities;
 using DrillingCore.Infrastructure.Persistence;
@@ -56,6 +57,31 @@ namespace DrillingCore.Infrastructure.Repositories
             }
 
             return await query.ToListAsync();
+        }
+
+        // Новый метод для обновления пользователя
+        public async Task UpdateUserAsync(User user)
+        {
+            // Находим существующего пользователя по идентификатору
+            var existingUser = await _context.Users.FindAsync(user.Id);
+            if (existingUser == null)
+            {
+                throw new NotFoundException("User not found.");
+            }
+
+            // Обновляем свойства пользователя
+            existingUser.Username = user.Username;
+            // Если не требуется обновлять пароль, можно исключить PasswordHash,
+            // либо обновлять его только при необходимости (например, при сбросе пароля)
+            existingUser.PasswordHash = user.PasswordHash;
+            existingUser.FullName = user.FullName;
+            existingUser.Email = user.Email;
+            existingUser.Mobile = user.Mobile;
+            existingUser.RoleId = user.RoleId;
+            // Если добавлено новое поле IsActive:
+            existingUser.IsActive = user.IsActive;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

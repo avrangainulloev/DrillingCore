@@ -19,11 +19,13 @@ namespace DrillingCore.Application.Users.Commands
         {
             var user = new User
             {
-                Username= request.Username,
-                PasswordHash = request.Password,
+                Username = request.Username,
+                PasswordHash = request.Password, // В реальном проекте пароль хэшируется
                 FullName = request.FullName,
                 Email = request.Email,
-                Mobile = request.Mobile
+                Mobile = request.Mobile,
+                RoleId = request.RoleId,
+                IsActive = request.IsActive  // Получаем статус из команды (по умолчанию true)
             };
 
             await _userRepository.AddAsync(user);
