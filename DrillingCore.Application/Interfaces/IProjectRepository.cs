@@ -1,4 +1,5 @@
 ﻿// Application/Interfaces/IProjectRepository.cs
+using DrillingCore.Application.DTOs;
 using DrillingCore.Core.Entities;
 
 namespace DrillingCore.Application.Interfaces
@@ -10,5 +11,6 @@ namespace DrillingCore.Application.Interfaces
         Task AddAsync(Project project);
         Task UpdateAsync(Project project);
         Task DeleteAsync(Project project);
+        Task<IEnumerable<ProjectGroupDto>> GetProjectGroupsWithParticipantsAsync(int projectId);
     }
 }

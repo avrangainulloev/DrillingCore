@@ -17,16 +17,23 @@ namespace DrillingCore.Application.Projects.Participants.Commands
 
         public async Task<int> Handle(AddParticipantCommand request, CancellationToken cancellationToken)
         {
-            var participant = new Participant
+            int lastId = 0;
+            foreach (var userId in request.UserIds)
             {
-                ProjectId = request.ProjectId,
-                UserId = request.UserId,
-                GroupId = request.GroupId, // если null – участник добавлен напрямую в проект
-                DateAdded = request.DateAdded
-            };
+                var participant = new Participant
+                {
+                    ProjectId = request.ProjectId,
+                    UserId = userId,
+                    GroupId = request.GroupId, // если null – участник добавлен напрямую в проект
+                    DateAdded = request.DateAdded,
+                    DailyRate = request.DailyRate,
+                    MeterRate = request.MeterRate
+                };
 
-            await _participantRepository.AddAsync(participant);
-            return participant.Id;
+                await _participantRepository.AddAsync(participant);
+                lastId = participant.Id; // можно возвращать последний созданный Id или, например, количество добавленных записей
+            }
+            return lastId;
         }
     }
 }

@@ -12,8 +12,9 @@ namespace DrillingCore.Application.Interfaces
         Task<User?> GetByIdAsync(int id);
         Task AddAsync(User user);
         Task UpdateUserAsync(User user);
-
-        // Новый метод для получения пользователей с фильтрацией
+ 
         Task<IEnumerable<User>> GetUsersAsync(string searchTerm, int? roleId);
+
+        Task<IEnumerable<User>> GetAvailableUsersAsync();
     }
 }

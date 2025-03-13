@@ -6,7 +6,7 @@ namespace DrillingCore.Application.Interfaces
 {
     public interface IRoleRepository
     {
-        Task<IEnumerable<Role>> GetAllAsync();
+        Task<IEnumerable<Role>> GetAllRolesAsync();
         Task<Role?> GetByIdAsync(int id);
         Task AddAsync(Role role);
     }

@@ -41,16 +41,40 @@
         </form>
     </div>
 
-    <!-- Simple login logic for demonstration -->
     <script>
-    async function login() {
-      // Here you would call your authentication API.
-      // On successful authentication, store the token and redirect to the dashboard.
-      // For now, we simply redirect:
-      window.location.href = "dashboard.html";
-    }
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('https://localhost:7200/api/Auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(errorData.message || "Ошибка авторизации");
+                    return;
+                }
+
+                const data = await response.json();
+                // Сохраняем токен в куках.
+                // Обратите внимание: если вам требуется более безопасное хранение, настройте сервер на установку HttpOnly куки.
+                document.cookie = `auth_token=${data.token}; path=/; secure; samesite=strict`;
+                // Перенаправляем пользователя на dashboard
+                window.location.href = "dashboard.html";
+            } catch (error) {
+                console.error("Ошибка при запросе:", error);
+                alert("Ошибка соединения");
+            }
+        }
     </script>
-    <!-- Bootstrap 5 JS (optional for JS components) -->
+
+    <!-- Bootstrap 5 JS (опционально для компонентов JS) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

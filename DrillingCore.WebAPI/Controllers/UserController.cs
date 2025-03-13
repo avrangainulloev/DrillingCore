@@ -61,6 +61,16 @@ namespace DrillingCore.WebAPI.Controllers
             return Ok("User updated successfully.");
         }
 
+        // GET: api/Users/available
+        [HttpGet("available")]
+        public async Task<IActionResult> GetAvailableUsers()
+        {
+            var query = new GetAvailableUsersQuery();
+            IEnumerable<UserDto> users = await _mediator.Send(query);
+            return Ok(users);
+        }
+
+
         // DELETE: api/Users/{id}
         //[HttpDelete("{id}")]
         //public async Task<IActionResult> DeleteUser(int id)

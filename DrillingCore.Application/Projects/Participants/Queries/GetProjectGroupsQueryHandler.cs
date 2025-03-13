@@ -10,38 +10,19 @@ namespace DrillingCore.Application.Projects.Participants.Queries
 {
     public class GetProjectGroupsQueryHandler : IRequestHandler<GetProjectGroupsQuery, IEnumerable<ProjectGroupDto>>
     {
-        private readonly IProjectGroupRepository _groupRepository;
+        private readonly IProjectRepository _projectRepository;
+        
         // Если нужно получить данные о пользователях, можно использовать IUserRepository:
         // private readonly IUserRepository _userRepository;
 
-        public GetProjectGroupsQueryHandler(IProjectGroupRepository groupRepository)
+        public GetProjectGroupsQueryHandler(IProjectRepository projectRepository)
         {
-            _groupRepository = groupRepository;
+            _projectRepository = projectRepository;
         }
 
         public async Task<IEnumerable<ProjectGroupDto>> Handle(GetProjectGroupsQuery request, CancellationToken cancellationToken)
         {
-            var groups = await _groupRepository.GetByProjectIdAsync(request.ProjectId);
-            var groupDtos = groups.Select(g => new ProjectGroupDto
-            {
-                Id = g.Id,
-                ProjectId = g.ProjectId,
-                GroupName = g.GroupName,
-                Participants = g.Participants.Select(p => new ParticipantDto
-                {
-                    Id = p.Id,
-                    ProjectId = p.ProjectId,
-                    UserId = p.UserId,
-                    GroupId = p.GroupId,
-                    DateAdded = p.DateAdded,
-                    EndDate = p.EndDate,
-                    FullName = p.User?.FullName,
-                    Mobile = p.User?.Mobile,
-                    Email = p.User?.Email,
-                    Role = p.User?.Role.Name
-                }).ToList()
-            });
-            return groupDtos;
+            return await _projectRepository.GetProjectGroupsWithParticipantsAsync(request.ProjectId);
         }
     }
 }

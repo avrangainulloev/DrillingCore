@@ -15,7 +15,7 @@ namespace DrillingCore.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Role>> GetAllAsync()
+        public async Task<IEnumerable<Role>> GetAllRolesAsync()
         {
             return await _context.Roles.ToListAsync();
         }

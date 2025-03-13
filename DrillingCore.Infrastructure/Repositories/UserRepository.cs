@@ -83,5 +83,15 @@ namespace DrillingCore.Infrastructure.Repositories
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<User>> GetAvailableUsersAsync()
+        {
+            // Предполагается, что таблица Participants содержит участников проектов,
+            // у которых EndDate = null означает, что они сейчас работают
+            return await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.IsActive && !_context.Participants.Any(p => p.UserId == u.Id && p.EndDate == null))
+                .ToListAsync();
+        }
     }
 }
