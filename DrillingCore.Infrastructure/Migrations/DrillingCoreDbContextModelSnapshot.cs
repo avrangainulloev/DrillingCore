@@ -22,6 +22,52 @@ namespace DrillingCore.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.Equipment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EquipmentTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RegistrationNumber")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentTypeId");
+
+                    b.ToTable("Equipments");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.EquipmentType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("TypeName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EquipmentTypes");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.Participant", b =>
                 {
                     b.Property<int>("Id")
@@ -36,8 +82,8 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<int?>("GroupId")
                         .HasColumnType("integer");
@@ -47,6 +93,9 @@ namespace DrillingCore.Infrastructure.Migrations
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -86,7 +135,12 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Projects");
                 });
@@ -108,6 +162,51 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProjectGroups");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ProjectStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProjectStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Проект активный",
+                            Name = "Active"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Проект не активный",
+                            Name = "Inactive"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Проект приостановлен",
+                            Name = "Suspended"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Проект завершён",
+                            Name = "Completed"
+                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Role", b =>
@@ -197,6 +296,44 @@ namespace DrillingCore.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DrillingCore.Domain.Entities.ParticipantEquipment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("ParticipantEquipments");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.Equipment", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.EquipmentType", "EquipmentType")
+                        .WithMany("Equipments")
+                        .HasForeignKey("EquipmentTypeId");
+
+                    b.Navigation("EquipmentType");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.Participant", b =>
                 {
                     b.HasOne("DrillingCore.Core.Entities.ProjectGroup", null)
@@ -210,6 +347,17 @@ namespace DrillingCore.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.Project", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.ProjectStatus", "Status")
+                        .WithMany("Projects")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.User", b =>
@@ -227,9 +375,38 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("DrillingCore.Domain.Entities.ParticipantEquipment", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("Participant");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.EquipmentType", b =>
+                {
+                    b.Navigation("Equipments");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectGroup", b =>
                 {
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ProjectStatus", b =>
+                {
+                    b.Navigation("Projects");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Role", b =>

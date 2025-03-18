@@ -9,14 +9,15 @@ namespace DrillingCore.Application.DTOs
         public int UserId { get; set; }
         // Если участник в группе, GroupId содержит значение; иначе – null
         public int? GroupId { get; set; }
-        public DateTime DateAdded { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateOnly? StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
 
-        // Дополнительно можно добавить поля для отображения имени и телефона пользователя,
-        // которые можно получить через IUserRepository, если требуется.
+        public decimal? DailyRate { get; set; }
+        public decimal? MeterRate { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string Mobile { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        //public DateTime DateAdded { get; set; }
     }
 }

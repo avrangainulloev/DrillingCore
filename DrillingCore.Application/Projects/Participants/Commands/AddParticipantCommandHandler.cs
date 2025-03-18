@@ -25,9 +25,11 @@ namespace DrillingCore.Application.Projects.Participants.Commands
                     ProjectId = request.ProjectId,
                     UserId = userId,
                     GroupId = request.GroupId, // если null – участник добавлен напрямую в проект
-                    DateAdded = request.DateAdded,
+                    StartDate = request.StartDate,
                     DailyRate = request.DailyRate,
-                    MeterRate = request.MeterRate
+                    MeterRate = request.MeterRate,
+                    DateAdded = DateTime.UtcNow
+
                 };
 
                 await _participantRepository.AddAsync(participant);

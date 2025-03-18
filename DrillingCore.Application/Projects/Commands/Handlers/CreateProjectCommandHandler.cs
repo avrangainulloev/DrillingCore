@@ -28,7 +28,9 @@ namespace DrillingCore.Application.Projects.Commands.Handlers
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Client = dto.Client,
-                HasCampOrHotel = dto.HasCampOrHotel
+                HasCampOrHotel = dto.HasCampOrHotel,
+                StatusId = dto.StatusId,
+
             };
 
             await _projectRepository.AddAsync(project);

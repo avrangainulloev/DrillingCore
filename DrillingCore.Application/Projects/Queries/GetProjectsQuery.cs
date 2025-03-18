@@ -8,5 +8,7 @@ namespace DrillingCore.Application.Projects.Queries
     {
         // Можно передавать параметры запроса, например, количество проектов (limit)
         public int Limit { get; set; } = 30;
+        public string? SearchTerm { get; set; }
+        public string? Status { get; set; }
     }
 }

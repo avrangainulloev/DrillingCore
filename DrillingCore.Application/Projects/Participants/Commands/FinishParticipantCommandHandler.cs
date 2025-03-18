@@ -22,8 +22,9 @@ namespace DrillingCore.Application.Projects.Participants.Commands
             {
                 throw new Exception("Participant not found for the specified project");
             }
-
-            participant.EndDate = request.FinishDate;
+         
+            participant.EndDate = request.FinishDate ;
+            //participant.EndDate = DateTime.SpecifyKind(request.FinishDate, DateTimeKind.Utc);
             await _participantRepository.UpdateAsync(participant);
 
             return Unit.Value;

@@ -31,6 +31,8 @@ namespace DrillingCore.Application.Projects.Queries.Handlers
                 StartDate = project.StartDate,
                 EndDate = project.EndDate,
                 Client = project.Client,
+                 
+                StatusId = project.StatusId,
                 HasCampOrHotel = project.HasCampOrHotel
             };
         }

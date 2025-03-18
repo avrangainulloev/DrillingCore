@@ -20,8 +20,9 @@ namespace DrillingCore.Application.Projects.Queries.Handlers
 
         public async Task<IEnumerable<ProjectDto>> Handle(GetProjectsQuery request, CancellationToken cancellationToken)
         {
-            var projects = await _projectRepository.GetAllAsync(request.Limit);
-            // Преобразуем сущности Project в DTO. Если нужно, можно использовать AutoMapper.
+            var projects = await _projectRepository.GetAllAsync(request.Limit, request.SearchTerm, request.Status);
+
+            // Маппинг сущностей Project в ProjectDto. В данном случае Status маппится через p.Status.Name.
             return projects.Select(p => new ProjectDto
             {
                 Id = p.Id,
@@ -30,7 +31,10 @@ namespace DrillingCore.Application.Projects.Queries.Handlers
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
                 Client = p.Client,
-                HasCampOrHotel = p.HasCampOrHotel
+                HasCampOrHotel = p.HasCampOrHotel,
+                Status = p.Status.Name,
+                 StatusId = p.StatusId
+
             });
         }
     }

@@ -31,9 +31,11 @@ namespace DrillingCore.Application.Projects.Commands.Handlers
             // Обновляем поля проекта
             project.Name = dto.Name;
             project.Client = dto.Client;
+            project.Location = dto.Location;
             project.StartDate = dto.StartDate;
             project.EndDate = dto.EndDate;
             project.HasCampOrHotel = dto.HasCampOrHotel;
+            project.StatusId = dto.StatusId;
             // Если нужны дополнительные поля – обновите их здесь
 
             // Сохраняем изменения (в зависимости от реализации репозитория)

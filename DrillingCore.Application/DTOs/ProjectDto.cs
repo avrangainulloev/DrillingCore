@@ -10,5 +10,7 @@ namespace DrillingCore.Application.DTOs
         public DateTime? EndDate { get; set; }
         public string Client { get; set; } = null!;
         public bool HasCampOrHotel { get; set; }
+        public string Status { get; set; } = null!;
+        public int StatusId { get; set; }
     }
 }

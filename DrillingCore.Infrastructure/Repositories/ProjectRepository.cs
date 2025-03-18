@@ -22,12 +22,26 @@ namespace DrillingCore.Infrastructure.Repositories
             return await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Project>> GetAllAsync(int limit = 30)
+        public async Task<IEnumerable<Project>> GetAllAsync(int limit, string? searchTerm = null, string? status = null)
         {
-            return await _dbContext.Projects
-                                   .OrderByDescending(p => p.StartDate)
-                                   .Take(limit)
-                                   .ToListAsync();
+            var query = _dbContext.Projects
+                                  .Include(p => p.Status)
+                                  .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                string lowerSearch = searchTerm.ToLower();
+                query = query.Where(p => p.Name.ToLower().Contains(lowerSearch));
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(p => p.Status.Name == status);
+            }
+
+            return await query.OrderByDescending(p => p.StartDate)
+                              .Take(limit)
+                              .ToListAsync();
         }
 
         public async Task AddAsync(Project project)
@@ -60,12 +74,14 @@ namespace DrillingCore.Infrastructure.Repositories
                     ParticipantId = p == null ? (int?)null : (int?)p.Id,
                     ProjectId = projectId,
                     UserId = p == null ? (int?)null : (int?)p.UserId,
-                    DateAdded = p == null ? (DateTime?)null : (DateTime?)p.DateAdded,
-                    EndDate = p == null ? (DateTime?)null : (DateTime?)p.EndDate,
+                    StartDate = p == null ? (DateOnly?)null : (DateOnly?)p.StartDate,
+                    EndDate = p == null ? (DateOnly?)null : (DateOnly?)p.EndDate,
                     FullName = p == null ? null : p.User.FullName,
                     Mobile = p == null ? null : p.User.Mobile,
                     Email = p == null ? null : p.User.Email,
-                    Role = p == null ? null : p.User.Role.Name
+                    Role = p == null ? null : p.User.Role.Name,
+                    DailyRate = p == null ? (decimal?)null : p.DailyRate,
+                    MeterRate = p == null ? (decimal?)null : p.MeterRate
                 });
 
             // 2. Запрос: участники без группы (GroupId == null)
@@ -78,12 +94,14 @@ namespace DrillingCore.Infrastructure.Repositories
                     ParticipantId = (int?)p.Id,
                     ProjectId = projectId,
                     UserId = (int?)p.UserId,
-                    DateAdded = (DateTime?)p.DateAdded,
-                    EndDate = (DateTime?)p.EndDate,
+                    StartDate = (DateOnly?)p.StartDate,
+                    EndDate = (DateOnly?)p.EndDate,
                     FullName = p.User.FullName,
                     Mobile = p.User.Mobile,
                     Email = p.User.Email,
-                    Role = p.User.Role.Name
+                    Role = p.User.Role.Name,
+                    DailyRate = p.DailyRate,
+                    MeterRate = p.MeterRate
                 });
 
             // 3. Запрос: пустые группы (в которых нет участников)
@@ -96,12 +114,14 @@ namespace DrillingCore.Infrastructure.Repositories
                     ParticipantId = (int?)null,
                     ProjectId = projectId,
                     UserId = (int?)null,
-                    DateAdded = (DateTime?)null,
-                    EndDate = (DateTime?)null,
+                    StartDate = (DateOnly?)null,
+                    EndDate = (DateOnly?)null,
                     FullName = (string)null,
                     Mobile = (string)null,
                     Email = (string)null,
-                    Role = (string)null
+                    Role = (string)null,
+                    DailyRate = (decimal?)null,
+                    MeterRate = (decimal?)null
                 });
 
             // Объединяем все части через Union
@@ -125,18 +145,19 @@ namespace DrillingCore.Infrastructure.Repositories
                                       ProjectId = x.ProjectId,
                                       UserId = x.UserId.Value,
                                       GroupId = x.GroupId,
-                                      DateAdded = x.DateAdded.Value,
+                                      StartDate = x.StartDate,
                                       EndDate = x.EndDate,
                                       FullName = x.FullName,
                                       Mobile = x.Mobile,
                                       Email = x.Email,
-                                      Role = x.Role
+                                      Role = x.Role,
+                                      DailyRate = x.DailyRate,
+                                      MeterRate = x.MeterRate
                                   }).ToList()
             }).ToList();
 
             return result;
         }
-
 
 
 

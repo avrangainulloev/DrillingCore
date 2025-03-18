@@ -1,4 +1,5 @@
 ﻿using DrillingCore.Core.Entities;
+using DrillingCore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Persistence
@@ -13,9 +14,15 @@ namespace DrillingCore.Infrastructure.Persistence
         public DbSet<Project> Projects { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<ProjectStatus> ProjectStatuses { get; set; }
 
         public DbSet<ProjectGroup> ProjectGroups { get; set; }
         public DbSet<Participant> Participants { get; set; }
+        public DbSet<Equipment> Equipments { get; set; }
+        public DbSet<EquipmentType> EquipmentTypes { get; set; }
+        public DbSet<ParticipantEquipment> ParticipantEquipments { get; set; }
+
+
         // Добавьте DbSet для других сущностей
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -87,6 +94,25 @@ namespace DrillingCore.Infrastructure.Persistence
                 .HasOne(p => p.User)
                 .WithMany()  // Если в User нет коллекции участников, иначе укажите коллекцию
                 .HasForeignKey(p => p.UserId);
+
+
+
+            modelBuilder.Entity<Project>()
+       .HasOne(p => p.Status)
+       .WithMany(s => s.Projects)
+       .HasForeignKey(p => p.StatusId)
+       .OnDelete(DeleteBehavior.Restrict); // или другой подходящий вариант
+
+            // Можно задать начальное заполнение (seed) для статусов, если нужно:
+            modelBuilder.Entity<ProjectStatus>().HasData(
+                new ProjectStatus { Id = 1, Name = "Active", Description = "Проект активный" },
+                new ProjectStatus { Id = 2, Name = "Inactive", Description = "Проект не активный" },
+                new ProjectStatus { Id = 3, Name = "Suspended", Description = "Проект приостановлен" },
+                new ProjectStatus { Id = 4, Name = "Completed", Description = "Проект завершён" }
+            );
+
         }
+
+
     }
 }

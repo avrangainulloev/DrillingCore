@@ -10,5 +10,10 @@ namespace DrillingCore.Core.Entities
         public DateTime? EndDate { get; set; }
         public string Client { get; set; } = null!;
         public bool HasCampOrHotel { get; set; }
+
+        // Новый внешний ключ и навигационное свойство
+        public int StatusId { get; set; }
+        public ProjectStatus Status { get; set; } = null!;
     }
+
 }

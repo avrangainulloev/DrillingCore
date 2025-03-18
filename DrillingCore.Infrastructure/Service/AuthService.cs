@@ -46,7 +46,8 @@ namespace DrillingCore.Infrastructure.Services
             {
                 HttpOnly = true,
                 Secure = true, // в production должно быть true
-                Expires = DateTime.UtcNow.AddHours(1)
+                Expires = DateTime.UtcNow.AddHours(1),
+                SameSite = SameSiteMode.None // Важно
             };
 
             _httpContextAccessor.HttpContext.Response.Cookies.Append("AuthToken", token, cookieOptions);

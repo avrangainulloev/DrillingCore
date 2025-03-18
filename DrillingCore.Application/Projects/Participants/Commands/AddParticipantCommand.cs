@@ -10,7 +10,7 @@ namespace DrillingCore.Application.Projects.Participants.Commands
         public List<int> UserIds { get; set; }
         // Если участник добавляется в группу, здесь указывается GroupId; иначе – null
         public int? GroupId { get; set; }
-        public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+        public DateOnly StartDate { get; set; } 
 
         // Новые поля:
         public decimal? DailyRate { get; set; }

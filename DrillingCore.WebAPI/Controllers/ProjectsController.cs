@@ -24,13 +24,20 @@ namespace DrillingCore.WebAPI.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetProjects([FromQuery] int limit = 30)
+        public async Task<IActionResult> GetProjects(
+      [FromQuery] int limit = 30,
+      [FromQuery] string? searchTerm = null,
+      [FromQuery] string? status = null)
         {
-            var query = new GetProjectsQuery { Limit = limit };
+            var query = new GetProjectsQuery
+            {
+                Limit = limit,
+                SearchTerm = searchTerm,
+                Status = status
+            };
             var projects = await _mediator.Send(query);
             return Ok(projects);
         }
-
         // GET: api/Projects/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProjectById(int id)

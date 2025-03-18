@@ -7,6 +7,6 @@ namespace DrillingCore.Application.Projects.Participants.Commands
     {
         public int ProjectId { get; set; }
         public int ParticipantId { get; set; }
-        public DateTime FinishDate { get; set; }
+        public DateOnly FinishDate { get; set; }
     }
 }
