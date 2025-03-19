@@ -18,7 +18,7 @@ namespace DrillingCore.Application.Equipments.Commands
             var equipment = new Equipment
             {
                 Name = request.Name,
-                TypeId = request.TypeId,
+                EquipmentTypeId = request.TypeId,
                 RegistrationNumber = request.RegistrationNumber,
                 CreatedDate = DateTime.UtcNow
             };

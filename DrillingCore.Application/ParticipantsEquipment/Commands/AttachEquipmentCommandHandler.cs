@@ -18,6 +18,7 @@ namespace DrillingCore.Application.ParticipantsEquipment.Commands
             // Создаем запись ParticipantEquipment
             var assignment = new ParticipantEquipment
             {
+                ProjectId = request.ProjectId,
                 ParticipantId = request.ParticipantId,
                 EquipmentId = request.EquipmentId,
                 StartDate = request.StartDate

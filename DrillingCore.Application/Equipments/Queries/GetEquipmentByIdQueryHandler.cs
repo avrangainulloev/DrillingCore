@@ -22,7 +22,7 @@ namespace DrillingCore.Application.Equipments.Queries.GetEquipmentById
             {
                 Id = equipment.Id,
                 Name = equipment.Name,
-                TypeId = equipment.TypeId,
+                TypeId = equipment.EquipmentTypeId,
                 RegistrationNumber = equipment.RegistrationNumber,
                 CreatedDate = equipment.CreatedDate,
                 TypeName = equipment.EquipmentType?.TypeName

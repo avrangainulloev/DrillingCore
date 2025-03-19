@@ -20,7 +20,7 @@ public class UpdateEquipmentCommandHandler : IRequestHandler<UpdateEquipmentComm
         }
 
         equipment.Name = request.Name;
-        equipment.TypeId = request.TypeId;
+        equipment.EquipmentTypeId = request.TypeId;
         equipment.RegistrationNumber = request.RegistrationNumber;
 
         await _repository.UpdateAsync(equipment);

@@ -7,8 +7,7 @@
         // Например, Name — это название (или модель) оборудования
         public string Name { get; set; } = null!;
 
-        // TypeId — ссылка на сущность EquipmentType (например, бурилка, водовоз и т.д.)
-        public int TypeId { get; set; }
+   
 
         // Регистрационный номер (номер машины и т.п.)
         public string RegistrationNumber { get; set; } = null!;
@@ -17,6 +16,10 @@
         public DateTime CreatedDate { get; set; }
 
         // Навигационное свойство на тип
+        
+        public int EquipmentTypeId { get; set; }
+
         public virtual EquipmentType? EquipmentType { get; set; }
+     
     }
 }

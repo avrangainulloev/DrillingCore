@@ -1,5 +1,6 @@
-﻿using DrillingCore.Application.Interfaces;
-using DrillingCore.Core.Entities; 
+﻿using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Interfaces;
+using DrillingCore.Core.Entities;
 using DrillingCore.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,13 +22,27 @@ namespace DrillingCore.Infrastructure.Repositories
                                    .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<IEnumerable<Equipment>> GetAllAsync()
+        public async Task<IEnumerable<Equipment>> GetAllAsync(string? searchTerm, int? equipmentTypeId, int limit, CancellationToken cancellationToken)
         {
-            return await _dbContext.Equipments
-                                   .Include(e => e.EquipmentType)
-                                   .ToListAsync();
-        }
+            var query = _dbContext.Equipments
+                                  .Include(e => e.EquipmentType)
+                                  .AsQueryable();
 
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                string term = searchTerm.ToLower();
+                query = query.Where(e => e.Name.ToLower().Contains(term) || e.RegistrationNumber.ToLower().Contains(term));
+            }
+
+            if (equipmentTypeId.HasValue)
+            {
+                query = query.Where(e => e.EquipmentTypeId == equipmentTypeId.Value);
+            }
+
+            return await query.OrderByDescending(e => e.CreatedDate)
+                              .Take(limit)
+                              .ToListAsync(cancellationToken);
+        }
         public async Task AddAsync(Equipment equipment)
         {
             await _dbContext.Equipments.AddAsync(equipment);

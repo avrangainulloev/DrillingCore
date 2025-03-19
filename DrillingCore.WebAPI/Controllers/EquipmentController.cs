@@ -21,9 +21,13 @@ namespace DrillingCore.WebAPI.Controllers
 
         // GET: api/Equipment
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? searchTerm, [FromQuery] int? equipmentTypeId)
         {
-            var query = new GetAllEquipmentQuery();
+            var query = new GetAllEquipmentQuery
+            {
+                SearchTerm = searchTerm,
+                EquipmentTypeId = equipmentTypeId
+            };
             var result = await _mediator.Send(query);
             return Ok(result);
         }

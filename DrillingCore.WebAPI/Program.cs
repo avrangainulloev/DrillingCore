@@ -66,6 +66,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IParticipantEquipmentRepository, ParticipantEquipmentRepository>();
+builder.Services.AddScoped<IEquipmentTypeRepository, EquipmentTypeRepository>();
 // Регистрируем MediatR
 builder.Services.AddMediatR(cfg =>
 {
