@@ -19,9 +19,9 @@ namespace DrillingCore.Domain.Entities
         public virtual Equipment? Equipment { get; set; }
 
         // Дата начала использования
-        public DateTime StartDate { get; set; }
+        public DateOnly StartDate { get; set; }
 
         // Дата окончания использования (nullable)
-        public DateTime? EndDate { get; set; }
+        public DateOnly? EndDate { get; set; }
     }
 }

@@ -13,5 +13,7 @@ namespace DrillingCore.Application.Interfaces
         Task AddAsync(Equipment equipment);
         Task UpdateAsync(Equipment equipment);
         Task DeleteAsync(Equipment equipment);
+        Task<IEnumerable<Equipment>> GetFreeEquipmentAsync(CancellationToken cancellationToken);
+
     }
 }

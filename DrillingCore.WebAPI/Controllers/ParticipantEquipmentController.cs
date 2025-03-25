@@ -17,11 +17,11 @@ namespace DrillingCore.WebAPI.Controllers
             _mediator = mediator;
         }
 
-        // GET: api/ParticipantEquipment
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        // GET: api/ParticipantEquipment/5
+        [HttpGet("{participantId}")]
+        public async Task<IActionResult> GetEquipmentForParticipant(int participantId)
         {
-            var query = new GetAllParticipantEquipmentQuery();
+            var query = new GetAllParticipantEquipmentQuery { ParticipantId = participantId };
             var result = await _mediator.Send(query);
             return Ok(result);
         }

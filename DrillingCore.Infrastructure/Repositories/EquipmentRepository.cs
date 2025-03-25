@@ -60,5 +60,15 @@ namespace DrillingCore.Infrastructure.Repositories
             _dbContext.Equipments.Remove(equipment);
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Equipment>> GetFreeEquipmentAsync(CancellationToken cancellationToken)
+        {
+            return await _dbContext.Equipments
+     .Include(e => e.EquipmentType)
+     // Если для оборудования есть активная привязка (EndDate == null), оно считается занятым
+     .Where(e => !_dbContext.ParticipantEquipments
+                     .Any(pe => pe.EquipmentId == e.Id && pe.EndDate == null))
+     .ToListAsync(cancellationToken);
+        }
     }
 }

@@ -5,6 +5,7 @@ using DrillingCore.Application.Equipments.Queries.GetAllEquipment;
 using DrillingCore.Application.Equipments.Queries.GetEquipmentById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using DrillingCore.Application.Equipments.Queries;
 
 namespace DrillingCore.WebAPI.Controllers
 {
@@ -68,6 +69,14 @@ namespace DrillingCore.WebAPI.Controllers
             var command = new DeleteEquipmentCommand { Id = id };
             await _mediator.Send(command);
             return NoContent();
+        }
+
+        [HttpGet("free")]
+        public async Task<IActionResult> GetFreeEquipment()
+        {
+            var query = new GetFreeEquipmentQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
     }
 }

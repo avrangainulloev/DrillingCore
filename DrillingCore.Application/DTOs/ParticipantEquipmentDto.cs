@@ -11,8 +11,8 @@ namespace DrillingCore.Application.DTOs
         public int Id { get; set; }
         public int ParticipantId { get; set; }
         public int EquipmentId { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
 
         // Дополнительно: можно вывести FullName участника, Name техники и т.д.
         public string? ParticipantName { get; set; }

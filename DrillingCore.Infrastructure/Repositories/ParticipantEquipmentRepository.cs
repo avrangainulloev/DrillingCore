@@ -23,6 +23,16 @@ namespace DrillingCore.Infrastructure.Repositories
                 .FirstOrDefaultAsync(pe => pe.Id == id);
         }
 
+        public async Task<IEnumerable<ParticipantEquipment>> GetByParticipantIdAsync(int participantId, CancellationToken cancellationToken)
+        {
+            return await _dbContext.ParticipantEquipments
+                .Include(pe => pe.Participant)
+                    .ThenInclude(p => p.User)
+                .Include(pe => pe.Equipment)
+                .Where(pe => pe.ParticipantId == participantId)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<IEnumerable<ParticipantEquipment>> GetAllAsync()
         {
             return await _dbContext.ParticipantEquipments
