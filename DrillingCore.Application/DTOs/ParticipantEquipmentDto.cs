@@ -17,5 +17,7 @@ namespace DrillingCore.Application.DTOs
         // Дополнительно: можно вывести FullName участника, Name техники и т.д.
         public string? ParticipantName { get; set; }
         public string? EquipmentName { get; set; }
+        public string? EquipmentTypeName { get; set; }
+        public string? RegistrationNumber { get; set; }
     }
 }

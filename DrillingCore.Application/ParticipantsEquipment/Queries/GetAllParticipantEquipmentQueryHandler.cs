@@ -29,7 +29,10 @@ namespace DrillingCore.Application.ParticipantsEquipment.Queries
                 StartDate = a.StartDate,
                 EndDate = a.EndDate,
                 ParticipantName = a.Participant?.User.FullName,
-                EquipmentName = a.Equipment?.Name
+                EquipmentName = a.Equipment?.Name,
+                EquipmentTypeName = a.Equipment.EquipmentType.TypeName,
+                RegistrationNumber = a.Equipment.RegistrationNumber
+                
             }).ToList();
         }
     }

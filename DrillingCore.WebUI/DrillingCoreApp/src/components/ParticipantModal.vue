@@ -87,6 +87,13 @@
       @close="showFinishModal = false"
       @finished="onParticipantFinished"
     />
+    <AttachEquipmentModal
+  v-if="showEquipmentModal"
+  :participantId="currentEquipmentParticipantId"
+  :projectId="projectId"
+  @close="showEquipmentModal = false"
+  @equipment-attached="loadParticipantGroups"
+/>
   </div>
 </template>
 
@@ -96,14 +103,15 @@ import AddGroupModal from './AddGroupModal.vue';
 import DeleteGroupModal from './DeleteGroupModal.vue';
 import AddParticipantModal from './AddParticipantModal.vue';
 import FinishParticipantModal from './FinishParticipantModal.vue';
-
+import AttachEquipmentModal from './AttachEquipmentModal.vue';
 export default defineComponent({
   name: 'ParticipantModal',
   components: {
     AddGroupModal,
     DeleteGroupModal,
     AddParticipantModal,
-    FinishParticipantModal
+    FinishParticipantModal,
+    AttachEquipmentModal
   },
   props: {
     projectId: {
@@ -119,6 +127,8 @@ export default defineComponent({
       showDeleteGroupModal: false,
       showAddParticipantModal: false,
       showFinishModal: false,
+      showEquipmentModal: false,
+    currentEquipmentParticipantId: 0,
       finishModalData: {
         participantId: 0,
         participantName: ''
@@ -174,8 +184,9 @@ export default defineComponent({
       this.showFinishModal = true;
     },
     openEquipmentModal(groupName: string, participantId: number) {
-      console.log(`Open equipment modal for participant ${participantId} in group ${groupName}`);
-      // Реализуйте логику открытия модального окна для оборудования участника
+  console.log(`Open equipment modal for participant ${participantId} in group ${groupName}`);
+  this.currentEquipmentParticipantId = participantId;
+  this.showEquipmentModal = true;
     },
     onParticipantFinished() {
       // Обновляем список участников после завершения работы участника

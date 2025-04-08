@@ -29,6 +29,7 @@ namespace DrillingCore.Infrastructure.Repositories
                 .Include(pe => pe.Participant)
                     .ThenInclude(p => p.User)
                 .Include(pe => pe.Equipment)
+                .ThenInclude(e => e.EquipmentType)
                 .Where(pe => pe.ParticipantId == participantId)
                 .ToListAsync(cancellationToken);
         }
