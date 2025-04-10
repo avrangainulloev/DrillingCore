@@ -14,6 +14,6 @@ namespace DrillingCore.Application.Forms.Commands
 
         public List<ChecklistResponseDto> ChecklistResponses { get; set; } = new();
         public List<FormParticipantDto> Participants { get; set; } = new();
-        public List<FormPhotoDto> Photos { get; set; } = new();
+  
     }
 }

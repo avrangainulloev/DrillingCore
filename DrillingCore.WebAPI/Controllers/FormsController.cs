@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DrillingCore.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api/Forms")]
+    [Route("api/[controller]")]
     public class FormsController : Controller
     {
         private readonly IMediator _mediator;
@@ -85,5 +85,62 @@ namespace DrillingCore.WebAPI.Controllers
             var result = await _mediator.Send(new GetFormSignaturesQuery { FormId = formId});
             return Ok(result);
         }
+
+
+
+        /// <summary>
+        /// Uploads a photo for a form.
+        /// </summary>
+        /// <param name="projectFormId">ID of the form (ProjectForm)</param>
+        /// <param name="file">Image file to upload</param>
+        /// <returns>Returns the URL of the uploaded photo</returns>
+        /// <response code="200">Photo uploaded successfully</response>
+        /// <response code="400">If no file is provided</response>
+        [HttpPost("{projectFormId}/photos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UploadPhoto(int projectFormId, [FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            var command = new UploadFormPhotoCommand
+            {
+                ProjectFormId = projectFormId,
+                Photo = file
+            };
+
+            var result = await _mediator.Send(command);
+            return Ok(result); // result может быть url или объект
+        }
+
+        /// <summary>
+        /// Uploads a signature image for a participant of a form.
+        /// </summary>
+        /// <param name="projectFormId">ID of the form (ProjectForm)</param>
+        /// <param name="participantId">ID of the participant signing</param>
+        /// <param name="file">Signature file</param>
+        /// <returns>Returns the URL of the uploaded signature</returns>
+        /// <response code="200">Signature uploaded successfully</response>
+        /// <response code="400">If no file is provided</response>
+        [HttpPost("{projectFormId}/signatures")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UploadSignature(int projectFormId, [FromForm] int participantId, [FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No signature file uploaded.");
+
+            var command = new UploadFormSignatureCommand
+            {
+                ProjectFormId = projectFormId,
+                ParticipantId = participantId,
+                File = file
+            };
+
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
     }
 }

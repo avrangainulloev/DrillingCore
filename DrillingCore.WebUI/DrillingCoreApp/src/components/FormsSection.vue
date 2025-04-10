@@ -1,7 +1,7 @@
 <template>
   <div class="forms-section">
     <transition name="fade" mode="out-in">
-      <!-- Выбор типа формы -->
+      <!-- Cards Mode -->
       <div v-if="viewMode === 'cards'" key="cards">
         <h3 class="section-title">Select Form Type</h3>
         <div class="form-type-grid">
@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <!-- Таблица форм -->
+      <!-- List Mode -->
       <div v-else key="list">
         <div class="list-header">
           <button class="btn back-btn" @click="backToCards">Back</button>
@@ -62,11 +62,12 @@
 
     <!-- DrillInspectionModal -->
     <DrillInspectionModal
-  v-if="showDrillInspectionModal"
-  :user-id="userId"
-  :form-type-id="selectedType?.id || 2"
-  @close="closeDrillInspectionModal"
-/>
+      v-if="showDrillInspectionModal"
+      :user-id="userId"
+      :form-type-id="selectedType?.id || 2"
+      :form-id="editingFormId ?? undefined"
+      @close="onModalClosed"
+    />
   </div>
 </template>
 
@@ -109,6 +110,7 @@ export default defineComponent({
       forms: [] as FormDto[],
       selectedType: null as FormType | null,
       showDrillInspectionModal: false,
+      editingFormId: null as number | null,
       projectId: 0
     };
   },
@@ -132,26 +134,25 @@ export default defineComponent({
     formatDate(dateStr: string) {
       return new Date(dateStr).toLocaleDateString();
     },
-    editForm(formId: number) {
-      alert(`Edit form ${formId}`);
-    },
     addNewForm() {
-      if (!this.selectedType) return;
-      if (this.selectedType.id === 2) {
-        this.showDrillInspectionModal = true;
-      } else {
-        alert(`Add new form for ${this.selectedType.name}`);
-      }
+      this.editingFormId = null;
+      this.showDrillInspectionModal = true;
     },
-    closeDrillInspectionModal() {
+    editForm(formId: number) {
+      this.editingFormId = formId;
+      this.showDrillInspectionModal = true;
+    },
+    onModalClosed() {
       this.showDrillInspectionModal = false;
+      this.editingFormId = null;
+      this.loadFormsFromBackend(); // refresh
     },
     async loadProjectId() {
       try {
         const res = await fetch(`/api/users/${this.userId}/active-project`, { credentials: 'include' });
         if (!res.ok) throw new Error("Failed to load project");
         const project = await res.json();
-        this.projectId = project.projectId;
+        this.projectId = project.projectId ?? project.id;
       } catch (err) {
         console.error("Error loading projectId:", err);
       }

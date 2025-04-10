@@ -71,6 +71,7 @@
     },
     methods: {
       submitDate() {
+        console.log(`EquipmentID ${this.assignmentId}` )
         const payload = this.isAttachMode 
           ? { projectId: this.projectId, participantId: this.participantId, equipmentId: this.equipmentId, startDate: this.dateInput }
           : { id: this.assignmentId, endDate: this.dateInput };

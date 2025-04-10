@@ -10,6 +10,8 @@ using DrillingCore.Application.Projects.Commands.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using DrillingCore.Infrastructure.Services;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using DrillingCore.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,20 +60,7 @@ builder.Services.AddAuthorization();
 
 
 
-// Регистрация зависимостей
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IParticipantRepository, ParticipantRepository>();
-builder.Services.AddScoped<IProjectGroupRepository, ProjectGroupRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-builder.Services.AddScoped<IFormRepository, FormRepository>();
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
-builder.Services.AddScoped<IParticipantEquipmentRepository, ParticipantEquipmentRepository>();
-builder.Services.AddScoped<IEquipmentTypeRepository, EquipmentTypeRepository>();
-builder.Services.AddScoped<IChecklistRepository, ChecklistItemRepository>();
+builder.Services.AddInfrastructure();
 // Регистрируем MediatR
 builder.Services.AddMediatR(cfg =>
 {

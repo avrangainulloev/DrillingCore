@@ -21,7 +21,7 @@ public class CreateDrillInspectionHandler : IRequestHandler<CreateDrillInspectio
             CreatorId = request.CreatorId,
             CrewName = request.CrewName,
             UnitNumber = request.UnitNumber,
-            DateFilled = request.DateFilled,
+            DateFilled = DateTime.SpecifyKind(request.DateFilled, DateTimeKind.Utc),
             OtherComments = request.OtherComments
         };
 
@@ -34,17 +34,12 @@ public class CreateDrillInspectionHandler : IRequestHandler<CreateDrillInspectio
         var participants = request.Participants.Select(x => new FormParticipant
         {
             ParticipantId = x.ParticipantId,
-            AttachDate = DateTime.UtcNow,
-            Signature = x.Signature
+            AttachDate = DateTime.UtcNow
         }).ToList();
 
-        var photos = request.Photos.Select(x => new FormPhoto
-        {
-            PhotoUrl = x.PhotoUrl,
-            CreatedDate = DateTime.UtcNow
-        }).ToList();
+        // Фото и подписи теперь загружаются отдельно через отдельные команды, удалено из основного запроса
 
-        return await _formRepository.CreateDrillInspectionAsync(form, checklist, participants, photos, cancellationToken);
+        return await _formRepository.CreateDrillInspectionAsync(form, checklist, participants, cancellationToken);
     }
 }
 

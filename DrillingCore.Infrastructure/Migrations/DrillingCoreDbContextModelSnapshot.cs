@@ -87,6 +87,13 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EquipmentTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            TypeName = "Drill"
+                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormChecklistResponse", b =>
@@ -171,6 +178,33 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.ToTable("FormPhotos");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormSignature", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProjectFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SignatureUrl")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectFormId");
+
+                    b.ToTable("FormSignatures");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.FormType", b =>
                 {
                     b.Property<int>("Id")
@@ -188,6 +222,13 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FormTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2,
+                            Name = "Drill Inspection"
+                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormTypeEquipmentType", b =>
@@ -562,7 +603,7 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormParticipant", b =>
                 {
-                    b.HasOne("DrillingCore.Core.Entities.User", "Participant")
+                    b.HasOne("DrillingCore.Core.Entities.Participant", "Participant")
                         .WithMany()
                         .HasForeignKey("ParticipantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -582,7 +623,18 @@ namespace DrillingCore.Infrastructure.Migrations
             modelBuilder.Entity("DrillingCore.Core.Entities.FormPhoto", b =>
                 {
                     b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
-                        .WithMany()
+                        .WithMany("FormPhotos")
+                        .HasForeignKey("ProjectFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProjectForm");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormSignature", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
+                        .WithMany("FormSignatures")
                         .HasForeignKey("ProjectFormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -725,6 +777,13 @@ namespace DrillingCore.Infrastructure.Migrations
             modelBuilder.Entity("DrillingCore.Core.Entities.FormType", b =>
                 {
                     b.Navigation("ProjectForms");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ProjectForm", b =>
+                {
+                    b.Navigation("FormPhotos");
+
+                    b.Navigation("FormSignatures");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectGroup", b =>

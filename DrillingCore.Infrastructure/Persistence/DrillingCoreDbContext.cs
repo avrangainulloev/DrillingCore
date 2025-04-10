@@ -26,10 +26,11 @@ namespace DrillingCore.Infrastructure.Persistence
         public DbSet<ChecklistItem> ChecklistItems { get; set; }
         public DbSet<FormChecklistResponse> FormChecklistResponses { get; set; }
         public DbSet<FormPhoto> FormPhotos { get; set; }
+
         public DbSet<FormParticipant> FormParticipants { get; set; }
         public DbSet<FormTypeEquipmentType> FormTypeEquipmentTypes { get; set; }
 
-
+        public DbSet<FormSignature> FormSignatures { get; set; }
 
         // Добавьте DbSet для других сущностей
 
@@ -37,7 +38,16 @@ namespace DrillingCore.Infrastructure.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<FormParticipant>()
+                .HasOne(fp => fp.Participant)
+                .WithMany()
+                .HasForeignKey(fp => fp.ParticipantId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<FormSignature>()
+    .HasOne(fs => fs.ProjectForm)
+    .WithMany(pf => pf.FormSignatures)
+    .HasForeignKey(fs => fs.ProjectFormId);
 
             modelBuilder.Entity<Participant>()
             .HasOne(p => p.Project)
@@ -46,6 +56,15 @@ namespace DrillingCore.Infrastructure.Persistence
 
             modelBuilder.Entity<FormTypeEquipmentType>()
     .HasKey(ft => new { ft.FormTypeId, ft.EquipmentTypeId });
+
+
+            modelBuilder.Entity<FormType>().HasData(
+    new FormType { Id = 2, Name = "Drill Inspection" }
+);
+
+            modelBuilder.Entity<EquipmentType>().HasData(
+                new EquipmentType { Id = 1, TypeName = "Drill" }
+            );
 
             modelBuilder.Entity<FormTypeEquipmentType>().HasData(
                 new FormTypeEquipmentType { FormTypeId = 2, EquipmentTypeId = 1 } // DrillInspection — Drill

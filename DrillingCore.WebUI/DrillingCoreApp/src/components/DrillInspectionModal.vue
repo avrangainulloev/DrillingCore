@@ -12,7 +12,7 @@
           <input type="text" v-model="crewName" class="form-control" disabled />
         </div>
 
-        <!-- Date Picker -->
+        <!-- Date -->
         <div class="form-group">
           <label>Date Filled</label>
           <input type="date" v-model="dateFilled" class="form-control" />
@@ -72,7 +72,10 @@
           <label>Attach Photos</label>
           <input type="file" multiple @change="onPhotosSelected" accept="image/*" class="form-control" />
           <div class="photo-preview-list">
-            <img v-for="(photo, idx) in photos" :key="idx" :src="photo.preview" class="preview-img" />
+            <div v-for="(photo, idx) in photos" :key="idx" class="preview-wrapper">
+              <img :src="photo.preview" class="preview-img" @click="viewPhoto(photo.preview)" />
+              <button class="remove-btn" @click="removePhoto(idx)">&times;</button>
+            </div>
           </div>
         </div>
 
@@ -85,6 +88,19 @@
             <img v-if="signatures[participantId]" :src="signatures[participantId]" class="signature-preview" />
           </div>
         </div>
+
+        <!-- Photo Viewer -->
+        <div v-if="photoToView" class="photo-modal" @click="photoToView = ''">
+          <img :src="photoToView" />
+        </div>
+
+        <!-- Signature Modal -->
+        <SignatureModal
+          v-if="showSignatureModal && currentSignatureParticipantId !== null"
+          :participantId="currentSignatureParticipantId"
+          @close="showSignatureModal = false"
+          @signature-saved="onSignatureSaved"
+        />
       </div>
 
       <div class="modal-footer">
@@ -92,18 +108,11 @@
         <button class="btn btn-secondary" @click="closeModal">Cancel</button>
       </div>
     </div>
-
-    <SignatureModal
-      v-if="showSignatureModal && currentSignatureParticipantId !== null"
-      :participantId="currentSignatureParticipantId!"
-      @close="showSignatureModal = false"
-      @signature-saved="onSignatureSaved"
-    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, watch } from 'vue';
 import SignatureModal from './SignatureModal.vue';
 
 export default defineComponent({
@@ -111,7 +120,8 @@ export default defineComponent({
   components: { SignatureModal },
   props: {
     userId: { type: Number, required: true },
-    formTypeId: { type: Number, default: 2 }
+    formTypeId: { type: Number, default: 2 },
+    formId: { type: Number, required: false }
   },
   data() {
     return {
@@ -126,10 +136,11 @@ export default defineComponent({
       safetyAccessoryItems: [] as any[],
       checkedItems: [] as number[],
       otherComments: '',
-      photos: [] as { name: string; preview: string }[],
+      photos: [] as { name: string; preview: string; file: File }[],
       signatures: {} as Record<number, string>,
       currentSignatureParticipantId: null as number | null,
-      showSignatureModal: false
+      showSignatureModal: false,
+      photoToView: ''
     };
   },
   computed: {
@@ -138,42 +149,40 @@ export default defineComponent({
       return this.allParticipants.filter(p => p.fullName.toLowerCase().includes(term));
     }
   },
-  async mounted() {
-    try {
-      await this.loadActiveProject();
-      await this.loadParticipants();
-      await this.loadChecklist();
-      await this.loadEquipment();
-    } catch (err) {
-      console.error("DrillInspectionModal init error:", err);
+  watch: {
+    formId: {
+      immediate: true,
+      async handler(newVal: number | null) {
+        this.resetForm();
+        await this.loadActiveProject();
+        await this.loadParticipants();
+        await this.loadChecklist();
+        await this.loadEquipment();
+        // TODO: for editing existing form (optional)
+        if (newVal !== null) {
+          console.log("Edit mode - load form details");
+        }
+      }
     }
   },
   methods: {
+    resetForm() {
+      this.crewName = '';
+      this.unitNumber = '';
+      this.dateFilled = new Date().toISOString().split('T')[0];
+      this.participantSearch = '';
+      this.selectedParticipantIds = [];
+      this.photos = [];
+      this.signatures = {};
+      this.otherComments = '';
+      this.checkedItems = [];
+    },
     closeModal() {
       this.$emit('close');
     },
     getParticipantName(id: number) {
-      const p = this.allParticipants.find(part => part.id === id);
-      return p ? p.fullName : 'Unknown';
-    },
-    openSignatureModal(participantId: number) {
-      this.currentSignatureParticipantId = participantId;
-      this.showSignatureModal = true;
-    },
-    onSignatureSaved(payload: { participantId: number; signatureData: string }) {
-      this.signatures[payload.participantId] = payload.signatureData;
-      this.showSignatureModal = false;
-    },
-    onPhotosSelected(event: any) {
-      const files = event.target.files;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.photos.push({ name: file.name, preview: e.target.result });
-        };
-        reader.readAsDataURL(file);
-      }
+      const p = this.allParticipants.find(x => x.id === id);
+      return p?.fullName || 'Unknown';
     },
     async loadActiveProject() {
       const res = await fetch(`/api/users/${this.userId}/active-project`, { credentials: 'include' });
@@ -198,35 +207,80 @@ export default defineComponent({
     },
     async loadEquipment() {
       if (!this.selectedParticipantIds.length) return;
-      const participantId = this.selectedParticipantIds[0];
-      const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
+      const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${this.selectedParticipantIds[0]}&projectId=${this.projectId}`);
       const equipment = await res.json();
       this.unitNumber = equipment?.registrationNumber ?? '';
+    },
+    onPhotosSelected(event: any) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.photos.push({ name: file.name, preview: e.target.result, file });
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    removePhoto(index: number) {
+      this.photos.splice(index, 1);
+    },
+    viewPhoto(url: string) {
+      this.photoToView = url;
+    },
+    openSignatureModal(participantId: number) {
+      this.currentSignatureParticipantId = participantId;
+      this.showSignatureModal = true;
+    },
+    onSignatureSaved(payload: { participantId: number; signatureData: string }) {
+      this.signatures[payload.participantId] = payload.signatureData;
+      this.showSignatureModal = false;
     },
     async saveInspection() {
       const payload = {
         projectId: this.projectId,
         formTypeId: this.formTypeId,
+        creatorId: this.userId,
         crewName: this.crewName,
         unitNumber: this.unitNumber,
         dateFilled: this.dateFilled,
-        participants: this.selectedParticipantIds,
-        checklist: this.checkedItems,
-        otherComments: this.otherComments,
-        photos: this.photos.map(p => p.preview),
-        signatures: this.signatures
+        participants: this.selectedParticipantIds.map(id => ({
+    participantId: id,
+    signature: this.signatures[id] || null
+  })),
+        checklistResponses: this.checkedItems.map(x => ({ checklistItemId: x, response: true })),
+        otherComments: this.otherComments
       };
+
       const res = await fetch('/api/forms/drill-inspection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) {
-        const errText = await res.text();
-        alert(`Error: ${errText}`);
-        return;
+
+      const result = await res.json();
+      const formId = result.formId;
+      for (const photo of this.photos) {
+        const formData = new FormData();
+        formData.append('file', photo.file);
+        await fetch(`/api/forms/${formId}/photos`, {
+          method: 'POST',
+          body: formData
+        });
       }
-      alert("Drill Inspection saved!");
+
+      for (const [participantId, signature] of Object.entries(this.signatures)) {
+        const blob = await fetch(signature).then(res => res.blob());
+        const formData = new FormData();
+        formData.append('participantId', participantId);
+        formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
+        await fetch(`/api/forms/${formId}/signatures`, {
+          method: 'POST',
+          body: formData
+        });
+      }
+
+      alert('Drill Inspection saved!');
       this.closeModal();
     }
   }
@@ -332,5 +386,33 @@ export default defineComponent({
 }
 .sign-btn {
   background-color: #fd7e14;
+}
+.preview-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.remove-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 0 0 0 4px;
+  cursor: pointer;
+}
+.photo-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+.photo-modal img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
 }
 </style>

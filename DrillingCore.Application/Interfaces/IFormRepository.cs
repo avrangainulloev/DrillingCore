@@ -15,13 +15,16 @@ namespace DrillingCore.Application.Interfaces
         Task<int> CreateDrillInspectionAsync(ProjectForm form,
      List<FormChecklistResponse> checklistResponses,
      List<FormParticipant> participants,
-     List<FormPhoto> photos,
+    
      CancellationToken cancellationToken);
 
         Task<int?> GetEquipmentTypeIdForFormTypeAsync(int formTypeId);
 
         Task<List<FormPhotoDto>> GetFormPhotosAsync(int formId);
         Task<List<FormSignatureDto>> GetFormSignaturesAsync(int formId);
+
+        Task SavePhotoAsync(FormPhoto photo);
+        Task SaveSignatureAsync(FormSignature signature);
     }
 
 

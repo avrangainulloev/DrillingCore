@@ -124,6 +124,7 @@
         :mode="'attach'"
         :projectId="projectId"
         :participantId="participantId"
+        :equipmentId="selectedEquipmentId?? undefined"
        :assignmentId="selectedAssignmentId ?? undefined"
         @close="closeAttachDateModal"
         @submitted="onEquipmentAttached"

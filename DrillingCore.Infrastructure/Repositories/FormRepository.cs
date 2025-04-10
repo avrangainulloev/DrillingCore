@@ -31,7 +31,7 @@ namespace DrillingCore.Infrastructure.Repositories
         public async Task<int> CreateDrillInspectionAsync(ProjectForm form,
        List<FormChecklistResponse> checklistResponses,
        List<FormParticipant> participants,
-       List<FormPhoto> photos,
+      
        CancellationToken cancellationToken)
         {
             _context.ProjectForms.Add(form);
@@ -47,14 +47,11 @@ namespace DrillingCore.Infrastructure.Repositories
                 item.ProjectFormId = form.Id;
             }
 
-            foreach (var item in photos)
-            {
-                item.ProjectFormId = form.Id;
-            }
+            
 
             _context.FormChecklistResponses.AddRange(checklistResponses);
             _context.FormParticipants.AddRange(participants);
-            _context.FormPhotos.AddRange(photos);
+            
 
             await _context.SaveChangesAsync(cancellationToken);
             return form.Id;
@@ -95,6 +92,18 @@ namespace DrillingCore.Infrastructure.Repositories
                    Signature = p.Signature!
                })
                .ToListAsync();
+        }
+
+        public async Task SavePhotoAsync(FormPhoto photo)
+        {
+            _context.FormPhotos.Add(photo);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveSignatureAsync(FormSignature signature)
+        {
+            _context.FormSignatures.Add(signature);
+            await _context.SaveChangesAsync();
         }
     }
 }

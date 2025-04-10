@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Migrations
 {
     [DbContext(typeof(DrillingCoreDbContext))]
-    [Migration("20250320070307_ChangeParticipantEquipmentDates")]
-    partial class ChangeParticipantEquipmentDates
+    [Migration("20250410060453_InitFullSchema")]
+    partial class InitFullSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,30 @@ namespace DrillingCore.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ChecklistItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FormTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("GroupName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FormTypeId");
+
+                    b.ToTable("ChecklistItems");
+                });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Equipment", b =>
                 {
@@ -66,6 +90,170 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EquipmentTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            TypeName = "Drill"
+                        });
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormChecklistResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChecklistItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProjectFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Response")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChecklistItemId");
+
+                    b.HasIndex("ProjectFormId");
+
+                    b.ToTable("FormChecklistResponses");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormParticipant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttachDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DetachDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProjectFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Signature")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.HasIndex("ProjectFormId");
+
+                    b.ToTable("FormParticipants");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProjectFormId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectFormId");
+
+                    b.ToTable("FormPhotos");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormSignature", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProjectFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SignatureUrl")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectFormId");
+
+                    b.ToTable("FormSignatures");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FormTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2,
+                            Name = "Drill Inspection"
+                        });
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormTypeEquipmentType", b =>
+                {
+                    b.Property<int>("FormTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EquipmentTypeId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FormTypeId", "EquipmentTypeId");
+
+                    b.HasIndex("EquipmentTypeId");
+
+                    b.ToTable("FormTypeEquipmentTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            FormTypeId = 2,
+                            EquipmentTypeId = 1
+                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Participant", b =>
@@ -103,6 +291,8 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("ProjectId");
 
                     b.HasIndex("UserId");
 
@@ -143,6 +333,49 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasIndex("StatusId");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ProjectForm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalData")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CrewName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("DateFilled")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FormTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OtherComments")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UnitNumber")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("FormTypeId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectForms");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectGroup", b =>
@@ -330,6 +563,17 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.ToTable("ParticipantEquipments");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.ChecklistItem", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.FormType", "FormType")
+                        .WithMany()
+                        .HasForeignKey("FormTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FormType");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.Equipment", b =>
                 {
                     b.HasOne("DrillingCore.Core.Entities.EquipmentType", "EquipmentType")
@@ -341,17 +585,104 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Navigation("EquipmentType");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormChecklistResponse", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.ChecklistItem", "ChecklistItem")
+                        .WithMany("Responses")
+                        .HasForeignKey("ChecklistItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
+                        .WithMany()
+                        .HasForeignKey("ProjectFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChecklistItem");
+
+                    b.Navigation("ProjectForm");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormParticipant", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
+                        .WithMany()
+                        .HasForeignKey("ProjectFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Participant");
+
+                    b.Navigation("ProjectForm");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormPhoto", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
+                        .WithMany("FormPhotos")
+                        .HasForeignKey("ProjectFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProjectForm");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormSignature", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
+                        .WithMany("FormSignatures")
+                        .HasForeignKey("ProjectFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProjectForm");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormTypeEquipmentType", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.EquipmentType", "EquipmentType")
+                        .WithMany()
+                        .HasForeignKey("EquipmentTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.FormType", "FormType")
+                        .WithMany()
+                        .HasForeignKey("FormTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EquipmentType");
+
+                    b.Navigation("FormType");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.Participant", b =>
                 {
                     b.HasOne("DrillingCore.Core.Entities.ProjectGroup", null)
                         .WithMany("Participants")
                         .HasForeignKey("GroupId");
 
+                    b.HasOne("DrillingCore.Core.Entities.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DrillingCore.Core.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Project");
 
                     b.Navigation("User");
                 });
@@ -365,6 +696,33 @@ namespace DrillingCore.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ProjectForm", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.FormType", "FormType")
+                        .WithMany("ProjectForms")
+                        .HasForeignKey("FormTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("FormType");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.User", b =>
@@ -409,9 +767,26 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.ChecklistItem", b =>
+                {
+                    b.Navigation("Responses");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.EquipmentType", b =>
                 {
                     b.Navigation("Equipments");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FormType", b =>
+                {
+                    b.Navigation("ProjectForms");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.ProjectForm", b =>
+                {
+                    b.Navigation("FormPhotos");
+
+                    b.Navigation("FormSignatures");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectGroup", b =>
