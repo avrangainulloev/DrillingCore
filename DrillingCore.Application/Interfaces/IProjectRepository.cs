@@ -12,5 +12,6 @@ namespace DrillingCore.Application.Interfaces
         Task UpdateAsync(Project project);
         Task DeleteAsync(Project project);
         Task<IEnumerable<ProjectGroupDto>> GetProjectGroupsWithParticipantsAsync(int projectId);
+        Task<Project?> GetActiveProjectByUserAsync(int userId);
     }
 }

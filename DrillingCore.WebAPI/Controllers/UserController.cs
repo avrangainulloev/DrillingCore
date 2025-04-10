@@ -71,12 +71,36 @@ namespace DrillingCore.WebAPI.Controllers
         }
 
 
-        // DELETE: api/Users/{id}
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteUser(int id)
-        //{
-        //    await _mediator.Send(new DeleteUserCommand(id));
-        //    return Ok("User deleted successfully.");
-        //}
+        [HttpGet("{userId}/active-project")]
+        public async Task<IActionResult> GetActiveProject(int userId)
+        {
+            var query = new GetActiveProjectQuery { UserId = userId };
+            var result = await _mediator.Send(query);
+            return  Ok(result);
+        }
+
+        /// <summary>
+        /// Returns the currently authenticated user's profile.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint extracts the username from the JWT token (stored in HttpOnly cookie),
+        /// then fetches and returns the user's profile details.
+        /// </remarks>
+        /// <response code="200">Returns the current user's profile</response>
+        /// <response code="401">User is not authenticated</response>
+        /// <response code="404">User not found</response>
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized();
+
+            var user = await _mediator.Send(new GetUserByUsernameQuery { Username = username });
+            if (user == null)
+                return NotFound("User not found");
+
+            return Ok(user);
+        }
     }
 }

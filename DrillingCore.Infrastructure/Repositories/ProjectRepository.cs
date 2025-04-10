@@ -159,9 +159,13 @@ namespace DrillingCore.Infrastructure.Repositories
             return result;
         }
 
-
-
-
-
+        public async Task<Project?> GetActiveProjectByUserAsync(int userId)
+        {
+            return await _dbContext.Participants
+                .Include(p => p.Project)
+                .Where(p => p.UserId == userId && p.EndDate == null && p.Project.Status!.Name == "Active")
+                .Select(p => p.Project!)
+                .FirstOrDefaultAsync();
+        }
     }
 }

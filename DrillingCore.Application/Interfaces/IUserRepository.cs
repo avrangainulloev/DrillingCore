@@ -16,5 +16,6 @@ namespace DrillingCore.Application.Interfaces
         Task<IEnumerable<User>> GetUsersAsync(string searchTerm, int? roleId);
 
         Task<IEnumerable<User>> GetAvailableUsersAsync();
+        Task<User?> GetByUsernameAsync(string username);
     }
 }

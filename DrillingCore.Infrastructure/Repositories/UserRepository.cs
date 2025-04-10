@@ -93,5 +93,12 @@ namespace DrillingCore.Infrastructure.Repositories
                 .Where(u => u.IsActive && !_context.Participants.Any(p => p.UserId == u.Id && p.EndDate == null))
                 .ToListAsync();
         }
+
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }
     }
 }

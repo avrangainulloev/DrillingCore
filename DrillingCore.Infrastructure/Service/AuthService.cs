@@ -31,6 +31,7 @@ namespace DrillingCore.Infrastructure.Services
             {
                 return new LoginResponse
                 {
+                    
                     IsAuthenticated = false,
                     Token = string.Empty,
                     Username = string.Empty,
@@ -55,6 +56,7 @@ namespace DrillingCore.Infrastructure.Services
             // Возвращаем данные пользователя без токена в теле ответа
             return new LoginResponse
             {
+                UserId = user.Id,
                 IsAuthenticated = true,
                 Token = string.Empty, // Токен не передаётся во фронтенд
                 Username = user.Username,

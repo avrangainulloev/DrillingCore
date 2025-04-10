@@ -20,7 +20,7 @@ namespace DrillingCore.Application.ParticipantsEquipment.Queries
 
         public async Task<List<ParticipantEquipmentDto>> Handle(GetAllParticipantEquipmentQuery request, CancellationToken cancellationToken)
         {
-            var assignments = await _repository.GetByParticipantIdAsync(request.ParticipantId, cancellationToken);
+            var assignments = await _repository.GetEquipmentByParticipantIdAsync(request.ParticipantId,request.ProjectId, cancellationToken);
             return assignments.Select(a => new ParticipantEquipmentDto
             {
                 Id = a.Id,

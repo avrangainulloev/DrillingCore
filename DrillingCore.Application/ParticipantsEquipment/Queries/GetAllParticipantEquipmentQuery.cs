@@ -11,5 +11,6 @@ namespace DrillingCore.Application.ParticipantsEquipment.Queries
     public class GetAllParticipantEquipmentQuery : IRequest<List<ParticipantEquipmentDto>>
     {
         public int ParticipantId { get; set; }
+        public int ProjectId { get; set; }
     }
 }

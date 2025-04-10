@@ -21,6 +21,14 @@ namespace DrillingCore.Infrastructure.Persistence
         public DbSet<Equipment> Equipments { get; set; }
         public DbSet<EquipmentType> EquipmentTypes { get; set; }
         public DbSet<ParticipantEquipment> ParticipantEquipments { get; set; }
+        public DbSet<FormType> FormTypes { get; set; }
+        public DbSet<ProjectForm> ProjectForms { get; set; }
+        public DbSet<ChecklistItem> ChecklistItems { get; set; }
+        public DbSet<FormChecklistResponse> FormChecklistResponses { get; set; }
+        public DbSet<FormPhoto> FormPhotos { get; set; }
+        public DbSet<FormParticipant> FormParticipants { get; set; }
+        public DbSet<FormTypeEquipmentType> FormTypeEquipmentTypes { get; set; }
+
 
 
         // Добавьте DbSet для других сущностей
@@ -28,6 +36,21 @@ namespace DrillingCore.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
+
+            modelBuilder.Entity<Participant>()
+            .HasOne(p => p.Project)
+            .WithMany() // или .WithMany(p => p.Participants) если есть
+            .HasForeignKey(p => p.ProjectId);
+
+            modelBuilder.Entity<FormTypeEquipmentType>()
+    .HasKey(ft => new { ft.FormTypeId, ft.EquipmentTypeId });
+
+            modelBuilder.Entity<FormTypeEquipmentType>().HasData(
+                new FormTypeEquipmentType { FormTypeId = 2, EquipmentTypeId = 1 } // DrillInspection — Drill
+                                                                                  // добавь другие при необходимости
+            );
 
             modelBuilder.Entity<Role>(entity =>
             {
@@ -112,6 +135,8 @@ namespace DrillingCore.Infrastructure.Persistence
             );
 
         }
+
+
 
 
     }

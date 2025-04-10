@@ -39,17 +39,16 @@
       </header>
       
       <section class="content-area container fade-in">
-        <!-- Если активная вкладка - Projects, то рендерим ProjectsSection с ref -->
         <ProjectsSection 
           v-if="currentSection === 'Projects'" 
           ref="projectsSectionRef"
           @open-project-modal="handleOpenProjectModal" 
           @open-participant-modal="handleOpenParticipantModal" 
         />
-        <!-- Для других секций используем динамический компонент -->
         <component 
           v-else
           :is="activeSectionComponent" 
+          :user-id="userId"
           @open-project-modal="handleOpenProjectModal" 
           @open-participant-modal="handleOpenParticipantModal" 
         />
@@ -73,7 +72,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import ProjectsSection from './ProjectsSection.vue';
 import EquipmentSection from './EquipmentSection.vue';
@@ -101,7 +100,21 @@ export default defineComponent({
     const showProjectModal = ref(false);
     const showParticipantModal = ref(false);
     const currentProjectId = ref<number | null>(null);
-    const projectsSectionRef = ref(null);
+      const projectsSectionRef = ref<InstanceType<typeof ProjectsSection> | null>(null);
+    const userId = ref<number | null>(null);
+
+    onMounted(async () => {
+      try {
+        const res = await fetch('/api/users/current', { credentials: 'include' });
+        if (!res.ok) throw new Error("Not authorized");
+        const user = await res.json();
+        userId.value = user.id;
+        localStorage.setItem('userId', user.id);
+      } catch {
+        localStorage.removeItem('userId');
+        router.push('/');
+      }
+    });
 
     const menuItems = [
       { name: 'Projects', label: 'Projects', icon: 'bi bi-folder-fill' },
@@ -124,23 +137,18 @@ export default defineComponent({
 
     function setSection(section: string) {
       currentSection.value = section;
-      console.log("Active section set to:", currentSection.value);
     }
 
     function handleOpenProjectModal(projectId?: number) {
-      console.log("Dashboard: Opening project modal for projectId:", projectId);
       currentProjectId.value = projectId ?? null;
       showProjectModal.value = true;
     }
 
     function closeProjectModal() {
-      console.log("Dashboard: Closing project modal");
       showProjectModal.value = false;
     }
 
     function handleProjectSaved() {
-      console.log("Dashboard: Project saved. Updating project list.");
-      // Если текущая вкладка - Projects, вызываем loadProjects через ref
       if (currentSection.value === 'Projects' && projectsSectionRef.value?.loadProjects) {
         projectsSectionRef.value.loadProjects();
       }
@@ -148,23 +156,21 @@ export default defineComponent({
     }
 
     function handleOpenParticipantModal(projectId?: number) {
-      console.log("Dashboard: Opening participant modal for projectId:", projectId);
       currentProjectId.value = projectId ?? null;
       showParticipantModal.value = true;
     }
 
     function closeParticipantModal() {
-      console.log("Dashboard: Closing participant modal");
       showParticipantModal.value = false;
     }
 
     function handleParticipantsUpdated() {
-      console.log("Dashboard: Participants updated.");
       closeParticipantModal();
     }
 
     function logout() {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('userId');
       router.push('/');
     }
 
@@ -185,7 +191,8 @@ export default defineComponent({
       handleParticipantsUpdated,
       logout,
       router,
-      projectsSectionRef
+      projectsSectionRef,
+      userId
     };
   }
 });

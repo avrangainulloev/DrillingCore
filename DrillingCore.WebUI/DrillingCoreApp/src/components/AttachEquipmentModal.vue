@@ -124,7 +124,7 @@
         :mode="'attach'"
         :projectId="projectId"
         :participantId="participantId"
-        :equipmentId="selectedEquipmentId"
+       :assignmentId="selectedAssignmentId ?? undefined"
         @close="closeAttachDateModal"
         @submitted="onEquipmentAttached"
       />
@@ -135,7 +135,7 @@
         :mode="'detach'"
         :projectId="projectId"
         :participantId="participantId"
-        :assignmentId="selectedAssignmentId"
+       :assignmentId="selectedAssignmentId ?? undefined"
         @close="closeDetachDateModal"
         @submitted="onEquipmentDetached"
       />
@@ -216,7 +216,7 @@
       },
       async loadAttachedEquipment() {
         try {
-          const url = `https://localhost:7200/api/ParticipantEquipment/${this.participantId}`;
+          const url = `https://localhost:7200/api/ParticipantEquipment/${this.participantId}?projectId=${this.projectId}`;
           const response = await fetch(url, { credentials: 'include' });
           if (response.ok) {
             this.attachedEquipment = await response.json();

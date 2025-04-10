@@ -4,6 +4,7 @@ using DrillingCore.Application.Groups.Queries;
 using DrillingCore.Application.Projects;
 using DrillingCore.Application.Projects.Commands;
 using DrillingCore.Application.Projects.Queries;
+using DrillingCore.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -73,6 +74,8 @@ namespace DrillingCore.WebAPI.Controllers
             await _mediator.Send(new UpdateProjectCommand { ProjectDto = projectDto });
             return NoContent();
         }
+
+       
 
 
     }

@@ -8,9 +8,13 @@ export default defineConfig({
     emptyOutDir: true
   },
   server: {
+    https: false, // сам Vite не будет https
     proxy: {
-      // Если нужно проксировать запросы к /api на ваш .NET-бэкенд (порт 7200)
-      '/api': 'https://localhost:7200'
+      '/api': {
+        target: 'https://localhost:7200',
+        changeOrigin: true,
+        secure: false // <--- Важно! отключает проверку SSL
+      }
     }
   }
 })

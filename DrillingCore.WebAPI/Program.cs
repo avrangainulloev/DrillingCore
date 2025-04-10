@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SpaServices;
 using DrillingCore.Application.Projects.Commands.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using DrillingCore.Infrastructure.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,18 +56,22 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+
+
 // Регистрация зависимостей
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IParticipantRepository, ParticipantRepository>();
 builder.Services.AddScoped<IProjectGroupRepository, ProjectGroupRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IFormRepository, FormRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IParticipantEquipmentRepository, ParticipantEquipmentRepository>();
 builder.Services.AddScoped<IEquipmentTypeRepository, EquipmentTypeRepository>();
+builder.Services.AddScoped<IChecklistRepository, ChecklistItemRepository>();
 // Регистрируем MediatR
 builder.Services.AddMediatR(cfg =>
 {
@@ -75,7 +80,12 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 
 // Настройка статических файлов
 builder.Services.AddSpaStaticFiles(configuration =>
@@ -99,6 +109,12 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<DrillingCoreDbContext>();
+    await SeedData.SeedAsync(context);
+}
 // Включаем раздачу статических файлов
 app.UseDefaultFiles();
 app.UseStaticFiles();

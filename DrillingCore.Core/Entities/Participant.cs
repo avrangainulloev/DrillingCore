@@ -15,7 +15,7 @@ namespace DrillingCore.Core.Entities
 
         // Навигационное свойство – связь с таблицей пользователей
         public virtual User User { get; set; }
-
+        public virtual Project Project { get; set; } = null!;
         public decimal? DailyRate { get; set; }
         public decimal? MeterRate { get; set; }
         public DateTime DateAdded { get; set; }
