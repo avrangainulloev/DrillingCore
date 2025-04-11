@@ -1,4 +1,5 @@
 ﻿using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Forms.Commands;
 using DrillingCore.Application.Interfaces;
 using DrillingCore.Core.Entities;
 using DrillingCore.Infrastructure.Persistence;
@@ -66,34 +67,6 @@ namespace DrillingCore.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<FormPhotoDto>> GetFormPhotosAsync(int formId)
-        {
-            return await _context.FormPhotos
-                .Where(p => p.ProjectFormId == formId)
-                .Select(p => new FormPhotoDto
-                {
-                    Id = p.Id,
-                    PhotoUrl = p.PhotoUrl,
-                    CreatedDate = p.CreatedDate
-                })
-                .ToListAsync();
-        }
-
-        public async Task<List<FormSignatureDto>> GetFormSignaturesAsync(int formId)
-        {
-            return await _context.FormParticipants
-               .Where(p => p.ProjectFormId == formId && !string.IsNullOrEmpty(p.Signature))
-               .Include(p => p.Participant)
-               .ThenInclude(p => p.User)
-               .Select(p => new FormSignatureDto
-               {
-                   ParticipantId = p.ParticipantId,
-                   ParticipantName = p.Participant!.User!.FullName,
-                   Signature = p.Signature!
-               })
-               .ToListAsync();
-        }
-
         public async Task SavePhotoAsync(FormPhoto photo)
         {
             _context.FormPhotos.Add(photo);
@@ -105,5 +78,79 @@ namespace DrillingCore.Infrastructure.Repositories
             _context.FormSignatures.Add(signature);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<DrillInspectionDto> GetDrillInspectionByIdAsync(int formId, CancellationToken cancellationToken)
+        {
+            var form = await _context.ProjectForms
+                .Include(f => f.FormChecklistResponses)
+                .Include(f => f.FormParticipants)
+                .Include(f => f.FormPhotos)
+                .Include(f => f.FormSignatures)
+                .FirstOrDefaultAsync(f => f.Id == formId, cancellationToken);
+
+            if (form == null) throw new Exception("Form not found");
+
+            return new DrillInspectionDto
+            {
+                Id = form.Id,
+                CrewName = form.CrewName,
+                UnitNumber = form.UnitNumber,
+                DateFilled = form.DateFilled,
+                OtherComments = form.OtherComments,
+                ProjectId = form.ProjectId,
+                ChecklistResponses = form.FormChecklistResponses.Select(x => new ChecklistResponseDto
+                {
+                    ChecklistItemId = x.ChecklistItemId,
+                    Response = x.Response
+                }).ToList(),
+                Participants = form.FormParticipants.Select(p => new FormParticipantDto
+                {
+                    ParticipantId = p.ParticipantId,
+                    Signature = p.Signature
+                }).ToList(),
+                PhotoUrls = form.FormPhotos.Select(p => p.PhotoUrl).ToList(),
+                Signatures = form.FormSignatures.Select(s => new FormSignatureDto
+                {
+                    ParticipantId = s.ParticipantId,
+                    SignatureUrl = s.SignatureUrl
+                }).ToList()
+            };
+        }
+
+        public async Task UpdateDrillInspectionAsync(UpdateDrillInspectionCommand command, CancellationToken cancellationToken)
+        {
+            var form = await _context.ProjectForms
+                .Include(f => f.FormChecklistResponses)
+                .Include(f => f.FormParticipants)
+                .FirstOrDefaultAsync(f => f.Id == command.FormId, cancellationToken);
+
+            if (form == null)
+                throw new Exception("Form not found");
+
+            form.CrewName = command.CrewName;
+            form.UnitNumber = command.UnitNumber;
+            form.DateFilled = command.DateFilled;
+            form.OtherComments = command.OtherComments;
+
+            // Обновим чеклисты
+            _context.FormChecklistResponses.RemoveRange(form.FormChecklistResponses);
+            _context.FormChecklistResponses.AddRange(command.ChecklistResponses.Select(c => new FormChecklistResponse
+            {
+                ProjectFormId = form.Id,
+                ChecklistItemId = c.ChecklistItemId,
+                Response = c.Response
+            }));
+
+            // Обновим участников
+            _context.FormParticipants.RemoveRange(form.FormParticipants);
+            _context.FormParticipants.AddRange(command.Participants.Select(p => new FormParticipant
+            {
+                ProjectFormId = form.Id,
+                ParticipantId = p.ParticipantId
+            }));
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
     }
 }

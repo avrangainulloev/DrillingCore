@@ -5,26 +5,23 @@
         <h3 class="modal-title">Drill Inspection</h3>
         <button type="button" class="btn-close" @click="closeModal">&times;</button>
       </div>
+
       <div class="modal-body">
-        <!-- Crew Name -->
         <div class="form-group">
           <label>Crew Name</label>
           <input type="text" v-model="crewName" class="form-control" disabled />
         </div>
 
-        <!-- Date -->
         <div class="form-group">
           <label>Date Filled</label>
           <input type="date" v-model="dateFilled" class="form-control" />
         </div>
 
-        <!-- Unit Number -->
         <div class="form-group">
           <label>Unit Number</label>
           <input type="text" v-model="unitNumber" class="form-control" />
         </div>
 
-        <!-- Participants -->
         <div class="form-group">
           <label>Participants</label>
           <input type="text" class="form-control" v-model="participantSearch" placeholder="Search participants..." />
@@ -38,7 +35,6 @@
           </div>
         </div>
 
-        <!-- Checklist Section -->
         <div class="checklist-section">
           <div class="checklist-group">
             <h5>🛠️ Equipment & Storage</h5>
@@ -61,13 +57,11 @@
           </div>
         </div>
 
-        <!-- Comments -->
         <div class="form-group">
           <label>Other Comments</label>
           <textarea v-model="otherComments" rows="3" class="form-control" placeholder="Additional notes..."></textarea>
         </div>
 
-        <!-- Photo Upload -->
         <div class="form-group">
           <label>Attach Photos</label>
           <input type="file" multiple @change="onPhotosSelected" accept="image/*" class="form-control" />
@@ -79,7 +73,6 @@
           </div>
         </div>
 
-        <!-- Signatures -->
         <div class="form-group">
           <label>Signatures</label>
           <div v-for="participantId in selectedParticipantIds" :key="participantId" class="signature-block">
@@ -89,12 +82,10 @@
           </div>
         </div>
 
-        <!-- Photo Viewer -->
         <div v-if="photoToView" class="photo-modal" @click="photoToView = ''">
           <img :src="photoToView" />
         </div>
 
-        <!-- Signature Modal -->
         <SignatureModal
           v-if="showSignatureModal && currentSignatureParticipantId !== null"
           :participantId="currentSignatureParticipantId"
@@ -109,10 +100,13 @@
       </div>
     </div>
   </div>
+  <div v-if="showSuccessToast" class="toast-success">
+  {{ successMessage }}
+</div>
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from 'vue';
+import { defineComponent } from 'vue';
 import SignatureModal from './SignatureModal.vue';
 
 export default defineComponent({
@@ -136,11 +130,13 @@ export default defineComponent({
       safetyAccessoryItems: [] as any[],
       checkedItems: [] as number[],
       otherComments: '',
-      photos: [] as { name: string; preview: string; file: File }[],
+      photos: [] as { name: string; preview: string; file: File | null }[],
       signatures: {} as Record<number, string>,
       currentSignatureParticipantId: null as number | null,
       showSignatureModal: false,
-      photoToView: ''
+      photoToView: '',
+      showSuccessToast: false,
+      successMessage: '',
     };
   },
   computed: {
@@ -154,13 +150,15 @@ export default defineComponent({
       immediate: true,
       async handler(newVal: number | null) {
         this.resetForm();
-        await this.loadActiveProject();
-        await this.loadParticipants();
-        await this.loadChecklist();
-        await this.loadEquipment();
-        // TODO: for editing existing form (optional)
-        if (newVal !== null) {
-          console.log("Edit mode - load form details");
+        if ( newVal !== null && newVal !== undefined) {
+          await this.loadFormData(newVal);
+          await this.loadChecklist();
+         
+        } else {
+          await this.loadActiveProject();
+          await this.loadParticipants();
+          await this.loadChecklist();
+          await this.loadEquipment();
         }
       }
     }
@@ -177,6 +175,11 @@ export default defineComponent({
       this.otherComments = '';
       this.checkedItems = [];
     },
+    showToast(message: string) {
+  this.successMessage = message;
+  this.showSuccessToast = true;
+  setTimeout(() => this.showSuccessToast = false, 3000);
+},
     closeModal() {
       this.$emit('close');
     },
@@ -194,7 +197,7 @@ export default defineComponent({
       const groups = await res.json();
       this.allParticipants = groups.flatMap((g: any) => g.participants);
       const group = groups.find((g: any) => g.participants.some((p: any) => p.userId === this.userId));
-      if (group) {
+      if (group && !this.formId) {
         this.crewName = group.groupName;
         this.selectedParticipantIds = group.participants.map((p: any) => p.id);
       }
@@ -211,6 +214,38 @@ export default defineComponent({
       const equipment = await res.json();
       this.unitNumber = equipment?.registrationNumber ?? '';
     },
+    async loadFormData(formId: number) {
+  const res = await fetch(`/api/forms/drill-inspection/${formId}`);
+  const form = await res.json();
+
+  const API_BASE = 'http://localhost:5152/';
+
+  this.projectId = form.projectId;
+  this.crewName = form.crewName;
+  this.unitNumber = form.unitNumber;
+  this.dateFilled = form.dateFilled.split("T")[0];
+  this.otherComments = form.otherComments;
+
+  this.checkedItems = form.checklistResponses
+    .filter((c: any) => c.response)
+    .map((c: any) => c.checklistItemId);
+
+  this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
+
+  this.signatures = {};
+  for (const sig of form.signatures) {
+    this.signatures[sig.participantId] = API_BASE + sig.signatureUrl;
+  }
+
+  this.photos = form.photoUrls.map((url: string) => ({
+    name: '',
+    preview: API_BASE + url,
+    file: null
+  }));
+
+  await this.loadParticipants();
+}
+,
     onPhotosSelected(event: any) {
       const files = event.target.files;
       for (let i = 0; i < files.length; i++) {
@@ -237,52 +272,74 @@ export default defineComponent({
       this.showSignatureModal = false;
     },
     async saveInspection() {
-      const payload = {
+  const payload = {
+    crewName: this.crewName,
+    unitNumber: this.unitNumber,
+    dateFilled: this.dateFilled,
+    otherComments: this.otherComments,
+    participants: this.selectedParticipantIds.map(id => ({
+      participantId: id,
+      signature: this.signatures[id] || null
+    })),
+    checklistResponses: this.checkedItems.map(x => ({ checklistItemId: x, response: true }))
+  };
+
+  let formId = this.formId;
+
+  if (this.formId) {
+    // Обновление существующей формы
+    await fetch('/api/forms/drill-inspection', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        formId: this.formId,
+        ...payload
+      })
+    });
+  } else {
+    // Создание новой формы
+    const res = await fetch('/api/forms/drill-inspection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         projectId: this.projectId,
         formTypeId: this.formTypeId,
         creatorId: this.userId,
-        crewName: this.crewName,
-        unitNumber: this.unitNumber,
-        dateFilled: this.dateFilled,
-        participants: this.selectedParticipantIds.map(id => ({
-    participantId: id,
-    signature: this.signatures[id] || null
-  })),
-        checklistResponses: this.checkedItems.map(x => ({ checklistItemId: x, response: true })),
-        otherComments: this.otherComments
-      };
+        ...payload
+      })
+    });
 
-      const res = await fetch('/api/forms/drill-inspection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    const result = await res.json();
+    formId = result.formId;
+  }
 
-      const result = await res.json();
-      const formId = result.formId;
-      for (const photo of this.photos) {
-        const formData = new FormData();
-        formData.append('file', photo.file);
-        await fetch(`/api/forms/${formId}/photos`, {
-          method: 'POST',
-          body: formData
-        });
-      }
+  // Загрузка фото
+  for (const photo of this.photos) {
+    if (!photo.file) continue;
+    const formData = new FormData();
+    formData.append('file', photo.file);
+    await fetch(`/api/forms/${formId}/photos`, {
+      method: 'POST',
+      body: formData
+    });
+  }
 
-      for (const [participantId, signature] of Object.entries(this.signatures)) {
-        const blob = await fetch(signature).then(res => res.blob());
-        const formData = new FormData();
-        formData.append('participantId', participantId);
-        formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
-        await fetch(`/api/forms/${formId}/signatures`, {
-          method: 'POST',
-          body: formData
-        });
-      }
+  // Загрузка подписей
+  for (const [participantId, signature] of Object.entries(this.signatures)) {
+    if (signature.startsWith('http')) continue; // Уже загружена
+    const blob = await fetch(signature).then(res => res.blob());
+    const formData = new FormData();
+    formData.append('participantId', participantId);
+    formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
+    await fetch(`/api/forms/${formId}/signatures`, {
+      method: 'POST',
+      body: formData
+    });
+  }
 
-      alert('Drill Inspection saved!');
-      this.closeModal();
-    }
+  this.showToast(this.formId ? '✅ Drill Inspection updated successfully!' : '✅ Drill Inspection created successfully!');
+  setTimeout(() => this.closeModal(), 1500);
+}
   }
 });
 </script>
@@ -414,5 +471,25 @@ export default defineComponent({
   max-width: 90vw;
   max-height: 90vh;
   border-radius: 8px;
+}
+
+.toast-success {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #28a745;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  font-weight: bold;
+  z-index: 10000;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(20px); }
 }
 </style>

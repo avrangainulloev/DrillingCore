@@ -1,4 +1,5 @@
-﻿using DrillingCore.Application.Forms.Commands;
+﻿using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Forms.Commands;
 using DrillingCore.Application.Forms.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -61,31 +62,7 @@ namespace DrillingCore.WebAPI.Controllers
         }
 
 
-        
-        /// <summary>
-        /// Returns all photos attached to the specified form.
-        /// </summary>
-        /// <param name="formId">The ID of the form.</param>
-        /// <returns>A list of form photos.</returns>
-        [HttpGet("{formId}/photos")]
-        public async Task<IActionResult> GetFormPhotos(int formId)
-        {
-            var result = await _mediator.Send(new GetFormPhotosQuery { FormId = formId });
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Returns all participant signatures attached to the specified form.
-        /// </summary>
-        /// <param name="formId">The ID of the form.</param>
-        /// <returns>A list of participant signatures.</returns>
-        [HttpGet("{formId}/signatures")]
-        public async Task<IActionResult> GetFormSignatures(int formId)
-        {
-            var result = await _mediator.Send(new GetFormSignaturesQuery { FormId = formId});
-            return Ok(result);
-        }
-
+   
 
 
         /// <summary>
@@ -142,5 +119,40 @@ namespace DrillingCore.WebAPI.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Returns a full drill inspection form by ID.
+        /// </summary>
+        /// <param name="formId">ID of the form</param>
+        /// <returns>Full DrillInspectionDto</returns>
+        [HttpGet("drill-inspection/{formId}")]
+        [ProducesResponseType(typeof(DrillInspectionDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetDrillInspectionById(int formId)
+        {
+
+            var result = await _mediator.Send(new GetDrillInspectionByIdQuery { FormId = formId });
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Updates an existing Drill Inspection form.
+        /// </summary>
+        /// <param name="command">The updated drill inspection form data.</param>
+        /// <returns>NoContent if the update is successful.</returns>
+        /// <remarks>
+        /// This endpoint updates the core form details, checklist responses, and participants.
+        /// Photos and signatures should be uploaded separately via the designated endpoints:
+        /// - POST /api/forms/{formId}/photos
+        /// - POST /api/forms/{formId}/signatures
+        /// </remarks>
+        /// <response code="204">Form updated successfully</response>
+        /// <response code="400">Invalid data or missing fields</response>
+        /// <response code="404">Form not found</response>
+        /// <response code="500">Internal server error</response>
+        [HttpPut("drill-inspection")]
+        public async Task<IActionResult> UpdateDrillInspection([FromBody] UpdateDrillInspectionCommand command)
+        {
+            await _mediator.Send(command);
+            return NoContent();
+        }
     }
 }

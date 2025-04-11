@@ -25,5 +25,8 @@ namespace DrillingCore.Core.Entities
 
         public ICollection<FormSignature> FormSignatures { get; set; } = new List<FormSignature>();
         public ICollection<FormPhoto> FormPhotos { get; set; } = new List<FormPhoto>();
+        public ICollection<FormChecklistResponse> FormChecklistResponses { get; set; } = new List<FormChecklistResponse>();
+        public ICollection<FormParticipant> FormParticipants { get; set; } = new List<FormParticipant>();
+
     }
 }

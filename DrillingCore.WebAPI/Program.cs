@@ -10,19 +10,17 @@ using DrillingCore.Application.Projects.Commands.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using DrillingCore.Infrastructure.Services;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using DrillingCore.Infrastructure;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 // Настройка строки подключения к PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DrillingCoreDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Добавляем аутентификацию с JWT Bearer
+// JWT-аутентификация
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -30,7 +28,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // Извлечение токена из куки (например, "AuthToken")
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -58,10 +55,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-
-
 builder.Services.AddInfrastructure();
-// Регистрируем MediatR
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateProjectCommandHandler).Assembly);
@@ -76,13 +70,11 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath);
 });
 
-// Настройка статических файлов
 builder.Services.AddSpaStaticFiles(configuration =>
 {
     configuration.RootPath = "wwwroot";
 });
 
-// Настройка CORS для разработки
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowDev",
@@ -90,7 +82,7 @@ builder.Services.AddCors(options =>
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials() // разрешаем отправку credentials (куки)
+            .AllowCredentials()
     );
 });
 
@@ -100,15 +92,27 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<DrillingCoreDbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<DrillingCoreDbContext>();
     await SeedData.SeedAsync(context);
 }
-// Включаем раздачу статических файлов
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
-// Swagger в режиме разработки
+// Важно: сначала UseDefaultFiles и UseStaticFiles
+app.UseDefaultFiles();
+//app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var path = ctx.Context.Request.Path.Value;
+        if (path != null && (path.StartsWith("/photos") || path.StartsWith("/signatures")))
+        {
+            ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = "http://localhost:5173";
+            ctx.Context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+        }
+    }
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -122,7 +126,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Для SPA – fallback на index.html
+// SPA fallback
 app.MapFallbackToFile("index.html");
 
 app.Run();

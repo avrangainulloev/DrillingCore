@@ -1,4 +1,5 @@
 ﻿using DrillingCore.Application.DTOs;
+using DrillingCore.Application.Forms.Commands;
 using DrillingCore.Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -18,13 +19,14 @@ namespace DrillingCore.Application.Interfaces
     
      CancellationToken cancellationToken);
 
-        Task<int?> GetEquipmentTypeIdForFormTypeAsync(int formTypeId);
-
-        Task<List<FormPhotoDto>> GetFormPhotosAsync(int formId);
-        Task<List<FormSignatureDto>> GetFormSignaturesAsync(int formId);
+        Task<int?> GetEquipmentTypeIdForFormTypeAsync(int formTypeId);     
 
         Task SavePhotoAsync(FormPhoto photo);
         Task SaveSignatureAsync(FormSignature signature);
+        Task<DrillInspectionDto> GetDrillInspectionByIdAsync(int formId, CancellationToken cancellationToken);
+        Task UpdateDrillInspectionAsync(UpdateDrillInspectionCommand command, CancellationToken cancellationToken);
+
+
     }
 
 
