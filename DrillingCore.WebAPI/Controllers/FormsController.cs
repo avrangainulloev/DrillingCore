@@ -57,7 +57,7 @@ namespace DrillingCore.WebAPI.Controllers
         {
             var result = await _mediator.Send(query);
             return result == null
-                ? NotFound("No equipment found.")
+                ? Ok("No equipment found.")
                 : Ok(result);
         }
 

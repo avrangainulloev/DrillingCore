@@ -32,9 +32,9 @@
             <div class="mb-3">
               <label class="form-label">Role</label>
               <select class="form-select" v-model="user.roleId" required>
-                <option value="-1">Administrator</option>
-                <option value="-2">ProjectManager</option>
-                <option value="-3">Helper</option>
+                <option v-for="role in roles" :key="role.id" :value="role.id">
+                  {{ role.name }}
+                </option>
               </select>
             </div>
             <div class="mb-3">
@@ -69,7 +69,7 @@ export default defineComponent({
   props: {
     editingUserId: {
       type: Number,
-      default: null
+      default: undefined
     }
   },
   emits: ['close', 'user-saved'],
@@ -82,72 +82,60 @@ export default defineComponent({
         fullName: '',
         email: '',
         mobile: '',
-        roleId: -3, // значение по умолчанию - Helper
+        roleId: null,
         isActive: true
       },
+      roles: [] as { id: number; name: string }[],
       notificationMessage: '',
       errorMessage: ''
     };
   },
-  mounted() {
+  async mounted() {
+    await this.loadRoles();
     if (this.editingUserId) {
       this.loadUserData(this.editingUserId);
     }
   },
   methods: {
+    async loadRoles() {
+      try {
+        const res = await fetch('https://localhost:7200/api/Roles');
+        this.roles = await res.json();
+      } catch (error) {
+        this.errorMessage = 'Failed to load roles';
+      }
+    },
     async loadUserData(userId: number) {
       try {
-        const response = await fetch(`https://localhost:7200/api/Users/${userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          this.user = {
-            id: data.id,
-            username: data.username,
-            password: '', // для безопасности не загружаем пароль
-            fullName: data.fullName,
-            email: data.email,
-            mobile: data.mobile,
-            roleId: data.roleId,
-            isActive: data.isActive
-          };
-        } else {
-          this.errorMessage = "Error fetching user data: " + response.statusText;
-        }
+        const res = await fetch(`https://localhost:7200/api/Users/${userId}`);
+        const data = await res.json();
+        this.user = { ...data, password: '' };
       } catch (error) {
-        console.error("Error fetching user data:", error);
-        this.errorMessage = "Error fetching user data. See console for details.";
+        this.errorMessage = 'Failed to load user';
       }
     },
     async submitUser() {
       this.notificationMessage = '';
       this.errorMessage = '';
-
-      if (!this.editingUserId && !this.user.password) {
-        this.errorMessage = "Password is required.";
-        return;
-      }
       const method = this.editingUserId ? 'PUT' : 'POST';
       let url = 'https://localhost:7200/api/Users';
-      if (this.editingUserId) {
-        url += `/${this.editingUserId}`;
-      }
+      if (this.editingUserId) url += `/${this.editingUserId}`;
+
       try {
-        const response = await fetch(url, {
+        const res = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.user)
         });
-        if (response.ok) {
-          this.notificationMessage = "User saved successfully!";
+        if (res.ok) {
+          this.notificationMessage = 'User saved successfully';
           this.$emit('user-saved');
           setTimeout(() => this.closeModal(), 1000);
         } else {
-          const errorText = await response.text();
-          this.errorMessage = "Error saving user: " + errorText;
+          this.errorMessage = await res.text();
         }
-      } catch (error) {
-        console.error("Error saving user:", error);
-        this.errorMessage = "Error saving user. See console for details.";
+      } catch (err) {
+        this.errorMessage = 'Error saving user';
       }
     },
     closeModal() {

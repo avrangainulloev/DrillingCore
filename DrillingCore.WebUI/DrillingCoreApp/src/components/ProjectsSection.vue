@@ -12,9 +12,9 @@
         <select class="status-select" v-model="selectedStatus">
           <option value="">All Statuses</option>
           <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="Suspended">Suspended</option>
-            <option value="Completed">Completed</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Suspended">Suspended</option>
+          <option value="Completed">Completed</option>
         </select>
         <button class="btn search-btn" @click="loadProjects">Search</button>
       </div>
@@ -44,24 +44,36 @@
           <td>
             <button class="btn edit-btn" @click="openProjectModal(project.id)">Edit</button>
             <button class="btn participant-btn" @click="openParticipants(project.id)">Participants</button>
+            <button class="btn forms-btn" @click="openFormsModal(project.id)">Forms</button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Modal for Forms -->
+    <Modal v-if="showFormsModal" @close="closeFormsModal">
+      <FormsSection :user-id="userId" :project-id="selectedProjectId" />
+    </Modal>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import Modal from './Modal.vue';
+import FormsSection from './FormsSection.vue';
 
 export default defineComponent({
   name: 'ProjectsSection',
+  components: { Modal, FormsSection },
   data() {
     return {
       projects: [] as any[],
       searchTerm: '',
-      selectedStatus: ''
-    }
+      selectedStatus: '',
+      showFormsModal: false,
+      selectedProjectId: null as number | null,
+      userId: 1
+    };
   },
   mounted() {
     this.loadProjects();
@@ -87,12 +99,17 @@ export default defineComponent({
       }
     },
     openProjectModal(projectId?: number) {
-      console.log("ProjectsSection: Emitting open-project-modal with projectId:", projectId);
       this.$emit('open-project-modal', projectId);
     },
     openParticipants(projectId: number) {
-      console.log("ProjectsSection: Emitting open-participant-modal for projectId:", projectId);
       this.$emit('open-participant-modal', projectId);
+    },
+    openFormsModal(projectId: number) {
+      this.selectedProjectId = projectId;
+      this.showFormsModal = true;
+    },
+    closeFormsModal() {
+      this.showFormsModal = false;
     },
     formatDate(dateStr: string) {
       if (!dateStr) return '';
@@ -106,7 +123,6 @@ export default defineComponent({
 .projects-section {
   padding: 1rem;
 }
-
 .projects-header {
   display: flex;
   flex-wrap: wrap;
@@ -114,21 +130,17 @@ export default defineComponent({
   align-items: center;
   margin-bottom: 1rem;
 }
-
-/* Фильтры */
 .filters {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
-
 .search-input,
 .status-select {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .search-btn {
   background-color: #1976d2;
   color: #ffffff;
@@ -140,21 +152,16 @@ export default defineComponent({
 .search-btn:hover {
   background-color: #1565c0;
 }
-
-/* Таблица */
 .projects-table {
   width: 100%;
   border-collapse: collapse;
 }
-
 .projects-table th,
 .projects-table td {
   border: 1px solid #333;
   padding: 0.75rem;
   text-align: left;
 }
-
-/* Кнопки */
 .create-btn {
   background-color: #1976d2;
   color: white;
@@ -164,7 +171,6 @@ export default defineComponent({
 .create-btn:hover {
   background-color: #1565c0;
 }
-
 .edit-btn {
   background-color: #115293;
   color: white;
@@ -174,7 +180,6 @@ export default defineComponent({
 .edit-btn:hover {
   background-color: #0d3c73;
 }
-
 .participant-btn {
   background-color: #4caf50;
   color: white;
@@ -184,5 +189,15 @@ export default defineComponent({
 }
 .participant-btn:hover {
   background-color: #43a047;
+}
+.forms-btn {
+  background-color: #ff9800;
+  color: white;
+  padding: 0.3rem 0.75rem;
+  margin-left: 0.3rem;
+  border-radius: 4px;
+}
+.forms-btn:hover {
+  background-color: #fb8c00;
 }
 </style>

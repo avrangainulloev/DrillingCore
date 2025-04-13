@@ -29,6 +29,7 @@ namespace DrillingCore.Infrastructure
             services.AddScoped<IParticipantEquipmentRepository, ParticipantEquipmentRepository>();
             services.AddScoped<IEquipmentTypeRepository, EquipmentTypeRepository>();
             services.AddScoped<IChecklistRepository, ChecklistItemRepository>();
+            services.AddScoped<IFlhaRepository, FlhaRepository>();
 
             return services;
         }

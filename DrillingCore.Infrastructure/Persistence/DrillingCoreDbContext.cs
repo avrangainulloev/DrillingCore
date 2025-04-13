@@ -31,6 +31,10 @@ namespace DrillingCore.Infrastructure.Persistence
         public DbSet<FormTypeEquipmentType> FormTypeEquipmentTypes { get; set; }
 
         public DbSet<FormSignature> FormSignatures { get; set; }
+        public DbSet<FLHAHazardGroup> FLHAHazardGroups { get; set; }
+        public DbSet<FLHAHazard> FLHAHazards { get; set; }
+        public DbSet<FLHAFormHazard> FLHAFormHazards { get; set; }
+        public DbSet<FLHAForm> FLHAForms { get; set; }
 
         // Добавьте DbSet для других сущностей
 
@@ -58,32 +62,10 @@ namespace DrillingCore.Infrastructure.Persistence
     .HasKey(ft => new { ft.FormTypeId, ft.EquipmentTypeId });
 
 
-            modelBuilder.Entity<FormType>().HasData(
-    new FormType { Id = 2, Name = "Drill Inspection" }
-);
+          
 
-            modelBuilder.Entity<EquipmentType>().HasData(
-                new EquipmentType { Id = 1, TypeName = "Drill" }
-            );
 
-            modelBuilder.Entity<FormTypeEquipmentType>().HasData(
-                new FormTypeEquipmentType { FormTypeId = 2, EquipmentTypeId = 1 } // DrillInspection — Drill
-                                                                                  // добавь другие при необходимости
-            );
-
-            modelBuilder.Entity<Role>(entity =>
-            {
-                entity.ToTable("Roles");
-                entity.HasKey(r => r.Id);
-                entity.Property(r => r.Id).UseIdentityByDefaultColumn();
-
-                entity.HasData(
-                    new Role { Id = -1, Name = "Administrator" },
-                    new Role { Id = -2, Name = "Driller" },
-                    new Role { Id = -3, Name = "ProjectManager" }
-                );
-            });
-
+           
             // Пример User
             modelBuilder.Entity<User>(entity =>
             {
@@ -96,18 +78,7 @@ namespace DrillingCore.Infrastructure.Persistence
                       .WithMany()
                       .HasForeignKey(u => u.RoleId);
 
-                entity.HasData(
-                    new User
-                    {
-                        Id = 1,
-                        Username = "admin",
-                        PasswordHash = "admin",
-                        RoleId = -1, // должно совпадать с Role { Id = -1 }
-                        FullName = "Administrator",
-                        Email = "admin@example.com",
-                        Mobile = "1234567890"
-                    }
-                );
+             
             });
 
 
@@ -146,12 +117,12 @@ namespace DrillingCore.Infrastructure.Persistence
        .OnDelete(DeleteBehavior.Restrict); // или другой подходящий вариант
 
             // Можно задать начальное заполнение (seed) для статусов, если нужно:
-            modelBuilder.Entity<ProjectStatus>().HasData(
-                new ProjectStatus { Id = 1, Name = "Active", Description = "Проект активный" },
-                new ProjectStatus { Id = 2, Name = "Inactive", Description = "Проект не активный" },
-                new ProjectStatus { Id = 3, Name = "Suspended", Description = "Проект приостановлен" },
-                new ProjectStatus { Id = 4, Name = "Completed", Description = "Проект завершён" }
-            );
+            //modelBuilder.Entity<ProjectStatus>().HasData(
+            //    new ProjectStatus {  Name = "Active", Description = "Проект активный" },
+            //    new ProjectStatus { Name = "Inactive", Description = "Проект не активный" },
+            //    new ProjectStatus { Name = "Suspended", Description = "Проект приостановлен" },
+            //    new ProjectStatus { Name = "Completed", Description = "Проект завершён" }
+            //);
 
         }
 

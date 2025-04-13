@@ -1,108 +1,101 @@
 <template>
-  <div class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content drill-inspection-modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Drill Inspection</h3>
-        <button type="button" class="btn-close" @click="closeModal">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Crew Name</label>
-          <input type="text" v-model="crewName" class="form-control" disabled />
+  <div>
+    <div class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content drill-inspection-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Drill Inspection</h3>
+          <button type="button" class="btn-close" @click="closeModal">&times;</button>
         </div>
 
-        <div class="form-group">
-          <label>Date Filled</label>
-          <input type="date" v-model="dateFilled" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label>Unit Number</label>
-          <input type="text" v-model="unitNumber" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label>Participants</label>
-          <input type="text" class="form-control" v-model="participantSearch" placeholder="Search participants..." />
-          <div class="participants-list">
-            <div v-for="p in filteredParticipantOptions" :key="p.id" class="participant-item">
-              <label>
-                <input type="checkbox" :value="p.id" v-model="selectedParticipantIds" />
-                {{ p.fullName }}
-              </label>
-            </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Crew Name</label>
+            <input type="text" v-model="crewName" class="form-control" disabled />
           </div>
-        </div>
 
-        <div class="checklist-section">
-          <div class="checklist-group">
-            <h5>🛠️ Equipment & Storage</h5>
-            <div class="checklist-grid">
-              <label v-for="item in equipmentStorageItems" :key="item.id" class="checklist-item">
-                <input type="checkbox" :value="item.id" v-model="checkedItems" />
-                {{ item.label }}
-              </label>
+          <div class="form-group">
+            <label>Date Filled</label>
+            <input type="date" v-model="dateFilled" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Unit Number</label>
+            <input type="text" v-model="unitNumber" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Participants</label>
+            <input type="text" class="form-control" v-model="participantSearch" placeholder="Search participants..." />
+            <div class="participants-list">
+              <div v-for="p in filteredParticipantOptions" :key="p.id" class="participant-item">
+                <label>
+                  <input type="checkbox" :value="p.id" v-model="selectedParticipantIds" />
+                  {{ p.fullName }}
+                </label>
+              </div>
             </div>
           </div>
 
-          <div class="checklist-group">
-            <h5>🦺 Safety & Accessories</h5>
-            <div class="checklist-grid">
-              <label v-for="item in safetyAccessoryItems" :key="item.id" class="checklist-item">
-                <input type="checkbox" :value="item.id" v-model="checkedItems" />
-                {{ item.label }}
-              </label>
+          <div class="checklist-section">
+            <div v-for="(items, groupName) in groupedChecklist" :key="groupName" class="checklist-group">
+              <h5>{{ groupName }}</h5>
+              <div class="checklist-grid">
+                <label v-for="item in items" :key="item.id" class="checklist-item">
+                  <input type="checkbox" :value="item.id" v-model="checkedItems" />
+                  {{ item.label }}
+                </label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label>Other Comments</label>
-          <textarea v-model="otherComments" rows="3" class="form-control" placeholder="Additional notes..."></textarea>
-        </div>
+          <div class="form-group">
+            <label>Other Comments</label>
+            <textarea v-model="otherComments" rows="3" class="form-control" placeholder="Additional notes..."></textarea>
+          </div>
 
-        <div class="form-group">
-          <label>Attach Photos</label>
-          <input type="file" multiple @change="onPhotosSelected" accept="image/*" class="form-control" />
-          <div class="photo-preview-list">
-            <div v-for="(photo, idx) in photos" :key="idx" class="preview-wrapper">
-              <img :src="photo.preview" class="preview-img" @click="viewPhoto(photo.preview)" />
-              <button class="remove-btn" @click="removePhoto(idx)">&times;</button>
+          <div class="form-group">
+            <label>Attach Photos</label>
+            <input type="file" multiple @change="onPhotosSelected" accept="image/*" class="form-control" />
+            <div class="photo-preview-list">
+              <div v-for="(photo, idx) in photos" :key="idx" class="preview-wrapper">
+                <img :src="photo.preview" class="preview-img" @click="viewPhoto(photo.preview)" />
+                <button class="remove-btn" @click="removePhoto(idx)">&times;</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label>Signatures</label>
-          <div v-for="participantId in selectedParticipantIds" :key="participantId" class="signature-block">
-            <strong>{{ getParticipantName(participantId) }}</strong>
-            <button class="btn sign-btn" @click="openSignatureModal(participantId)">Sign</button>
-            <img v-if="signatures[participantId]" :src="signatures[participantId]" class="signature-preview" />
+          <div class="form-group">
+            <label>Signatures</label>
+            <div v-for="participantId in selectedParticipantIds" :key="participantId" class="signature-block">
+              <strong>{{ getParticipantName(participantId) }}</strong>
+              <button class="btn sign-btn" @click="openSignatureModal(participantId)">Sign</button>
+              <img v-if="signatures[participantId]" :src="signatures[participantId]" class="signature-preview" />
+            </div>
           </div>
+
+          <div v-if="photoToView" class="photo-modal" @click="photoToView = ''">
+            <img :src="photoToView" />
+          </div>
+
+          <SignatureModal
+            v-if="showSignatureModal && currentSignatureParticipantId !== null"
+            :participantId="currentSignatureParticipantId"
+            @close="showSignatureModal = false"
+            @signature-saved="onSignatureSaved"
+          />
         </div>
 
-        <div v-if="photoToView" class="photo-modal" @click="photoToView = ''">
-          <img :src="photoToView" />
+        <div class="modal-footer">
+          <button class="btn btn-success" @click="saveInspection">Save</button>
+          <button class="btn btn-secondary" @click="closeModal">Cancel</button>
         </div>
-
-        <SignatureModal
-          v-if="showSignatureModal && currentSignatureParticipantId !== null"
-          :participantId="currentSignatureParticipantId"
-          @close="showSignatureModal = false"
-          @signature-saved="onSignatureSaved"
-        />
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-success" @click="saveInspection">Save</button>
-        <button class="btn btn-secondary" @click="closeModal">Cancel</button>
       </div>
     </div>
+
+    <div v-if="showSuccessToast" class="toast-success">
+      {{ successMessage }}
+    </div>
   </div>
-  <div v-if="showSuccessToast" class="toast-success">
-  {{ successMessage }}
-</div>
 </template>
 
 <script lang="ts">
@@ -111,10 +104,11 @@ import SignatureModal from './SignatureModal.vue';
 
 export default defineComponent({
   name: 'DrillInspectionModal',
+  emits: ['close'],
   components: { SignatureModal },
   props: {
     userId: { type: Number, required: true },
-    formTypeId: { type: Number, default: 2 },
+    formTypeId: { type: Number, required: true },
     formId: { type: Number, required: false }
   },
   data() {
@@ -126,8 +120,6 @@ export default defineComponent({
       participantSearch: '',
       allParticipants: [] as any[],
       selectedParticipantIds: [] as number[],
-      equipmentStorageItems: [] as any[],
-      safetyAccessoryItems: [] as any[],
       checkedItems: [] as number[],
       otherComments: '',
       photos: [] as { name: string; preview: string; file: File | null }[],
@@ -137,12 +129,23 @@ export default defineComponent({
       photoToView: '',
       showSuccessToast: false,
       successMessage: '',
+      checklistItems: [] as any[],
     };
   },
   computed: {
     filteredParticipantOptions() {
       const term = this.participantSearch.toLowerCase();
       return this.allParticipants.filter(p => p.fullName.toLowerCase().includes(term));
+    },
+    groupedChecklist() {
+      const grouped: Record<string, any[]> = {};
+      for (const item of this.checklistItems) {
+        if (!grouped[item.groupName]) {
+          grouped[item.groupName] = [];
+        }
+        grouped[item.groupName].push(item);
+      }
+      return grouped;
     }
   },
   watch: {
@@ -150,10 +153,9 @@ export default defineComponent({
       immediate: true,
       async handler(newVal: number | null) {
         this.resetForm();
-        if ( newVal !== null && newVal !== undefined) {
+        if (newVal != null) {
           await this.loadFormData(newVal);
           await this.loadChecklist();
-         
         } else {
           await this.loadActiveProject();
           await this.loadParticipants();
@@ -176,10 +178,10 @@ export default defineComponent({
       this.checkedItems = [];
     },
     showToast(message: string) {
-  this.successMessage = message;
-  this.showSuccessToast = true;
-  setTimeout(() => this.showSuccessToast = false, 3000);
-},
+      this.successMessage = message;
+      this.showSuccessToast = true;
+      setTimeout(() => this.showSuccessToast = false, 3000);
+    },
     closeModal() {
       this.$emit('close');
     },
@@ -204,48 +206,69 @@ export default defineComponent({
     },
     async loadChecklist() {
       const res = await fetch(`/api/checklist/by-form-type/${this.formTypeId}`);
-      const items = await res.json();
-      this.equipmentStorageItems = items.filter((i: any) => i.groupName === 'Equipment & Storage');
-      this.safetyAccessoryItems = items.filter((i: any) => i.groupName === 'Safety & Accessories');
+       
+      this.checklistItems = await res.json();
     },
     async loadEquipment() {
-      if (!this.selectedParticipantIds.length) return;
-      const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${this.selectedParticipantIds[0]}&projectId=${this.projectId}`);
-      const equipment = await res.json();
-      this.unitNumber = equipment?.registrationNumber ?? '';
-    },
-    async loadFormData(formId: number) {
-  const res = await fetch(`/api/forms/drill-inspection/${formId}`);
-  const form = await res.json();
+  if (!this.allParticipants.length) return;
 
-  const API_BASE = 'http://localhost:5152/';
+  const currentParticipant = this.allParticipants.find(p => p.userId === this.userId)
+                            ?? this.allParticipants[0];
+  if (!currentParticipant) return;
 
-  this.projectId = form.projectId;
-  this.crewName = form.crewName;
-  this.unitNumber = form.unitNumber;
-  this.dateFilled = form.dateFilled.split("T")[0];
-  this.otherComments = form.otherComments;
+  const participantId = currentParticipant.id;
 
-  this.checkedItems = form.checklistResponses
-    .filter((c: any) => c.response)
-    .map((c: any) => c.checklistItemId);
-
-  this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
-
-  this.signatures = {};
-  for (const sig of form.signatures) {
-    this.signatures[sig.participantId] = API_BASE + sig.signatureUrl;
+  try {
+    const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
+    
+    if (res.ok) {
+      const contentType = res.headers.get("Content-Type");
+      if (contentType?.includes("application/json")) {
+        const equipment = await res.json();
+        this.unitNumber = equipment?.registrationNumber ?? '';
+      } else {
+//        const text = await res.text(); // например: "No equipment found."
+       
+        this.unitNumber = '';
+      }
+    } else {
+      console.warn("Failed to fetch equipment:", res.statusText);
+      this.unitNumber = '';
+    }
+  } catch (err) {
+    console.error("Error loading equipment:", err);
   }
+},
+    async loadFormData(formId: number) {
+      const res = await fetch(`/api/forms/drill-inspection/${formId}`);
+      const form = await res.json();
 
-  this.photos = form.photoUrls.map((url: string) => ({
-    name: '',
-    preview: API_BASE + url,
-    file: null
-  }));
+      const API_BASE = 'http://localhost:5152/';
+      this.projectId = form.projectId;
+      this.crewName = form.crewName;
+      this.unitNumber = form.unitNumber;
+      this.dateFilled = form.dateFilled.split("T")[0];
+      this.otherComments = form.otherComments;
 
-  await this.loadParticipants();
-}
-,
+      this.checkedItems = form.checklistResponses
+        .filter((c: any) => c.response)
+        .map((c: any) => c.checklistItemId);
+
+      this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
+
+      this.signatures = {};
+      for (const sig of form.signatures) {
+        this.signatures[sig.participantId] = API_BASE + sig.signatureUrl;
+      }
+
+      this.photos = form.photoUrls.map((url: string) => ({
+        name: '',
+        preview: API_BASE + url,
+        file: null
+      }));
+
+      await this.loadParticipants();
+    },
     onPhotosSelected(event: any) {
       const files = event.target.files;
       for (let i = 0; i < files.length; i++) {
@@ -272,74 +295,62 @@ export default defineComponent({
       this.showSignatureModal = false;
     },
     async saveInspection() {
-  const payload = {
-    crewName: this.crewName,
-    unitNumber: this.unitNumber,
-    dateFilled: this.dateFilled,
-    otherComments: this.otherComments,
-    participants: this.selectedParticipantIds.map(id => ({
-      participantId: id,
-      signature: this.signatures[id] || null
-    })),
-    checklistResponses: this.checkedItems.map(x => ({ checklistItemId: x, response: true }))
-  };
+      const payload = {
+        crewName: this.crewName,
+        unitNumber: this.unitNumber,
+        dateFilled: this.dateFilled,
+        otherComments: this.otherComments,
+        participants: this.selectedParticipantIds.map(id => ({
+          participantId: id,
+          signature: this.signatures[id] || null
+        })),
+        checklistResponses: this.checkedItems.map(x => ({ checklistItemId: x, response: true }))
+      };
 
-  let formId = this.formId;
+      let formId = this.formId;
 
-  if (this.formId) {
-    // Обновление существующей формы
-    await fetch('/api/forms/drill-inspection', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        formId: this.formId,
-        ...payload
-      })
-    });
-  } else {
-    // Создание новой формы
-    const res = await fetch('/api/forms/drill-inspection', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        projectId: this.projectId,
-        formTypeId: this.formTypeId,
-        creatorId: this.userId,
-        ...payload
-      })
-    });
+      if (this.formId) {
+        await fetch('/api/forms/drill-inspection', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ formId: this.formId, ...payload })
+        });
+      } else {
+        
+        const res = await fetch('/api/forms/drill-inspection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId: this.projectId, formTypeId: this.formTypeId, creatorId: this.userId, ...payload })
+        });
+        const result = await res.json();
+        formId = result.formId;
+      }
 
-    const result = await res.json();
-    formId = result.formId;
-  }
+      for (const photo of this.photos) {
+        if (!photo.file) continue;
+        const formData = new FormData();
+        formData.append('file', photo.file);
+        await fetch(`/api/forms/${formId}/photos`, {
+          method: 'POST',
+          body: formData
+        });
+      }
 
-  // Загрузка фото
-  for (const photo of this.photos) {
-    if (!photo.file) continue;
-    const formData = new FormData();
-    formData.append('file', photo.file);
-    await fetch(`/api/forms/${formId}/photos`, {
-      method: 'POST',
-      body: formData
-    });
-  }
+      for (const [participantId, signature] of Object.entries(this.signatures)) {
+        if (signature.startsWith('http')) continue;
+        const blob = await fetch(signature).then(res => res.blob());
+        const formData = new FormData();
+        formData.append('participantId', participantId);
+        formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
+        await fetch(`/api/forms/${formId}/signatures`, {
+          method: 'POST',
+          body: formData
+        });
+      }
 
-  // Загрузка подписей
-  for (const [participantId, signature] of Object.entries(this.signatures)) {
-    if (signature.startsWith('http')) continue; // Уже загружена
-    const blob = await fetch(signature).then(res => res.blob());
-    const formData = new FormData();
-    formData.append('participantId', participantId);
-    formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
-    await fetch(`/api/forms/${formId}/signatures`, {
-      method: 'POST',
-      body: formData
-    });
-  }
-
-  this.showToast(this.formId ? '✅ Drill Inspection updated successfully!' : '✅ Drill Inspection created successfully!');
-  setTimeout(() => this.closeModal(), 1500);
-}
+      this.showToast(this.formId ? '✅ Drill Inspection updated successfully!' : '✅ Drill Inspection created successfully!');
+      setTimeout(() => this.closeModal(), 1500);
+    }
   }
 });
 </script>

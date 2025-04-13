@@ -60,11 +60,19 @@
       </div>
     </transition>
 
-    <!-- DrillInspectionModal -->
+    <!-- Modals -->
     <DrillInspectionModal
       v-if="showDrillInspectionModal"
       :user-id="userId"
-      :form-type-id="selectedType?.id || 2"
+      :form-type-id="selectedType!.id"
+      :form-id="editingFormId ?? undefined"
+      @close="onModalClosed"
+    />
+
+    <FLHAModal
+      v-if="showFlhaModal"
+      :user-id="userId"
+      :project-id="projectId"
       :form-id="editingFormId ?? undefined"
       @close="onModalClosed"
     />
@@ -74,6 +82,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import DrillInspectionModal from './DrillInspectionModal.vue';
+import FLHAModal from './FLHAModal.vue';
 
 interface FormDto {
   id: number;
@@ -93,7 +102,7 @@ interface FormType {
 
 export default defineComponent({
   name: 'FormsSection',
-  components: { DrillInspectionModal },
+  components: { DrillInspectionModal, FLHAModal },
   props: {
     userId: { type: Number, required: true }
   },
@@ -110,6 +119,7 @@ export default defineComponent({
       forms: [] as FormDto[],
       selectedType: null as FormType | null,
       showDrillInspectionModal: false,
+      showFlhaModal: false,
       editingFormId: null as number | null,
       projectId: 0
     };
@@ -136,14 +146,23 @@ export default defineComponent({
     },
     addNewForm() {
       this.editingFormId = null;
-      this.showDrillInspectionModal = true;
+      if (this.selectedType?.id === 3) {
+        this.showFlhaModal = true;
+      } else {
+        this.showDrillInspectionModal = true;
+      }
     },
     editForm(formId: number) {
       this.editingFormId = formId;
-      this.showDrillInspectionModal = true;
+      if (this.selectedType?.id === 3) {
+        this.showFlhaModal = true;
+      } else {
+        this.showDrillInspectionModal = true;
+      }
     },
     onModalClosed() {
       this.showDrillInspectionModal = false;
+      this.showFlhaModal = false;
       this.editingFormId = null;
       this.loadFormsFromBackend(); // refresh
     },

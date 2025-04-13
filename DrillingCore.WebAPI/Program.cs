@@ -79,7 +79,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowDev",
         policy => policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:5174")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -93,6 +93,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DrillingCoreDbContext>();
+
+    // 1. Применить миграции, если база не существует — она будет создана
+    await context.Database.MigrateAsync();
+
+    // 2. Теперь можно выполнять сидирование
     await SeedData.SeedAsync(context);
 }
 

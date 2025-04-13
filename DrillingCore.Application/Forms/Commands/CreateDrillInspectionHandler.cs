@@ -17,7 +17,7 @@ public class CreateDrillInspectionHandler : IRequestHandler<CreateDrillInspectio
         var form = new ProjectForm
         {
             ProjectId = request.ProjectId,
-            FormTypeId = 2,
+            FormTypeId = request.FormTypeId,
             CreatorId = request.CreatorId,
             CrewName = request.CrewName,
             UnitNumber = request.UnitNumber,

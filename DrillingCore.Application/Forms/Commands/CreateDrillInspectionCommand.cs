@@ -7,6 +7,7 @@ namespace DrillingCore.Application.Forms.Commands
     {
         public int ProjectId { get; set; }
         public int CreatorId { get; set; }
+        public int FormTypeId { get; set; }
         public string CrewName { get; set; } = default!;
         public string UnitNumber { get; set; } = default!;
         public DateTime DateFilled { get; set; }

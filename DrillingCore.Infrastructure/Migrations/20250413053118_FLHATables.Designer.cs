@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Migrations
 {
     [DbContext(typeof(DrillingCoreDbContext))]
-    [Migration("20250410060453_InitFullSchema")]
-    partial class InitFullSchema
+    [Migration("20250413053118_FLHATables")]
+    partial class FLHATables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,13 +90,103 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EquipmentTypes");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            TypeName = "Drill"
-                        });
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAForm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateFilled")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TaskDescription")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FLHAForms");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAFormHazard", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ControlMeasures")
+                        .HasColumnType("text");
+
+                    b.Property<int>("FLHAFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("HazardTemplateId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("HazardText")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FLHAFormId");
+
+                    b.HasIndex("HazardTemplateId");
+
+                    b.ToTable("FLHAFormHazards");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAHazard", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ControlSuggestion")
+                        .HasColumnType("text");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("FLHAHazards");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAHazardGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FLHAHazardGroups");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormChecklistResponse", b =>
@@ -139,6 +229,9 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<DateTime?>("DetachDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("FLHAFormId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ParticipantId")
                         .HasColumnType("integer");
 
@@ -149,6 +242,8 @@ namespace DrillingCore.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FLHAFormId");
 
                     b.HasIndex("ParticipantId");
 
@@ -168,6 +263,9 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("FLHAFormId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
@@ -175,6 +273,8 @@ namespace DrillingCore.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FLHAFormId");
 
                     b.HasIndex("ProjectFormId");
 
@@ -192,6 +292,9 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("FLHAFormId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ParticipantId")
                         .HasColumnType("integer");
 
@@ -202,6 +305,8 @@ namespace DrillingCore.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FLHAFormId");
 
                     b.HasIndex("ProjectFormId");
 
@@ -225,13 +330,6 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FormTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 2,
-                            Name = "Drill Inspection"
-                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormTypeEquipmentType", b =>
@@ -247,13 +345,6 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasIndex("EquipmentTypeId");
 
                     b.ToTable("FormTypeEquipmentTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            FormTypeId = 2,
-                            EquipmentTypeId = 1
-                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Participant", b =>
@@ -414,32 +505,6 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProjectStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Проект активный",
-                            Name = "Active"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Проект не активный",
-                            Name = "Inactive"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Проект приостановлен",
-                            Name = "Suspended"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Проект завершён",
-                            Name = "Completed"
-                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Role", b =>
@@ -455,24 +520,7 @@ namespace DrillingCore.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = -1,
-                            Name = "Administrator"
-                        },
-                        new
-                        {
-                            Id = -2,
-                            Name = "Driller"
-                        },
-                        new
-                        {
-                            Id = -3,
-                            Name = "ProjectManager"
-                        });
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.User", b =>
@@ -514,19 +562,6 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasIndex("RoleId1");
 
                     b.ToTable("Users", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Email = "admin@example.com",
-                            FullName = "Administrator",
-                            IsActive = true,
-                            Mobile = "1234567890",
-                            PasswordHash = "admin",
-                            RoleId = -1,
-                            Username = "admin"
-                        });
                 });
 
             modelBuilder.Entity("DrillingCore.Domain.Entities.ParticipantEquipment", b =>
@@ -585,6 +620,34 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Navigation("EquipmentType");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAFormHazard", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.FLHAForm", "FLHAForm")
+                        .WithMany("Hazards")
+                        .HasForeignKey("FLHAFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.FLHAHazard", "HazardTemplate")
+                        .WithMany()
+                        .HasForeignKey("HazardTemplateId");
+
+                    b.Navigation("FLHAForm");
+
+                    b.Navigation("HazardTemplate");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAHazard", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.FLHAHazardGroup", "Group")
+                        .WithMany("Hazards")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.FormChecklistResponse", b =>
                 {
                     b.HasOne("DrillingCore.Core.Entities.ChecklistItem", "ChecklistItem")
@@ -594,7 +657,7 @@ namespace DrillingCore.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
-                        .WithMany()
+                        .WithMany("FormChecklistResponses")
                         .HasForeignKey("ProjectFormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -606,6 +669,10 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormParticipant", b =>
                 {
+                    b.HasOne("DrillingCore.Core.Entities.FLHAForm", null)
+                        .WithMany("Participants")
+                        .HasForeignKey("FLHAFormId");
+
                     b.HasOne("DrillingCore.Core.Entities.Participant", "Participant")
                         .WithMany()
                         .HasForeignKey("ParticipantId")
@@ -613,7 +680,7 @@ namespace DrillingCore.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
-                        .WithMany()
+                        .WithMany("FormParticipants")
                         .HasForeignKey("ProjectFormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -625,6 +692,10 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormPhoto", b =>
                 {
+                    b.HasOne("DrillingCore.Core.Entities.FLHAForm", null)
+                        .WithMany("FormPhotos")
+                        .HasForeignKey("FLHAFormId");
+
                     b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
                         .WithMany("FormPhotos")
                         .HasForeignKey("ProjectFormId")
@@ -636,6 +707,10 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormSignature", b =>
                 {
+                    b.HasOne("DrillingCore.Core.Entities.FLHAForm", null)
+                        .WithMany("FormSignatures")
+                        .HasForeignKey("FLHAFormId");
+
                     b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
                         .WithMany("FormSignatures")
                         .HasForeignKey("ProjectFormId")
@@ -777,6 +852,22 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Navigation("Equipments");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAForm", b =>
+                {
+                    b.Navigation("FormPhotos");
+
+                    b.Navigation("FormSignatures");
+
+                    b.Navigation("Hazards");
+
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.FLHAHazardGroup", b =>
+                {
+                    b.Navigation("Hazards");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.FormType", b =>
                 {
                     b.Navigation("ProjectForms");
@@ -784,6 +875,10 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectForm", b =>
                 {
+                    b.Navigation("FormChecklistResponses");
+
+                    b.Navigation("FormParticipants");
+
                     b.Navigation("FormPhotos");
 
                     b.Navigation("FormSignatures");

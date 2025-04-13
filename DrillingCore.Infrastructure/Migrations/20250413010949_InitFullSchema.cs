@@ -4,8 +4,6 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace DrillingCore.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -413,47 +411,6 @@ namespace DrillingCore.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.InsertData(
-                table: "EquipmentTypes",
-                columns: new[] { "Id", "TypeName" },
-                values: new object[] { 1, "Drill" });
-
-            migrationBuilder.InsertData(
-                table: "FormTypes",
-                columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 2, null, "Drill Inspection" });
-
-            migrationBuilder.InsertData(
-                table: "ProjectStatuses",
-                columns: new[] { "Id", "Description", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Проект активный", "Active" },
-                    { 2, "Проект не активный", "Inactive" },
-                    { 3, "Проект приостановлен", "Suspended" },
-                    { 4, "Проект завершён", "Completed" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { -3, "ProjectManager" },
-                    { -2, "Driller" },
-                    { -1, "Administrator" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "FormTypeEquipmentTypes",
-                columns: new[] { "EquipmentTypeId", "FormTypeId" },
-                values: new object[] { 1, 2 });
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "Email", "FullName", "IsActive", "Mobile", "PasswordHash", "RoleId", "RoleId1", "Username" },
-                values: new object[] { 1, "admin@example.com", "Administrator", true, "1234567890", "admin", -1, null, "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChecklistItems_FormTypeId",

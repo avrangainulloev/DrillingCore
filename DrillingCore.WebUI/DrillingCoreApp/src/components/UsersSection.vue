@@ -15,15 +15,16 @@
       <div class="col-md-4">
         <select class="form-select" v-model="selectedRole" @change="loadUsers">
           <option value="">All Roles</option>
-          <option value="-1">Administrator</option>
-          <option value="-2">ProjectManager</option>
-          <option value="-3">Helper</option>
+          <option v-for="role in roles" :key="role.id" :value="role.id">
+            {{ role.name }}
+          </option>
         </select>
       </div>
       <div class="col-md-4 text-end">
         <button class="btn btn-primary" @click="openUserModal()">Add User</button>
       </div>
     </div>
+
     <!-- Таблица пользователей -->
     <table class="table table-striped">
       <thead>
@@ -45,7 +46,7 @@
           <td>{{ user.fullName }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.mobile }}</td>
-          <td>{{ user.roleName }}</td>
+          <td>{{ user.roleName || 'Unknown' }}</td>
           <td :style="{ color: user.isActive ? 'green' : 'red' }">
             {{ user.isActive ? 'Active' : 'Inactive' }}
           </td>
@@ -59,10 +60,9 @@
       </tbody>
     </table>
 
-    <!-- Модальное окно для создания/редактирования пользователя -->
     <UserModal 
       v-if="showUserModal" 
-      :editingUserId="editingUserId" 
+      editingUserId: undefined as number 
       @close="closeUserModal" 
       @user-saved="handleUserSaved" 
     />
@@ -79,16 +79,28 @@ export default defineComponent({
   data() {
     return {
       users: [] as any[],
+      roles: [] as any[],
       searchTerm: '',
       selectedRole: '',
       showUserModal: false,
       editingUserId: null as number | null,
     };
   },
-  mounted() {
-    this.loadUsers();
+  async mounted() {
+    await this.loadRoles();
+    await this.loadUsers();
   },
   methods: {
+    async loadRoles() {
+      try {
+        const response = await fetch('https://localhost:7200/api/Roles');
+        if (response.ok) {
+          this.roles = await response.json();
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+      }
+    },
     async loadUsers() {
       let url = `https://localhost:7200/api/Users?searchTerm=${encodeURIComponent(this.searchTerm)}`;
       if (this.selectedRole) {
@@ -106,7 +118,6 @@ export default defineComponent({
       }
     },
     openUserModal(userId?: number) {
-      // Если userId не передан – создаём нового пользователя
       this.editingUserId = userId || null;
       this.showUserModal = true;
     },
@@ -114,7 +125,6 @@ export default defineComponent({
       this.showUserModal = false;
     },
     handleUserSaved() {
-      // После сохранения обновляем список и закрываем модалку
       this.loadUsers();
       this.closeUserModal();
     }

@@ -7,13 +7,23 @@ namespace DrillingCore.Infrastructure.Persistence
     {
         public static async Task SeedAsync(DrillingCoreDbContext context)
         {
+
+            if (!context.ProjectStatuses.Any())
+            {
+                context.ProjectStatuses.AddRange(new[] {
+                new ProjectStatus { Name = "Active", Description = "Проект активный" },
+                new ProjectStatus { Name = "Inactive", Description = "Проект не активный" },
+                new ProjectStatus { Name = "Suspended", Description = "Проект приостановлен" },
+                new ProjectStatus { Name = "Completed", Description = "Проект завершён" }
+                });
+            }
             if (!context.Roles.Any())
             {
                 context.Roles.AddRange(new List<Role>
                 {
-                    new() { Id = -1, Name = "Administrator" },
-                    new() { Id = -2, Name = "Driller" },
-                    new() { Id = -3, Name = "ProjectManager" }
+                    new() { Name = "Administrator" },
+                    new() { Name = "User" },
+                    new() { Name = "ProjectManager" }
                 });
 
                 await context.SaveChangesAsync();
@@ -23,10 +33,10 @@ namespace DrillingCore.Infrastructure.Persistence
             {
                 context.Users.Add(new User
                 {
-                    Id = 1,
+
                     Username = "admin",
                     PasswordHash = "admin",
-                    RoleId = -1,
+                    RoleId = 1,
                     FullName = "Administrator",
                     Email = "admin@example.com",
                     Mobile = "1234567890"
@@ -35,60 +45,41 @@ namespace DrillingCore.Infrastructure.Persistence
                 await context.SaveChangesAsync();
             }
 
+            if (!context.EquipmentTypes.Any())
+            {
+                context.EquipmentTypes.AddRange(new List<EquipmentType>
+               {
+                   new() {TypeName = "Truck"},
+                   new() {TypeName = "Drill"},
+                   new() {TypeName = "ATV"},
+                   new() {TypeName = "DTV"}
+               });
+                await context.SaveChangesAsync();
+            }
+
             if (!context.FormTypes.Any())
             {
                 context.FormTypes.AddRange(new List<FormType>
                 {
-                    new() { Id = 1, Name = "Truck Inspection" },
-                    new() { Id = 2, Name = "Drill Inspection" },
-                    new() { Id = 3, Name = "FLHA" },
-                    new() { Id = 4, Name = "Safety Checklist" },
-                    new() { Id = 5, Name = "Well Servicing" }
+                    new() {  Name = "Truck Inspection" },
+                    new() {  Name = "Drill Inspection" },
+                    new() {  Name = "FLHA" },
+                    new() {  Name = "Safety Checklist" },
+                    new() {  Name = "Well Servicing" }
                 });
 
                 await context.SaveChangesAsync();
             }
-
-            var drillFormType = await context.FormTypes.FirstOrDefaultAsync(f => f.Name == "Drill Inspection");
-
-            if (drillFormType != null && !context.ChecklistItems.Any(c => c.FormTypeId == drillFormType.Id))
+            if (!context.FormTypeEquipmentTypes.Any())
             {
-                var checklistItems = new List<ChecklistItem>
-                {
-                    new() { FormTypeId = drillFormType.Id, Label = "Cap Mag (away from powder box)", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Propane stored upright and away from mags", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Hoods Covering Mag Locks", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Drive Line \"U\" Joints (Tandem Only)", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Light (Front, Back, Mast & Deck)", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Seat Belt (3 inch for LIS)", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Leaks", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Kelly Hose", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Cleanliness", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Break Out Bowl Ram", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Pressure Gauges", GroupName = "Equipment & Storage" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Mast Rams", GroupName = "Equipment & Storage" },
-
-                    new() { FormTypeId = drillFormType.Id, Label = "2-way Radio with external speaker", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Escape Hutch (LIS Only)", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Windows", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Pull Down Ram, Cable or chains", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Myno Pump", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Hydraulic Hoses", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Emergency Shut Down Switch", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Galvo", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "4 Brass Knife", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "E Hoper Stinger Point", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "First Aid Kit (B.C basic level with book)", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Fire Extinguisher (2-20lb BC or 2x 10lb AB)", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Regulator on Propane Tank", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Explosive Placards, MSDS on board", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "ERP", GroupName = "Safety & Accessories" },
-                    new() { FormTypeId = drillFormType.Id, Label = "Back-Up Alarm", GroupName = "Safety & Accessories" },
-                };
-
-                context.ChecklistItems.AddRange(checklistItems);
+                context.FormTypeEquipmentTypes.Add(new FormTypeEquipmentType { EquipmentTypeId = 2, FormTypeId = 2 });
                 await context.SaveChangesAsync();
             }
+
+
+            await FLHAHazardSeeder.SeedAsync(context);
+            await DrillCheckListSeeder.SeedAsync(context);
+            await TruckInspecttionCheckListSeeder.SeedAsync(context);
         }
     }
 }
