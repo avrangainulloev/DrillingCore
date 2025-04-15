@@ -17,7 +17,9 @@ namespace DrillingCore.Application.DTOs
         public string? OtherComments { get; set; }
 
         public List<FLHAHazardEntryDto> Hazards { get; set; } = new();
-        public List<int> ParticipantIds { get; set; } = new();
+        //public List<int> ParticipantIds { get; set; } = new();
+        // 🔁 Изменено:
+        public List<ParticipantWithSignatureDto> Participants { get; set; } = new();
     }
 
     public class FLHAHazardEntryDto

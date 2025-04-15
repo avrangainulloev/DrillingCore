@@ -20,7 +20,20 @@ namespace DrillingCore.Infrastructure.Repositories
         {
             _context = context;
         }
+        public async Task AddProjectFormAsync(ProjectForm form, CancellationToken cancellationToken)
+        {
+            _context.ProjectForms.Add(form);
 
+            var total = form.FormParticipants.Count;
+            var signed = form.FormSignatures.Count;
+
+            form.Status = (signed >= total && total > 0)
+                ? "Completed"
+                : "Pending";
+
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
         public async Task<List<ProjectForm>> GetFormsByProjectAndTypeAsync(int projectId, int formTypeId)
         {
             return await _context.ProjectForms
@@ -77,6 +90,25 @@ namespace DrillingCore.Infrastructure.Repositories
         {
             _context.FormSignatures.Add(signature);
             await _context.SaveChangesAsync();
+            // Найти ProjectForm
+            var projectForm = await _context.ProjectForms
+                .Include(p => p.FormParticipants)
+                .Include(p => p.FormSignatures)
+                .FirstOrDefaultAsync(p => p.Id == signature.ProjectFormId);
+
+            if (projectForm != null)
+            {
+                var total = projectForm.FormParticipants.Count;
+                var signed = projectForm.FormSignatures
+                    .Count(s => projectForm.FormParticipants.Any(p => p.ParticipantId == s.ParticipantId));
+
+                projectForm.Status = (signed >= total && total > 0)
+                    ? "Completed"
+                    : "Pending";
+
+                await _context.SaveChangesAsync();
+            }
+
         }
 
         public async Task<DrillInspectionDto> GetDrillInspectionByIdAsync(int formId, CancellationToken cancellationToken)

@@ -22,11 +22,14 @@ namespace DrillingCore.Core.Entities
         public FormType FormType { get; set; } = default!;
         public Project Project { get; set; } = default!;
         public User Creator { get; set; } = default!;
+        public string Status { get; set; }
 
         public ICollection<FormSignature> FormSignatures { get; set; } = new List<FormSignature>();
         public ICollection<FormPhoto> FormPhotos { get; set; } = new List<FormPhoto>();
         public ICollection<FormChecklistResponse> FormChecklistResponses { get; set; } = new List<FormChecklistResponse>();
         public ICollection<FormParticipant> FormParticipants { get; set; } = new List<FormParticipant>();
+        public FLHAForm? FLHAForm { get; set; } // Навигация (если форма FLHA)
+
 
     }
 }

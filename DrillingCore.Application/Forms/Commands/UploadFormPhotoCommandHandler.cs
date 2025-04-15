@@ -29,6 +29,7 @@ namespace DrillingCore.Application.Forms.Commands
                 ProjectFormId = request.ProjectFormId,
                 PhotoUrl = fileUrl,
                 CreatedDate = DateTime.UtcNow
+
             };
 
             await _repository.SavePhotoAsync(photo);

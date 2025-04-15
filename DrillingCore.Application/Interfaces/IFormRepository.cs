@@ -25,6 +25,7 @@ namespace DrillingCore.Application.Interfaces
         Task SaveSignatureAsync(FormSignature signature);
         Task<DrillInspectionDto> GetDrillInspectionByIdAsync(int formId, CancellationToken cancellationToken);
         Task UpdateDrillInspectionAsync(UpdateDrillInspectionCommand command, CancellationToken cancellationToken);
+        Task AddProjectFormAsync(ProjectForm form, CancellationToken cancellationToken);
 
 
     }

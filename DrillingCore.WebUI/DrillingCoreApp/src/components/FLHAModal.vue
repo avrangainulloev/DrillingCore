@@ -146,23 +146,27 @@
       }
     },
     watch: {
-  selectedHazardIds(newVal: number[], oldVal: number[]) {
-    const added = newVal.filter(id => !oldVal.includes(id));
-    const removed = oldVal.filter(id => !newVal.includes(id));
-
-    for (const id of added) {
-      const hazard = this.hazardTemplates.find(h => h.id === id);
-      if (hazard) this.controls[id] = hazard.controlSuggestion || '';
-    }
-
-    for (const id of removed) {
-      delete this.controls[id];
-    }
-  }
-},
-    mounted() {
-      this.loadParticipants();
-      this.loadHazards();
+      formId: {
+        immediate: true,
+        handler: async function (newVal: number | undefined) {
+          if (newVal) await this.loadFormData(newVal);
+        }
+      },
+      selectedHazardIds(newVal: number[], oldVal: number[]) {
+        const added = newVal.filter(id => !oldVal.includes(id));
+        const removed = oldVal.filter(id => !newVal.includes(id));
+  
+        for (const id of added) {
+          const hazard = this.hazardTemplates.find(h => h.id === id);
+          if (hazard) this.controls[id] = hazard.controlSuggestion || '';
+        }
+        for (const id of removed) delete this.controls[id];
+      }
+    },
+    async mounted() {
+      const serverDate = await this.getServerDate();
+      await this.loadParticipants(serverDate);
+      await this.loadHazards();
     },
     methods: {
       closeModal() {
@@ -172,14 +176,65 @@
         const p = this.allParticipants.find(x => x.id === id);
         return p?.fullName || 'Unknown';
       },
-      async loadParticipants() {
+      async getServerDate(): Promise<Date> {
+        const res = await fetch('/api/Common/server-date');
+
+        const data = await res.json();
+        return new Date(data.now);
+      },
+      async loadParticipants(now: Date) {
         const res = await fetch(`/api/projects/${this.projectId}/groups`);
         const groups = await res.json();
-        this.allParticipants = groups.flatMap((g: any) => g.participants);
+        const flatList = groups.flatMap((g: any) => g.participants);
+  
+        const grouped = new Map<number, any[]>();
+        for (const p of flatList) {
+          if (!grouped.has(p.userId)) grouped.set(p.userId, []);
+          grouped.get(p.userId)!.push(p);
+        }
+  
+        this.allParticipants = [];
+  
+        for (const [userId, records] of grouped.entries()) {
+          const valid = records.filter(r => !r.endDate || new Date(r.endDate) > now);
+          if (valid.length > 0) {
+            valid.sort((a, b) => {
+              const aDate = a.endDate ? new Date(a.endDate) : new Date('9999-12-31');
+              const bDate = b.endDate ? new Date(b.endDate) : new Date('9999-12-31');
+              return aDate.getTime() - bDate.getTime();
+            });
+            this.allParticipants.push(valid[0]);
+          }
+        }
       },
       async loadHazards() {
         const res = await fetch(`/api/flha/hazards/2`);
         this.hazardTemplates = await res.json();
+      },
+      async loadFormData(formId: number) {
+        const res = await fetch(`/api/flha/${formId}`);
+        const form = await res.json();
+  
+        this.taskDescription = form.taskDescription;
+        this.dateFilled = form.dateFilled.split("T")[0];
+        this.otherComments = form.otherComments;
+        this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
+        const API_BASE = 'http://localhost:5152/';
+        this.signatures = {};
+        for (const p of form.participants) {
+          if (p.signatureUrl) this.signatures[p.participantId] = API_BASE + p.signatureUrl;
+        }
+        this.photos = form.photoUrls.map((url: string) => ({
+          preview: API_BASE + url,
+          file: null
+        }));
+        this.selectedHazardIds = form.hazards.filter((h: any) => h.hazardTemplateId !== null).map((h: any) => h.hazardTemplateId);
+        this.controls = {};
+        this.customHazards = [];
+        for (const h of form.hazards) {
+          if (h.hazardTemplateId) this.controls[h.hazardTemplateId] = h.controlMeasures;
+          else this.customHazards.push({ label: h.hazardText, control: h.controlMeasures });
+        }
       },
       addCustomHazard() {
         this.customHazards.push({ label: '', control: '' });
@@ -219,8 +274,7 @@
           dateFilled: this.dateFilled,
           otherComments: this.otherComments,
           participants: this.selectedParticipantIds.map(id => ({
-            participantId: id,
-            signature: this.signatures[id] || null
+            participantId: id
           })),
           hazards: [
             ...this.selectedHazardIds.map(id => ({
@@ -235,15 +289,26 @@
           ]
         };
   
-        const res = await fetch('/api/forms/flha', {
-          method: 'POST',
+        let formId = this.formId;
+        const method = formId ? 'PUT' : 'POST';
+        const url = formId ? `/api/flha/${formId}` : `/api/flha`;
+  
+        const res = await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const result = await res.json();
-        const formId = result.formId;
   
-        // Upload photos
+        if (!res.ok) {
+          alert('Failed to save form.');
+          return;
+        }
+  
+        if (!formId) {
+          const result = await res.json();
+          formId = result.formId;
+        }
+  
         for (const photo of this.photos) {
           if (!photo.file) continue;
           const formData = new FormData();
@@ -251,9 +316,8 @@
           await fetch(`/api/forms/${formId}/photos`, { method: 'POST', body: formData });
         }
   
-        // Upload signatures
         for (const [participantId, signature] of Object.entries(this.signatures)) {
-          if (signature.startsWith('http')) continue;
+          if (!signature.startsWith('data:')) continue;
           const blob = await fetch(signature).then(res => res.blob());
           const formData = new FormData();
           formData.append('participantId', participantId);

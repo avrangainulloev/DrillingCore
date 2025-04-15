@@ -3,7 +3,7 @@
     <div class="modal-overlay" @click.self="closeModal">
       <div class="modal-content drill-inspection-modal">
         <div class="modal-header">
-          <h3 class="modal-title">Drill Inspection</h3>
+          <h3 class="modal-title">{{ formTypeId === 1 ? 'Truck Inspection' : 'Drill Inspection' }}</h3>
           <button type="button" class="btn-close" @click="closeModal">&times;</button>
         </div>
 
@@ -195,15 +195,39 @@ export default defineComponent({
       this.projectId = data.projectId ?? data.id;
     },
     async loadParticipants() {
-      const res = await fetch(`/api/projects/${this.projectId}/groups`);
-      const groups = await res.json();
-      this.allParticipants = groups.flatMap((g: any) => g.participants);
-      const group = groups.find((g: any) => g.participants.some((p: any) => p.userId === this.userId));
-      if (group && !this.formId) {
-        this.crewName = group.groupName;
-        this.selectedParticipantIds = group.participants.map((p: any) => p.id);
-      }
-    },
+  const res = await fetch(`/api/projects/${this.projectId}/groups`);
+  const groups = await res.json();
+  const flatList = groups.flatMap((g: any) => g.participants);
+
+  const nowRes = await fetch('/api/Common/server-date');
+  const now = new Date((await nowRes.json()).now);
+
+  const grouped = new Map<number, any[]>();
+  for (const p of flatList) {
+    if (!grouped.has(p.userId)) grouped.set(p.userId, []);
+    grouped.get(p.userId)!.push(p);
+  }
+
+  this.allParticipants = [];
+
+  for (const [userId, records] of grouped.entries()) {
+    const valid = records.filter(r => !r.endDate || new Date(r.endDate) > now);
+    if (valid.length > 0) {
+      valid.sort((a, b) => {
+        const aDate = a.endDate ? new Date(a.endDate) : new Date('9999-12-31');
+        const bDate = b.endDate ? new Date(b.endDate) : new Date('9999-12-31');
+        return aDate.getTime() - bDate.getTime();
+      });
+      this.allParticipants.push(valid[0]);
+    }
+  }
+
+  const group = groups.find((g: any) => g.participants.some((p: any) => p.userId === this.userId));
+  if (group && !this.formId) {
+    this.crewName = group.groupName;
+    this.selectedParticipantIds = group.participants.map((p: any) => p.id);
+  }
+},
     async loadChecklist() {
       const res = await fetch(`/api/checklist/by-form-type/${this.formTypeId}`);
        

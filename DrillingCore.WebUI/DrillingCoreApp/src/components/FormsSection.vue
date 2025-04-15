@@ -1,7 +1,7 @@
 <template>
   <div class="forms-section">
     <transition name="fade" mode="out-in">
-      <!-- Cards Mode -->
+      <!-- Cards View -->
       <div v-if="viewMode === 'cards'" key="cards">
         <h3 class="section-title">Select Form Type</h3>
         <div class="form-type-grid">
@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <!-- List Mode -->
+      <!-- List View -->
       <div v-else key="list">
         <div class="list-header">
           <button class="btn back-btn" @click="backToCards">Back</button>
@@ -31,28 +31,32 @@
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Form Type</th>
-                <th>Crew</th>
-                <th>Unit</th>
+                <th v-if="selectedType?.id !== 3">Form Type</th>
+                <th v-if="selectedType?.id !== 3">Crew</th>
+                <th v-if="selectedType?.id !== 3">Unit</th>
                 <th>Date Filled</th>
+                <th v-if="selectedType?.id === 3">Created By</th>
                 <th>Comments</th>
+                <th v-if="selectedType?.id === 3">Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="form in filteredForms" :key="form.id">
                 <td>{{ form.id }}</td>
-                <td>{{ form.formTypeName }}</td>
-                <td>{{ form.crewName }}</td>
-                <td>{{ form.unitNumber }}</td>
+                <td v-if="selectedType?.id !== 3">{{ form.formTypeName }}</td>
+                <td v-if="selectedType?.id !== 3">{{ form.crewName }}</td>
+                <td v-if="selectedType?.id !== 3">{{ form.unitNumber }}</td>
                 <td>{{ formatDate(form.dateFilled) }}</td>
+                <td v-if="selectedType?.id === 3">{{ form.creatorName }}</td>
                 <td>{{ form.otherComments }}</td>
+                <td v-if="selectedType?.id === 3">{{ form.status }}</td>
                 <td>
                   <button class="btn edit-btn" @click="editForm(form.id)">View/Edit</button>
                 </td>
               </tr>
               <tr v-if="filteredForms.length === 0">
-                <td colspan="7" class="no-data">No forms found.</td>
+                <td :colspan="selectedType?.id === 3 ? 8 : 8" class="no-data">No forms found.</td>
               </tr>
             </tbody>
           </table>
@@ -68,9 +72,8 @@
       :form-id="editingFormId ?? undefined"
       @close="onModalClosed"
     />
-
     <FLHAModal
-      v-if="showFlhaModal"
+      v-if="showFLHAModal"
       :user-id="userId"
       :project-id="projectId"
       :form-id="editingFormId ?? undefined"
@@ -86,11 +89,13 @@ import FLHAModal from './FLHAModal.vue';
 
 interface FormDto {
   id: number;
-  formTypeName: string;
-  crewName: string;
-  unitNumber: string;
+  formTypeName?: string;
+  crewName?: string;
+  unitNumber?: string;
   dateFilled: string;
-  otherComments: string;
+  otherComments?: string;
+  creatorName?: string;
+  status?: string;
 }
 
 interface FormType {
@@ -118,9 +123,9 @@ export default defineComponent({
       ] as FormType[],
       forms: [] as FormDto[],
       selectedType: null as FormType | null,
-      showDrillInspectionModal: false,
-      showFlhaModal: false,
       editingFormId: null as number | null,
+      showDrillInspectionModal: false,
+      showFLHAModal: false,
       projectId: 0
     };
   },
@@ -147,7 +152,7 @@ export default defineComponent({
     addNewForm() {
       this.editingFormId = null;
       if (this.selectedType?.id === 3) {
-        this.showFlhaModal = true;
+        this.showFLHAModal = true;
       } else {
         this.showDrillInspectionModal = true;
       }
@@ -155,16 +160,16 @@ export default defineComponent({
     editForm(formId: number) {
       this.editingFormId = formId;
       if (this.selectedType?.id === 3) {
-        this.showFlhaModal = true;
+        this.showFLHAModal = true;
       } else {
         this.showDrillInspectionModal = true;
       }
     },
     onModalClosed() {
       this.showDrillInspectionModal = false;
-      this.showFlhaModal = false;
+      this.showFLHAModal = false;
       this.editingFormId = null;
-      this.loadFormsFromBackend(); // refresh
+      this.loadFormsFromBackend();
     },
     async loadProjectId() {
       try {
@@ -179,7 +184,11 @@ export default defineComponent({
     async loadFormsFromBackend() {
       if (!this.selectedType) return;
       try {
-        const res = await fetch(`/api/forms/project/${this.projectId}/type/${this.selectedType.id}`, { credentials: 'include' });
+        const url =
+          this.selectedType.id === 3
+            ? `/api/flha/project/${this.projectId}`
+            : `/api/forms/project/${this.projectId}/type/${this.selectedType.id}`;
+        const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) throw new Error("Failed to load forms");
         this.forms = await res.json();
       } catch (err) {
