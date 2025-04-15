@@ -32,7 +32,7 @@ namespace DrillingCore.Application.Forms.Commands
                 CreatedDate = DateTime.UtcNow
             };
 
-            await _repository.SaveSignatureAsync(signature);
+            await _repository.SaveSignatureAsync(signature,cancellationToken);
             return signature.Id;
         }
     }

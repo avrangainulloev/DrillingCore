@@ -35,6 +35,8 @@ namespace DrillingCore.Infrastructure.Persistence
         public DbSet<FLHAHazard> FLHAHazards { get; set; }
         public DbSet<FLHAFormHazard> FLHAFormHazards { get; set; }
         public DbSet<FLHAForm> FLHAForms { get; set; }
+        public DbSet<FormDeliveryRule> FormDeliveryRules { get; set; } = default!;
+        public DbSet<FormDeliveryRecipient> FormDeliveryRecipients { get; set; } = default!;
 
         // Добавьте DbSet для других сущностей
 
@@ -62,10 +64,10 @@ namespace DrillingCore.Infrastructure.Persistence
     .HasKey(ft => new { ft.FormTypeId, ft.EquipmentTypeId });
 
 
-          
 
 
-           
+
+
             // Пример User
             modelBuilder.Entity<User>(entity =>
             {
@@ -78,7 +80,7 @@ namespace DrillingCore.Infrastructure.Persistence
                       .WithMany()
                       .HasForeignKey(u => u.RoleId);
 
-             
+
             });
 
 
@@ -116,13 +118,10 @@ namespace DrillingCore.Infrastructure.Persistence
        .HasForeignKey(p => p.StatusId)
        .OnDelete(DeleteBehavior.Restrict); // или другой подходящий вариант
 
-            // Можно задать начальное заполнение (seed) для статусов, если нужно:
-            //modelBuilder.Entity<ProjectStatus>().HasData(
-            //    new ProjectStatus {  Name = "Active", Description = "Проект активный" },
-            //    new ProjectStatus { Name = "Inactive", Description = "Проект не активный" },
-            //    new ProjectStatus { Name = "Suspended", Description = "Проект приостановлен" },
-            //    new ProjectStatus { Name = "Completed", Description = "Проект завершён" }
-            //);
+            modelBuilder.Entity<FormDeliveryRule>()
+      .HasMany(r => r.Recipients)
+      .WithOne(r => r.FormDeliveryRule)
+      .HasForeignKey(r => r.FormDeliveryRuleId);
 
         }
 

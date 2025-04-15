@@ -12,7 +12,10 @@ using DrillingCore.Infrastructure.Services;
 using System.Reflection;
 using DrillingCore.Infrastructure;
 using Microsoft.Extensions.FileProviders;
+using QuestPDF.Infrastructure;
 
+
+QuestPDF.Settings.License = LicenseType.Community;
 var builder = WebApplication.CreateBuilder(args);
 
 // Настройка строки подключения к PostgreSQL

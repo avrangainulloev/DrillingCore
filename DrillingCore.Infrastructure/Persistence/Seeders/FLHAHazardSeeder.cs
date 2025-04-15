@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DrillingCore.Infrastructure.Persistence
+namespace DrillingCore.Infrastructure.Persistence.Seeders
 {
     public static class FLHAHazardSeeder
     {

@@ -1,7 +1,7 @@
 ﻿using DrillingCore.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace DrillingCore.Infrastructure.Persistence
+namespace DrillingCore.Infrastructure.Persistence.Seeders
 {
     public static class DrillCheckListSeeder
     {

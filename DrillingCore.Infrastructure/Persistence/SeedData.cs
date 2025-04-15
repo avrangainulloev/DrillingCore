@@ -1,4 +1,5 @@
 ﻿using DrillingCore.Core.Entities;
+using DrillingCore.Infrastructure.Persistence.Seeders;
 using Microsoft.EntityFrameworkCore;
 
 namespace DrillingCore.Infrastructure.Persistence

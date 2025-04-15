@@ -22,7 +22,7 @@ namespace DrillingCore.Application.Interfaces
         Task<int?> GetEquipmentTypeIdForFormTypeAsync(int formTypeId);     
 
         Task SavePhotoAsync(FormPhoto photo);
-        Task SaveSignatureAsync(FormSignature signature);
+        Task SaveSignatureAsync(FormSignature signature, CancellationToken cancellationToken);
         Task<DrillInspectionDto> GetDrillInspectionByIdAsync(int formId, CancellationToken cancellationToken);
         Task UpdateDrillInspectionAsync(UpdateDrillInspectionCommand command, CancellationToken cancellationToken);
         Task AddProjectFormAsync(ProjectForm form, CancellationToken cancellationToken);

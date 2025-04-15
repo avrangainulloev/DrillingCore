@@ -15,21 +15,22 @@ namespace DrillingCore.Infrastructure.Repositories
     public class FormRepository : IFormRepository
     {
         private readonly DrillingCoreDbContext _context;
-
-        public FormRepository(DrillingCoreDbContext context)
+        private readonly IFormDeliveryService _formDeliveryService;
+        public FormRepository(DrillingCoreDbContext context, IFormDeliveryService formDeliveryService)
         {
             _context = context;
+            _formDeliveryService = formDeliveryService;
         }
         public async Task AddProjectFormAsync(ProjectForm form, CancellationToken cancellationToken)
         {
             _context.ProjectForms.Add(form);
 
-            var total = form.FormParticipants.Count;
-            var signed = form.FormSignatures.Count;
+            //var total = form.FormParticipants.Count;
+            //var signed = form.FormSignatures.Count;
 
-            form.Status = (signed >= total && total > 0)
-                ? "Completed"
-                : "Pending";
+            //form.Status = (signed >= total && total > 0)
+            //    ? "Completed"
+            //    : "Pending";
 
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -86,15 +87,37 @@ namespace DrillingCore.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task SaveSignatureAsync(FormSignature signature)
+        public async Task SaveSignatureAsync(FormSignature signature, CancellationToken cancellationToken)
         {
-            _context.FormSignatures.Add(signature);
+            var existing = await _context.FormSignatures
+        .FirstOrDefaultAsync(s =>
+            s.ProjectFormId == signature.ProjectFormId &&
+            s.ParticipantId == signature.ParticipantId,
+            cancellationToken);
+
+            if (existing == null)
+            {
+                _context.FormSignatures.Add(signature);
+            }
+            else
+            {
+                existing.SignatureUrl = signature.SignatureUrl;
+                existing.CreatedDate = DateTime.UtcNow;
+                _context.FormSignatures.Update(existing);
+            }
             await _context.SaveChangesAsync();
             // Найти ProjectForm
+            // Найти ProjectForm с нужными зависимостями
             var projectForm = await _context.ProjectForms
+                .Include(p => p.Project)
+                .Include(p => p.FormType)
                 .Include(p => p.FormParticipants)
+                  .ThenInclude(fp => fp.Participant)
+                  .ThenInclude(p => p.User)
                 .Include(p => p.FormSignatures)
-                .FirstOrDefaultAsync(p => p.Id == signature.ProjectFormId);
+                .Include(p => p.FormChecklistResponses)
+                    .ThenInclude(r => r.ChecklistItem)
+                .FirstOrDefaultAsync(p => p.Id == signature.ProjectFormId, cancellationToken);
 
             if (projectForm != null)
             {
@@ -106,7 +129,12 @@ namespace DrillingCore.Infrastructure.Repositories
                     ? "Completed"
                     : "Pending";
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
+
+                if (projectForm.Status == "Completed")
+                {
+                    await _formDeliveryService.TrySendOnFormCompleted(projectForm, cancellationToken);
+                }
             }
 
         }

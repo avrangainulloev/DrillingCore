@@ -1,6 +1,7 @@
 ﻿using DrillingCore.Application.Interfaces;
 using DrillingCore.Infrastructure.Persistence;
 using DrillingCore.Infrastructure.Repositories;
+using DrillingCore.Infrastructure.Service;
 using DrillingCore.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -30,6 +31,11 @@ namespace DrillingCore.Infrastructure
             services.AddScoped<IEquipmentTypeRepository, EquipmentTypeRepository>();
             services.AddScoped<IChecklistRepository, ChecklistItemRepository>();
             services.AddScoped<IFlhaRepository, FlhaRepository>();
+            services.AddScoped<IFormDeliveryRepository, FormDeliveryRepository>();
+            services.AddScoped<IFormDeliveryService, FormDeliveryService>();
+            //services.AddScoped<IEmailSender, FakeEmailSender>();
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+            services.AddScoped<FormPdfBuilder>();
 
             return services;
         }
