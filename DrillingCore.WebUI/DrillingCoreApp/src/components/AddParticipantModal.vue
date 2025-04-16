@@ -1,40 +1,52 @@
 <template>
-    <div class="modal-overlay" @click.self="closeModal">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <!-- Заголовок модального окна -->
-          <div class="modal-header">
-            <h5 class="modal-title">Add Participant</h5>
-            <button type="button" class="btn-close" @click="closeModal">&times;</button>
-          </div>
-          <!-- Тело модального окна -->
-          <div class="modal-body">
-            <!-- Выбор группы (если нужно добавить участника в конкретную группу) -->
+  <div class="modal-overlay" @click.self="closeModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <!-- Заголовок -->
+        <div class="modal-header">
+          <h5 class="modal-title">Add Participant</h5>
+          <button type="button" class="btn-close" @click="closeModal">&times;</button>
+        </div>
+
+        <!-- Тело с прокруткой -->
+        <div class="modal-body-scrollable">
+          <div class="modal-body-inner">
+
+            <!-- Select Group -->
             <div class="mb-3">
-              <label for="selectGroup" class="form-label">Select Group</label>
-              <select class="form-select" id="selectGroup" v-model="selectedGroupId">
+              <label class="form-label">Select Group</label>
+              <select class="form-select" v-model="selectedGroupId">
                 <option value="">-- No Group (just project) --</option>
                 <option v-for="group in groups" :key="group.id" :value="group.id">
                   {{ group.groupName }}
                 </option>
               </select>
             </div>
-            <!-- Поле выбора Start Date -->
+
+            <!-- Start Date -->
             <div class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input
-                type="date"
-                id="startDate"
-                class="form-control"
-                v-model="startDate"
-              />
+              <label class="form-label">Start Date</label>
+              <input type="date" class="form-control" v-model="startDate" />
             </div>
-            <!-- Панель фильтрации: поиск и фильтр по ролям -->
+
+            <!-- Salary Inputs -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Daily Rate</label>
+                <input type="number" class="form-control" v-model.number="dailyRate" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Meter Rate</label>
+                <input type="number" class="form-control" v-model.number="meterRate" />
+              </div>
+            </div>
+
+            <!-- Filters -->
             <div class="row mb-3">
               <div class="col-md-6">
                 <input
                   type="text"
-                  id="userSearchInput"
                   class="form-control"
                   placeholder="Search available users..."
                   v-model="searchTerm"
@@ -43,7 +55,6 @@
               </div>
               <div class="col-md-6">
                 <select
-                  id="participantRoleFilterAdd"
                   class="form-select"
                   v-model="selectedRole"
                   @change="applyFilters"
@@ -55,74 +66,59 @@
                 </select>
               </div>
             </div>
-            <!-- Дополнительные поля для расчёта зарплаты -->
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="dailyRate" class="form-label">Daily Rate</label>
-                <input
-                  type="number"
-                  id="dailyRate"
-                  class="form-control"
-                  placeholder="Enter daily rate (optional)"
-                  v-model.number="dailyRate"
-                />
-              </div>
-              <div class="col-md-6">
-                <label for="meterRate" class="form-label">Meter Rate</label>
-                <input
-                  type="number"
-                  id="meterRate"
-                  class="form-control"
-                  placeholder="Enter rate per meter (optional)"
-                  v-model.number="meterRate"
-                />
-              </div>
+
+            <!-- Table -->
+            <div class="scrollable-table">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Select</th>
+                    <th>Full Name</th>
+                    <th>Mobile</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="filteredUsers.length === 0">
+                    <td colspan="5">No users found.</td>
+                  </tr>
+                  <tr v-for="user in filteredUsers" :key="user.id">
+                    <td>
+                      <input type="checkbox" :value="user.id" v-model="selectedUserIds" />
+                    </td>
+                    <td>{{ user.fullName }}</td>
+                    <td>{{ user.mobile }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.roleName }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <!-- Таблица доступных пользователей -->
-            <table class="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Select</th>
-                  <th>Full Name</th>
-                  <th>Mobile</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="filteredUsers.length === 0">
-                  <td colspan="5">No users found.</td>
-                </tr>
-                <tr v-for="user in filteredUsers" :key="user.id">
-                  <td>
-                    <input type="checkbox" :value="user.id" v-model="selectedUserIds" />
-                  </td>
-                  <td>{{ user.fullName }}</td>
-                  <td>{{ user.mobile }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>{{ user.roleName }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <!-- Уведомления -->
+
+            <!-- Notifications -->
             <div v-if="notificationMessage" class="alert alert-success">
               {{ notificationMessage }}
             </div>
             <div v-if="errorMessage" class="alert alert-danger">
               {{ errorMessage }}
             </div>
-          </div>
-          <!-- Футер модального окна -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="addSelectedParticipants" :disabled="isAdding">
-              {{ isAdding ? 'Adding...' : 'Add Selected Participants' }}
-            </button>
-            <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
+
           </div>
         </div>
+
+        <!-- Футер -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="addSelectedParticipants" :disabled="isAdding">
+            {{ isAdding ? 'Adding...' : 'Add Selected Participants' }}
+          </button>
+          <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
+        </div>
+
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script lang="ts">
   import { defineComponent } from 'vue';
@@ -292,18 +288,26 @@
     justify-content: center;
     z-index: 1050;
     padding: 1rem;
+    
   }
   .modal-dialog {
     background: #fff;
     border-radius: 8px;
-    width: 100%;
+    width: 100%;    
     max-width: 900px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     overflow: hidden;
+    display: flex;
+  flex-direction: column;
+  max-height: 95vh;
   }
   .modal-content {
     display: flex;
     flex-direction: column;
+    display: flex;
+  flex-direction: column;
+  max-height: 95vh;
+  overflow: hidden;
   }
   .modal-header {
     display: flex;
@@ -398,5 +402,16 @@
     background-color: #f8d7da;
     color: #721c24;
   }
+  .scrollable-table {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;  
+}
+.modal-body-scrollable {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding: 1rem;
+}
   </style>
   

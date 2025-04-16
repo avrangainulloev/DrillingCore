@@ -27,7 +27,8 @@ namespace DrillingCore.WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] CreateFormDeliveryRuleCommand command)
+         
+        public async Task<IActionResult> Create(CreateFormDeliveryRuleCommand command)
         {
             var id = await _mediator.Send(command);
             return Ok(new { RuleId = id });
@@ -82,6 +83,20 @@ namespace DrillingCore.WebAPI.Controllers
         {
             await _mediator.Send(new DeleteFormDeliveryRuleCommand { Id = id });
             return NoContent();
+        }
+
+        /// <summary>
+        /// Ручная отправка всех Completed форм за выбранную дату.
+        /// </summary>
+        /// <param name="command">Проект, тип формы и дата.</param>
+        /// <returns>Результат отправки.</returns>
+        [HttpPost("send-manual")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SendFormsManual([FromBody] SendFormsManualCommand command, CancellationToken cancellationToken)
+        {
+            await _mediator.Send(command, cancellationToken);
+            return Ok(new { Message = "Forms sent if rule and data matched." });
         }
     }
 }

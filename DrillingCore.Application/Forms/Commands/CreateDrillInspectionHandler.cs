@@ -21,7 +21,9 @@ public class CreateDrillInspectionHandler : IRequestHandler<CreateDrillInspectio
             CreatorId = request.CreatorId,
             CrewName = request.CrewName,
             UnitNumber = request.UnitNumber,
-            DateFilled = DateTime.SpecifyKind(request.DateFilled, DateTimeKind.Utc),
+            DateFilled =  request.DateFilled,
+            CreatedAt = DateTime.UtcNow,
+            UpdateAt = DateTime.UtcNow,
             OtherComments = request.OtherComments
         };
 

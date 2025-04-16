@@ -36,6 +36,8 @@ namespace DrillingCore.Infrastructure
             //services.AddScoped<IEmailSender, FakeEmailSender>();
             services.AddScoped<IEmailSender, SmtpEmailSender>();
             services.AddScoped<FormPdfBuilder>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            services.AddHostedService<QueuedHostedService>();
 
             return services;
         }

@@ -1,7 +1,6 @@
 <template>
   <div class="projects-section">
     <div class="projects-header">
-      <h2>Projects</h2>
       <div class="filters">
         <input
           type="text"
@@ -21,39 +20,58 @@
       <button class="btn create-btn" @click="openProjectModal()">Create Project</button>
     </div>
 
-    <table class="projects-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Client</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="project in projects" :key="project.id">
-          <td>{{ project.id }}</td>
-          <td>{{ project.name }}</td>
-          <td>{{ project.client }}</td>
-          <td>{{ formatDate(project.startDate) }}</td>
-          <td>{{ formatDate(project.endDate) }}</td>
-          <td>{{ project.status }}</td>
-          <td>
-            <button class="btn edit-btn" @click="openProjectModal(project.id)">Edit</button>
-            <button class="btn participant-btn" @click="openParticipants(project.id)">Participants</button>
-            <button class="btn forms-btn" @click="openFormsModal(project.id)">Forms</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="scrollable-projects">
+      <table class="projects-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Client</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="project in projects" :key="project.id">
+            <td>{{ project.id }}</td>
+            <td>{{ project.name }}</td>
+            <td>{{ project.client }}</td>
+            <td>{{ formatDate(project.startDate) }}</td>
+            <td>{{ formatDate(project.endDate) }}</td>
+            <td>{{ project.status }}</td>
+            <td>
+              <button class="btn edit-btn" @click="openProjectModal(project.id)">Edit</button>
+              <button class="btn participant-btn" @click="openParticipants(project.id)">Participants</button>
+              <button class="btn forms-btn" @click="openFormsModal(project.id)">Forms</button>
+              <button class="btn delivery-btn" @click="openDeliveryModal(project.id)">Delivery Settings</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Modal for Forms -->
     <Modal v-if="showFormsModal" @close="closeFormsModal">
       <FormsSection :user-id="userId" :project-id="selectedProjectId" />
     </Modal>
+
+  <!-- Modal for Delivery Settings -->
+  <Modal v-if="showDeliveryModal" @close="closeDeliveryModal">
+  <FormDeliverySettings
+    v-if="!showAddDeliveryForm"
+    :project-id="deliveryProjectId!"
+    @add-new="showAddDeliveryForm = true"
+    @edit-rule="handleEditDeliveryRule"
+  />
+  <FormDeliveryModal
+  v-else-if="editingRule !== null"
+  :project-id="deliveryProjectId!"
+  :rule="editingRule"
+  @close="handleDeliveryModalClosed"
+/>
+</Modal>
   </div>
 </template>
 
@@ -61,10 +79,12 @@
 import { defineComponent } from 'vue';
 import Modal from './Modal.vue';
 import FormsSection from './FormsSection.vue';
+import FormDeliveryModal from './FormDeliveryModal.vue'; // ✅ импорт
+import FormDeliverySettings from './FormDeliverySettings.vue';
 
 export default defineComponent({
   name: 'ProjectsSection',
-  components: { Modal, FormsSection },
+  components: { Modal, FormsSection, FormDeliveryModal,FormDeliverySettings  },
   data() {
     return {
       projects: [] as any[],
@@ -72,13 +92,26 @@ export default defineComponent({
       selectedStatus: '',
       showFormsModal: false,
       selectedProjectId: null as number | null,
-      userId: 1
+      userId: 1,
+      showDeliveryModal: false,
+      deliveryProjectId: null as number | null,
+      showAddDeliveryForm: false,
+      editingRule: null as any | null,
     };
   },
   mounted() {
     this.loadProjects();
   },
   methods: {
+   handleEditDeliveryRule(rule: any) {
+  this.editingRule = rule;
+  this.showAddDeliveryForm = true;
+},
+handleDeliveryModalClosed() {
+  this.showAddDeliveryForm = false;
+  this.editingRule = null;
+  this.showDeliveryModal = false; // 👈 нужно обязательно
+},
     async loadProjects() {
       try {
         const params = new URLSearchParams();
@@ -110,6 +143,14 @@ export default defineComponent({
     },
     closeFormsModal() {
       this.showFormsModal = false;
+    },
+    openDeliveryModal(projectId: number) {
+      this.deliveryProjectId = projectId;
+      this.showDeliveryModal = true;
+    },
+    closeDeliveryModal() {
+      this.showDeliveryModal = false;
+      this.deliveryProjectId = null;
     },
     formatDate(dateStr: string) {
       if (!dateStr) return '';
@@ -162,6 +203,12 @@ export default defineComponent({
   padding: 0.75rem;
   text-align: left;
 }
+.projects-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f7f7f7;
+  z-index: 2;
+}
 .create-btn {
   background-color: #1976d2;
   color: white;
@@ -199,5 +246,21 @@ export default defineComponent({
 }
 .forms-btn:hover {
   background-color: #fb8c00;
+}
+.delivery-btn {
+  background-color: #f08d8d;
+  color: white;
+  padding: 0.3rem 0.75rem;
+  margin-left: 0.3rem;
+  border-radius: 4px;
+}
+.delivery-btn:hover {
+  background-color: #7b1fa2;
+}
+.scrollable-projects {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 </style>

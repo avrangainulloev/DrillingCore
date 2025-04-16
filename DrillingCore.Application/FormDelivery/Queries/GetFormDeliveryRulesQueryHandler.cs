@@ -30,6 +30,7 @@ namespace DrillingCore.Application.FormDelivery.Queries
                 Condition = r.Condition.ToString(),
                 Recipients = r.Recipients.Select(x => new FormDeliveryRecipientDto
                 {
+                    Id = x.Id,
                     FullName = x.FullName,
                     Company = x.Company,
                     Email = x.Email

@@ -116,7 +116,7 @@ export default defineComponent({
       projectId: 0,
       crewName: '',
       unitNumber: '',
-      dateFilled: new Date().toISOString().split('T')[0],
+      dateFilled: new Date().toISOString().split('T')[0], // yyyy-MM-dd
       participantSearch: '',
       allParticipants: [] as any[],
       selectedParticipantIds: [] as number[],
@@ -129,7 +129,7 @@ export default defineComponent({
       photoToView: '',
       showSuccessToast: false,
       successMessage: '',
-      checklistItems: [] as any[],
+      checklistItems: [] as any[]
     };
   },
   computed: {
@@ -140,9 +140,7 @@ export default defineComponent({
     groupedChecklist() {
       const grouped: Record<string, any[]> = {};
       for (const item of this.checklistItems) {
-        if (!grouped[item.groupName]) {
-          grouped[item.groupName] = [];
-        }
+        if (!grouped[item.groupName]) grouped[item.groupName] = [];
         grouped[item.groupName].push(item);
       }
       return grouped;
@@ -195,74 +193,59 @@ export default defineComponent({
       this.projectId = data.projectId ?? data.id;
     },
     async loadParticipants() {
-  const res = await fetch(`/api/projects/${this.projectId}/groups`);
-  const groups = await res.json();
-  const flatList = groups.flatMap((g: any) => g.participants);
+      const res = await fetch(`/api/projects/${this.projectId}/groups`);
+      const groups = await res.json();
+      const flatList = groups.flatMap((g: any) => g.participants);
 
-  const nowRes = await fetch('/api/Common/server-date');
-  const now = new Date((await nowRes.json()).now);
+      const nowRes = await fetch('/api/Common/server-date');
+      const now = new Date((await nowRes.json()).now);
 
-  const grouped = new Map<number, any[]>();
-  for (const p of flatList) {
-    if (!grouped.has(p.userId)) grouped.set(p.userId, []);
-    grouped.get(p.userId)!.push(p);
-  }
+      const grouped = new Map<number, any[]>();
+      for (const p of flatList) {
+        if (!grouped.has(p.userId)) grouped.set(p.userId, []);
+        grouped.get(p.userId)!.push(p);
+      }
 
-  this.allParticipants = [];
+      this.allParticipants = [];
+      for (const [, records] of grouped.entries()) {
+        const valid = records.filter(r => !r.endDate || new Date(r.endDate) > now);
+        if (valid.length > 0) {
+          valid.sort((a, b) => {
+            const aDate = a.endDate ? new Date(a.endDate) : new Date('9999-12-31');
+            const bDate = b.endDate ? new Date(b.endDate) : new Date('9999-12-31');
+            return aDate.getTime() - bDate.getTime();
+          });
+          this.allParticipants.push(valid[0]);
+        }
+      }
 
-  for (const [userId, records] of grouped.entries()) {
-    const valid = records.filter(r => !r.endDate || new Date(r.endDate) > now);
-    if (valid.length > 0) {
-      valid.sort((a, b) => {
-        const aDate = a.endDate ? new Date(a.endDate) : new Date('9999-12-31');
-        const bDate = b.endDate ? new Date(b.endDate) : new Date('9999-12-31');
-        return aDate.getTime() - bDate.getTime();
-      });
-      this.allParticipants.push(valid[0]);
-    }
-  }
-
-  const group = groups.find((g: any) => g.participants.some((p: any) => p.userId === this.userId));
-  if (group && !this.formId) {
-    this.crewName = group.groupName;
-    this.selectedParticipantIds = group.participants.map((p: any) => p.id);
-  }
-},
+      const group = groups.find((g: any) => g.participants.some((p: any) => p.userId === this.userId));
+      if (group && !this.formId) {
+        this.crewName = group.groupName;
+        this.selectedParticipantIds = group.participants.map((p: any) => p.id);
+      }
+    },
     async loadChecklist() {
       const res = await fetch(`/api/checklist/by-form-type/${this.formTypeId}`);
-       
       this.checklistItems = await res.json();
     },
     async loadEquipment() {
-  if (!this.allParticipants.length) return;
+      const currentParticipant = this.allParticipants.find(p => p.userId === this.userId) ?? this.allParticipants[0];
+      if (!currentParticipant) return;
 
-  const currentParticipant = this.allParticipants.find(p => p.userId === this.userId)
-                            ?? this.allParticipants[0];
-  if (!currentParticipant) return;
-
-  const participantId = currentParticipant.id;
-
-  try {
-    const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
-    
-    if (res.ok) {
-      const contentType = res.headers.get("Content-Type");
-      if (contentType?.includes("application/json")) {
-        const equipment = await res.json();
-        this.unitNumber = equipment?.registrationNumber ?? '';
-      } else {
-//        const text = await res.text(); // например: "No equipment found."
-       
-        this.unitNumber = '';
+      const participantId = currentParticipant.id;
+      try {
+        const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
+        if (res.ok) {
+          const equipment = await res.json();
+          this.unitNumber = equipment?.registrationNumber ?? '';
+        } else {
+          this.unitNumber = '';
+        }
+      } catch (err) {
+        console.error("Error loading equipment:", err);
       }
-    } else {
-      console.warn("Failed to fetch equipment:", res.statusText);
-      this.unitNumber = '';
-    }
-  } catch (err) {
-    console.error("Error loading equipment:", err);
-  }
-},
+    },
     async loadFormData(formId: number) {
       const res = await fetch(`/api/forms/drill-inspection/${formId}`);
       const form = await res.json();
@@ -271,7 +254,7 @@ export default defineComponent({
       this.projectId = form.projectId;
       this.crewName = form.crewName;
       this.unitNumber = form.unitNumber;
-      this.dateFilled = form.dateFilled.split("T")[0];
+      this.dateFilled = form.dateFilled; // already DateOnly as string
       this.otherComments = form.otherComments;
 
       this.checkedItems = form.checklistResponses
@@ -340,7 +323,6 @@ export default defineComponent({
           body: JSON.stringify({ formId: this.formId, ...payload })
         });
       } else {
-        
         const res = await fetch('/api/forms/drill-inspection', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -378,6 +360,7 @@ export default defineComponent({
   }
 });
 </script>
+
 
 <style scoped>
 .modal-overlay {

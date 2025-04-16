@@ -30,21 +30,21 @@ namespace DrillingCore.Infrastructure.Persistence
                 await context.SaveChangesAsync();
             }
 
-            if (!context.Users.Any())
-            {
-                context.Users.Add(new User
-                {
+            //if (!context.Users.Any())
+            //{
+            //    context.Users.Add(new User
+            //    {
 
-                    Username = "admin",
-                    PasswordHash = "admin",
-                    RoleId = 1,
-                    FullName = "Administrator",
-                    Email = "admin@example.com",
-                    Mobile = "1234567890"
-                });
+            //        Username = "admin",
+            //        PasswordHash = "admin",
+            //        RoleId = 1,
+            //        FullName = "Administrator",
+            //        Email = "admin@example.com",
+            //        Mobile = "1234567890"
+            //    });
 
-                await context.SaveChangesAsync();
-            }
+            //    await context.SaveChangesAsync();
+            //}
 
             if (!context.EquipmentTypes.Any())
             {
@@ -65,8 +65,8 @@ namespace DrillingCore.Infrastructure.Persistence
                     new() {  Name = "Truck Inspection" },
                     new() {  Name = "Drill Inspection" },
                     new() {  Name = "FLHA" },
-                    new() {  Name = "Safety Checklist" },
-                    new() {  Name = "Well Servicing" }
+                    new() {  Name = "ATV/UTV" },
+                    new() {  Name = "Drilling" }
                 });
 
                 await context.SaveChangesAsync();
@@ -81,6 +81,7 @@ namespace DrillingCore.Infrastructure.Persistence
             await FLHAHazardSeeder.SeedAsync(context);
             await DrillCheckListSeeder.SeedAsync(context);
             await TruckInspecttionCheckListSeeder.SeedAsync(context);
+            await TestDataSeeder.SeedAsync(context);
         }
     }
 }

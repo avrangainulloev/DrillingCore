@@ -26,7 +26,7 @@
           <button class="btn add-new-btn" @click="addNewForm">Add New Form</button>
         </div>
 
-        <div class="forms-table-container">
+        <div class="forms-table-container scrollable-forms">
           <table class="table forms-table">
             <thead>
               <tr>
@@ -49,7 +49,27 @@
                 <td v-if="selectedType?.id !== 3">{{ form.unitNumber }}</td>
                 <td>{{ formatDate(form.dateFilled) }}</td>
                 <td v-if="selectedType?.id === 3">{{ form.creatorName }}</td>
-                <td>{{ form.otherComments }}</td>
+                <td>
+                  <div>
+                    <span>
+                      {{
+                        commentExpanded[form.id]
+                          ? form.otherComments
+                          :form.otherComments
+  ? form.otherComments.slice(0, 100) + (form.otherComments.length > 100 ? '...' : '')
+  : '' 
+                      }}
+                    </span>
+                    <a
+                      v-if="form.otherComments && form.otherComments.length > 100"
+                      href="#"
+                      @click.prevent="toggleComment(form.id)"
+                      style="color: #1976d2; margin-left: 6px; font-size: 0.9rem"
+                    >
+                      {{ commentExpanded[form.id] ? 'Show less' : 'Show more' }}
+                    </a>
+                  </div>
+                </td>
                 <td v-if="selectedType?.id === 3">{{ form.status }}</td>
                 <td>
                   <button class="btn edit-btn" @click="editForm(form.id)">View/Edit</button>
@@ -79,6 +99,13 @@
       :form-id="editingFormId ?? undefined"
       @close="onModalClosed"
     />
+    <DrillingFormModal
+  v-if="showDrillingFormModal"
+  :user-id="userId"
+  :project-id="projectId"
+  :form-id="editingFormId ?? undefined"
+  @close="onModalClosed"
+/>
   </div>
 </template>
 
@@ -86,6 +113,7 @@
 import { defineComponent } from 'vue';
 import DrillInspectionModal from './DrillInspectionModal.vue';
 import FLHAModal from './FLHAModal.vue';
+import DrillingFormModal from './DrillingFormModal.vue';
 
 interface FormDto {
   id: number;
@@ -107,9 +135,10 @@ interface FormType {
 
 export default defineComponent({
   name: 'FormsSection',
-  components: { DrillInspectionModal, FLHAModal },
+  components: { DrillInspectionModal, FLHAModal, DrillingFormModal },
   props: {
-    userId: { type: Number, required: true }
+    userId: { type: Number, required: true },
+    projectId: { type: Number, required: true }
   },
   data() {
     return {
@@ -118,15 +147,16 @@ export default defineComponent({
         { id: 1, name: 'Truck Inspection', icon: 'bi bi-truck', color: '#e3f2fd' },
         { id: 2, name: 'Drill Inspection', icon: 'bi bi-wrench-adjustable', color: '#fce4ec' },
         { id: 3, name: 'FLHA', icon: 'bi bi-shield-lock', color: '#e8f5e9' },
-        { id: 4, name: 'Safety Checklist', icon: 'bi bi-check2-square', color: '#fff3e0' },
-        { id: 5, name: 'Well Servicing', icon: 'bi bi-tools', color: '#f3e5f5' }
+        { id: 4, name: 'ATV/UTV', icon: 'bi bi-check2-square', color: '#fff3e0' },
+        { id: 5, name: 'Drilling', icon: 'bi bi-tools', color: '#f3e5f5' }
       ] as FormType[],
       forms: [] as FormDto[],
       selectedType: null as FormType | null,
       editingFormId: null as number | null,
       showDrillInspectionModal: false,
       showFLHAModal: false,
-      projectId: 0
+      showDrillingFormModal: false,
+      commentExpanded: {} as Record<number, boolean>
     };
   },
   computed: {
@@ -135,10 +165,12 @@ export default defineComponent({
     }
   },
   methods: {
+    toggleComment(id: number) {
+      this.commentExpanded[id] = !this.commentExpanded[id];
+    },
     async selectFormType(type: FormType) {
       this.selectedType = type;
       this.viewMode = 'list';
-      await this.loadProjectId();
       await this.loadFormsFromBackend();
     },
     backToCards() {
@@ -147,12 +179,23 @@ export default defineComponent({
       this.forms = [];
     },
     formatDate(dateStr: string) {
-      return new Date(dateStr).toLocaleDateString();
+      const date = new Date(dateStr);
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      };
+      return date.toLocaleString(undefined, options).replace(',', '');
     },
     addNewForm() {
       this.editingFormId = null;
       if (this.selectedType?.id === 3) {
         this.showFLHAModal = true;
+      } else if (this.selectedType?.id === 5) {
+        this.showDrillingFormModal = true;
       } else {
         this.showDrillInspectionModal = true;
       }
@@ -161,6 +204,8 @@ export default defineComponent({
       this.editingFormId = formId;
       if (this.selectedType?.id === 3) {
         this.showFLHAModal = true;
+      } else if (this.selectedType?.id === 5) {
+        this.showDrillingFormModal = true;
       } else {
         this.showDrillInspectionModal = true;
       }
@@ -168,18 +213,9 @@ export default defineComponent({
     onModalClosed() {
       this.showDrillInspectionModal = false;
       this.showFLHAModal = false;
+      this.showDrillingFormModal = false;
       this.editingFormId = null;
       this.loadFormsFromBackend();
-    },
-    async loadProjectId() {
-      try {
-        const res = await fetch(`/api/users/${this.userId}/active-project`, { credentials: 'include' });
-        if (!res.ok) throw new Error("Failed to load project");
-        const project = await res.json();
-        this.projectId = project.projectId ?? project.id;
-      } catch (err) {
-        console.error("Error loading projectId:", err);
-      }
     },
     async loadFormsFromBackend() {
       if (!this.selectedType) return;
@@ -189,16 +225,15 @@ export default defineComponent({
             ? `/api/flha/project/${this.projectId}`
             : `/api/forms/project/${this.projectId}/type/${this.selectedType.id}`;
         const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) throw new Error("Failed to load forms");
+        if (!res.ok) throw new Error('Failed to load forms');
         this.forms = await res.json();
       } catch (err) {
-        console.error("Error loading forms:", err);
+        console.error('Error loading forms:', err);
       }
     }
   }
 });
 </script>
-
 <style scoped>
 .forms-section {
   padding: 1rem;
@@ -297,4 +332,20 @@ export default defineComponent({
 .fade-leave-to {
   opacity: 0;
 }
+
+.scrollable-forms {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Фиксированные заголовки */
+.forms-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f7f7f7;
+  z-index: 2;
+}
+
 </style>

@@ -28,14 +28,16 @@
   }
   
   .modal-window {
-    background: white;
-    border-radius: 8px;
-    max-width: 90%;
-    max-height: 90%;
-    padding: 1.5rem;
-    position: relative;
-    overflow-y: auto;
-  }
+  background: white;
+  border-radius: 8px;
+  width: 900px;              /* фиксированная ширина */
+  max-width: 95vw;
+  max-height: 90vh;
+  padding: 1.5rem;
+  position: relative;
+  overflow-y: auto;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+}
   
   .close-btn {
     position: absolute;

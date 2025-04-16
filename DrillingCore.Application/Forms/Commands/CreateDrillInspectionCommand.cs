@@ -10,7 +10,7 @@ namespace DrillingCore.Application.Forms.Commands
         public int FormTypeId { get; set; }
         public string CrewName { get; set; } = default!;
         public string UnitNumber { get; set; } = default!;
-        public DateTime DateFilled { get; set; }
+        public DateOnly DateFilled { get; set; }
         public string? OtherComments { get; set; }
 
         public List<ChecklistResponseDto> ChecklistResponses { get; set; } = new();

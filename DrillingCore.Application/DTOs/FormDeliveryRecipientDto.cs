@@ -8,6 +8,7 @@ namespace DrillingCore.Application.DTOs
 {
     public class FormDeliveryRecipientDto
     {
+        public int Id { get; set; }
         public string FullName { get; set; } = null!;
         public string Company { get; set; } = null!;
         public string Email { get; set; } = null!;

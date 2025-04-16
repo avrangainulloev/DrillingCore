@@ -25,7 +25,9 @@ namespace DrillingCore.Application.FLHA.Commands
                 ProjectId = dto.ProjectId,
                 FormTypeId = dto.FormTypeId,
                 CreatorId = dto.CreatorId,
-                DateFilled = DateTime.SpecifyKind(dto.DateFilled, DateTimeKind.Utc),
+                DateFilled =  dto.DateFilled,
+                CreatedAt = DateTime.UtcNow,
+                UpdateAt = DateTime.UtcNow,
                 OtherComments = dto.OtherComments,
                 CrewName = "",        // optional
                 UnitNumber = "",      // optional

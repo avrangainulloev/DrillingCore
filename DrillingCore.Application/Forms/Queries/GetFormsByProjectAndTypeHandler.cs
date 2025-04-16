@@ -28,7 +28,7 @@ namespace DrillingCore.Application.Forms.Queries
                 FormTypeName = f.FormType.Name,
                 CrewName = f.CrewName,
                 UnitNumber = f.UnitNumber,
-                DateFilled = f.DateFilled,
+                DateFilled = f.UpdateAt,
                 OtherComments = f.OtherComments
             }).ToList();
         }

@@ -15,7 +15,9 @@ namespace DrillingCore.Core.Entities
 
         public string CrewName { get; set; } = default!;
         public string UnitNumber { get; set; } = default!;
-        public DateTime DateFilled { get; set; }
+        public DateOnly DateFilled { get; set; }  // Например: 2025-04-15
+        public DateTime CreatedAt { get; set; }   // Например: 2025-04-14 22:15:03
+        public DateTime UpdateAt { get; set; }   // Например: 2025-04-14 22:15:03
         public string? OtherComments { get; set; }
         public string? AdditionalData { get; set; }
 
@@ -29,6 +31,7 @@ namespace DrillingCore.Core.Entities
         public ICollection<FormChecklistResponse> FormChecklistResponses { get; set; } = new List<FormChecklistResponse>();
         public ICollection<FormParticipant> FormParticipants { get; set; } = new List<FormParticipant>();
         public FLHAForm? FLHAForm { get; set; } // Навигация (если форма FLHA)
+        public DrillingForm? DrillingForm { get; set; }
 
 
     }

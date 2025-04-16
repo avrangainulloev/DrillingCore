@@ -100,9 +100,12 @@
           </div>
   
           <div class="modal-footer">
-            <button class="btn btn-success" @click="saveFLHAForm">Save</button>
-            <button class="btn btn-secondary" @click="closeModal">Cancel</button>
-          </div>
+  <button class="btn btn-success" :disabled="isSaving" @click="saveFLHAForm">
+    <span v-if="isSaving">Saving...</span>
+    <span v-else>Save</span>
+  </button>
+  <button class="btn btn-secondary" :disabled="isSaving" @click="closeModal">Cancel</button>
+</div>
         </div>
       </div>
     </div>
@@ -137,6 +140,7 @@
         signatures: {} as Record<number, string>,
         showSignatureModal: false,
         currentSignatureParticipantId: null as number | null,
+        isSaving: false,
         photoToView: ''
       };
     },
@@ -195,7 +199,7 @@
   
         this.allParticipants = [];
   
-        for (const [userId, records] of grouped.entries()) {
+        for (const [, records] of grouped.entries()) {
           const valid = records.filter(r => !r.endDate || new Date(r.endDate) > now);
           if (valid.length > 0) {
             valid.sort((a, b) => {
@@ -267,6 +271,7 @@
         this.showSignatureModal = false;
       },
       async saveFLHAForm() {
+        this.isSaving = true;
         const payload = {
           projectId: this.projectId,
           creatorId: this.userId,
@@ -300,6 +305,7 @@
         });
   
         if (!res.ok) {
+          this.isSaving = false;
           alert('Failed to save form.');
           return;
         }
@@ -324,7 +330,7 @@
           formData.append('file', new File([blob], 'signature.png', { type: 'image/png' }));
           await fetch(`/api/forms/${formId}/signatures`, { method: 'POST', body: formData });
         }
-  
+        this.isSaving = false;
         this.closeModal();
       }
     }

@@ -25,7 +25,7 @@ namespace DrillingCore.Application.FLHA.Queries
             return forms.Select(f => new FLHAFormListDto
             {
                 Id = f.ProjectFormId,
-                DateFilled = f.ProjectForm.DateFilled,
+                DateFilled = f.ProjectForm.UpdateAt,
                 TaskDescription = f.TaskDescription,
                 OtherComments = f.ProjectForm.OtherComments,
                 Status = f.ProjectForm.Status,

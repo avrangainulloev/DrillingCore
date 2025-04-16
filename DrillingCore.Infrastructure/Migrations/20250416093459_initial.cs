@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitFullSchema : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,6 +23,19 @@ namespace DrillingCore.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EquipmentTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FLHAHazardGroups",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FLHAHazardGroups", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +111,27 @@ namespace DrillingCore.Infrastructure.Migrations
                         name: "FK_Equipments_EquipmentTypes_EquipmentTypeId",
                         column: x => x.EquipmentTypeId,
                         principalTable: "EquipmentTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FLHAHazards",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Label = table.Column<string>(type: "text", nullable: true),
+                    ControlSuggestion = table.Column<string>(type: "text", nullable: true),
+                    GroupId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FLHAHazards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FLHAHazards_FLHAHazardGroups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "FLHAHazardGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -204,6 +238,33 @@ namespace DrillingCore.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FormDeliveryRules",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProjectId = table.Column<int>(type: "integer", nullable: false),
+                    FormTypeId = table.Column<int>(type: "integer", nullable: false),
+                    Condition = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormDeliveryRules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FormDeliveryRules_FormTypes_FormTypeId",
+                        column: x => x.FormTypeId,
+                        principalTable: "FormTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FormDeliveryRules_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Participants",
                 columns: table => new
                 {
@@ -251,9 +312,12 @@ namespace DrillingCore.Infrastructure.Migrations
                     CreatorId = table.Column<int>(type: "integer", nullable: false),
                     CrewName = table.Column<string>(type: "text", nullable: true),
                     UnitNumber = table.Column<string>(type: "text", nullable: true),
-                    DateFilled = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DateFilled = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     OtherComments = table.Column<string>(type: "text", nullable: true),
-                    AdditionalData = table.Column<string>(type: "text", nullable: true)
+                    AdditionalData = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -274,6 +338,28 @@ namespace DrillingCore.Infrastructure.Migrations
                         name: "FK_ProjectForms_Users_CreatorId",
                         column: x => x.CreatorId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FormDeliveryRecipients",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FormDeliveryRuleId = table.Column<int>(type: "integer", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: true),
+                    Company = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormDeliveryRecipients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FormDeliveryRecipients_FormDeliveryRules_FormDeliveryRuleId",
+                        column: x => x.FormDeliveryRuleId,
+                        principalTable: "FormDeliveryRules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -309,6 +395,46 @@ namespace DrillingCore.Infrastructure.Migrations
                         name: "FK_ParticipantEquipments_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DrillingForms",
+                columns: table => new
+                {
+                    ProjectFormId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    NumberOfWells = table.Column<int>(type: "integer", nullable: false),
+                    TotalMeters = table.Column<double>(type: "double precision", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DrillingForms", x => x.ProjectFormId);
+                    table.ForeignKey(
+                        name: "FK_DrillingForms_ProjectForms_ProjectFormId",
+                        column: x => x.ProjectFormId,
+                        principalTable: "ProjectForms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FLHAForms",
+                columns: table => new
+                {
+                    ProjectFormId = table.Column<int>(type: "integer", nullable: false),
+                    TaskDescription = table.Column<string>(type: "text", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FLHAForms", x => x.ProjectFormId);
+                    table.ForeignKey(
+                        name: "FK_FLHAForms_ProjectForms_ProjectFormId",
+                        column: x => x.ProjectFormId,
+                        principalTable: "ProjectForms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -412,6 +538,33 @@ namespace DrillingCore.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "FLHAFormHazards",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FLHAFormId = table.Column<int>(type: "integer", nullable: false),
+                    HazardText = table.Column<string>(type: "text", nullable: true),
+                    ControlMeasures = table.Column<string>(type: "text", nullable: true),
+                    HazardTemplateId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FLHAFormHazards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FLHAFormHazards_FLHAForms_FLHAFormId",
+                        column: x => x.FLHAFormId,
+                        principalTable: "FLHAForms",
+                        principalColumn: "ProjectFormId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FLHAFormHazards_FLHAHazards_HazardTemplateId",
+                        column: x => x.HazardTemplateId,
+                        principalTable: "FLHAHazards",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_ChecklistItems_FormTypeId",
                 table: "ChecklistItems",
@@ -423,6 +576,21 @@ namespace DrillingCore.Infrastructure.Migrations
                 column: "EquipmentTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FLHAFormHazards_FLHAFormId",
+                table: "FLHAFormHazards",
+                column: "FLHAFormId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FLHAFormHazards_HazardTemplateId",
+                table: "FLHAFormHazards",
+                column: "HazardTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FLHAHazards_GroupId",
+                table: "FLHAHazards",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FormChecklistResponses_ChecklistItemId",
                 table: "FormChecklistResponses",
                 column: "ChecklistItemId");
@@ -431,6 +599,21 @@ namespace DrillingCore.Infrastructure.Migrations
                 name: "IX_FormChecklistResponses_ProjectFormId",
                 table: "FormChecklistResponses",
                 column: "ProjectFormId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormDeliveryRecipients_FormDeliveryRuleId",
+                table: "FormDeliveryRecipients",
+                column: "FormDeliveryRuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormDeliveryRules_FormTypeId",
+                table: "FormDeliveryRules",
+                column: "FormTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormDeliveryRules_ProjectId",
+                table: "FormDeliveryRules",
+                column: "ProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FormParticipants_ParticipantId",
@@ -522,7 +705,16 @@ namespace DrillingCore.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "DrillingForms");
+
+            migrationBuilder.DropTable(
+                name: "FLHAFormHazards");
+
+            migrationBuilder.DropTable(
                 name: "FormChecklistResponses");
+
+            migrationBuilder.DropTable(
+                name: "FormDeliveryRecipients");
 
             migrationBuilder.DropTable(
                 name: "FormParticipants");
@@ -540,10 +732,16 @@ namespace DrillingCore.Infrastructure.Migrations
                 name: "ParticipantEquipments");
 
             migrationBuilder.DropTable(
+                name: "FLHAForms");
+
+            migrationBuilder.DropTable(
+                name: "FLHAHazards");
+
+            migrationBuilder.DropTable(
                 name: "ChecklistItems");
 
             migrationBuilder.DropTable(
-                name: "ProjectForms");
+                name: "FormDeliveryRules");
 
             migrationBuilder.DropTable(
                 name: "Equipments");
@@ -552,13 +750,19 @@ namespace DrillingCore.Infrastructure.Migrations
                 name: "Participants");
 
             migrationBuilder.DropTable(
-                name: "FormTypes");
+                name: "ProjectForms");
+
+            migrationBuilder.DropTable(
+                name: "FLHAHazardGroups");
 
             migrationBuilder.DropTable(
                 name: "EquipmentTypes");
 
             migrationBuilder.DropTable(
                 name: "ProjectGroups");
+
+            migrationBuilder.DropTable(
+                name: "FormTypes");
 
             migrationBuilder.DropTable(
                 name: "Projects");

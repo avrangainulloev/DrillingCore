@@ -154,5 +154,45 @@ namespace DrillingCore.WebAPI.Controllers
             await _mediator.Send(command);
             return NoContent();
         }
+
+        /// <summary>
+        /// Получает список всех доступных типов форм (Form Types).
+        /// </summary>
+        /// <returns>Список типов форм с описанием.</returns>
+        /// <response code="200">Успешно получен список типов форм.</response>
+        [HttpGet("form-types")]
+        [ProducesResponseType(typeof(List<FormTypeDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetFormTypes()
+        {
+            var result = await _mediator.Send(new GetFormTypesQuery());
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Creates a new Drilling Form.
+        /// </summary>
+        [HttpPost("drilling")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateDrillingForm([FromBody] CreateDrillingFormCommand command, CancellationToken ct)
+        {
+            var formId = await _mediator.Send(command, ct);
+            return Ok(new { FormId = formId });
+        }
+
+        /// <summary>
+        /// Updates an existing Drilling Form.
+        /// </summary>
+        [HttpPut("drilling/{formId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateDrillingForm(int formId, [FromBody] UpdateDrillingFormCommand command, CancellationToken ct)
+        {
+            if (formId != command.FormId)
+                return BadRequest("Form ID mismatch");
+
+            await _mediator.Send(command, ct);
+            return NoContent();
+        }
     }
 }

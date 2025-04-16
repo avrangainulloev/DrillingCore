@@ -204,6 +204,8 @@ export default defineComponent({
   min-height: 100vh;
   background-color: var(--bg-color, #ffffff);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Светлая тема */
@@ -244,7 +246,7 @@ export default defineComponent({
 
 /* Sidebar */
 .sidebar {
-  width: 260px;
+   
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--general-border-color-light);
   padding: 1.5rem 1rem;
@@ -252,6 +254,14 @@ export default defineComponent({
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 260px;
+  overflow-y: auto;
+  z-index: 10;
+  
 }
 
 .dark-theme .sidebar {
@@ -381,6 +391,10 @@ export default defineComponent({
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  margin-left: 260px; /* чтобы не перекрывалось сайдбаром */
+  height: 100vh;
+ 
+  overflow: hidden;
 }
 
 .main-header {
@@ -431,6 +445,10 @@ export default defineComponent({
   padding: 2rem;
   background-color: var(--content-bg);
   animation: fadeIn 0.5s ease-in-out;
+ 
+  overflow-y: auto;
+ 
+ 
 }
 
 @keyframes fadeIn {

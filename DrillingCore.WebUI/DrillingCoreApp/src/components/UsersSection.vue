@@ -1,6 +1,6 @@
 <template>
   <div class="users-section">
-    <h1>Users</h1>
+   
     <!-- Панель фильтрации и поиска -->
     <div class="row mb-3">
       <div class="col-md-4">
@@ -26,6 +26,7 @@
     </div>
 
     <!-- Таблица пользователей -->
+    <div class="scrollable-table-container">
     <table class="table table-striped">
       <thead>
         <tr>
@@ -59,6 +60,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
 
     <UserModal 
       v-if="showUserModal" 
@@ -135,5 +137,19 @@ export default defineComponent({
 <style scoped>
 .users-section {
   padding: 1rem;
+}
+
+.scrollable-table-container {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f7f7f7;
+  z-index: 1;
 }
 </style>

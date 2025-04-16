@@ -12,7 +12,7 @@ namespace DrillingCore.Application.DTOs
         public int FormTypeId { get; set; } = 3; // FLHA (например)
         public int CreatorId { get; set; }
 
-        public DateTime DateFilled { get; set; }
+        public DateOnly DateFilled { get; set; }
         public string TaskDescription { get; set; }
         public string? OtherComments { get; set; }
 

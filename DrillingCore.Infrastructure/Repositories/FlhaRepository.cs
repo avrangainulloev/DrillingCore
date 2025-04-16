@@ -50,8 +50,9 @@ namespace DrillingCore.Infrastructure.Repositories
                 throw new Exception($"FLHA form with ProjectFormId {formId} not found.");
 
             var projectForm = flha.ProjectForm;
-            projectForm.DateFilled = dto.DateFilled.ToUniversalTime();
+            projectForm.DateFilled = dto.DateFilled;
             projectForm.OtherComments = dto.OtherComments;
+            projectForm.UpdateAt = DateTime.UtcNow;
 
             // 🔄 Участники — поэлементно
             var existingParticipantIds = projectForm.FormParticipants.Select(p => p.ParticipantId).ToList();

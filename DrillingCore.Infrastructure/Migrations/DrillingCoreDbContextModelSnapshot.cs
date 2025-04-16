@@ -46,6 +46,25 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.ToTable("ChecklistItems");
                 });
 
+            modelBuilder.Entity("DrillingCore.Core.Entities.DrillingForm", b =>
+                {
+                    b.Property<int>("ProjectFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NumberOfWells")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("TotalMeters")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("ProjectFormId");
+
+                    b.ToTable("DrillingForms");
+                });
+
             modelBuilder.Entity("DrillingCore.Core.Entities.Equipment", b =>
                 {
                     b.Property<int>("Id")
@@ -463,14 +482,17 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<string>("AdditionalData")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("CreatorId")
                         .HasColumnType("integer");
 
                     b.Property<string>("CrewName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("DateFilled")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("DateFilled")
+                        .HasColumnType("date");
 
                     b.Property<int>("FormTypeId")
                         .HasColumnType("integer");
@@ -486,6 +508,9 @@ namespace DrillingCore.Infrastructure.Migrations
 
                     b.Property<string>("UnitNumber")
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -636,6 +661,17 @@ namespace DrillingCore.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("FormType");
+                });
+
+            modelBuilder.Entity("DrillingCore.Core.Entities.DrillingForm", b =>
+                {
+                    b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
+                        .WithOne("DrillingForm")
+                        .HasForeignKey("DrillingCore.Core.Entities.DrillingForm", "ProjectFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProjectForm");
                 });
 
             modelBuilder.Entity("DrillingCore.Core.Entities.Equipment", b =>
@@ -932,6 +968,8 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.ProjectForm", b =>
                 {
+                    b.Navigation("DrillingForm");
+
                     b.Navigation("FLHAForm");
 
                     b.Navigation("FormChecklistResponses");

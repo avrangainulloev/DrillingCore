@@ -1,5 +1,6 @@
 ﻿using DrillingCore.Core.Entities;
 using DrillingCore.Domain.Entities;
+using DrillingCore.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Persistence
@@ -37,13 +38,14 @@ namespace DrillingCore.Infrastructure.Persistence
         public DbSet<FLHAForm> FLHAForms { get; set; }
         public DbSet<FormDeliveryRule> FormDeliveryRules { get; set; } = default!;
         public DbSet<FormDeliveryRecipient> FormDeliveryRecipients { get; set; } = default!;
+        public DbSet<DrillingForm> DrillingForms { get; set; }  
 
         // Добавьте DbSet для других сущностей
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.ApplyConfiguration(new DrillingFormConfiguration());
             modelBuilder.Entity<FormParticipant>()
                 .HasOne(fp => fp.Participant)
                 .WithMany()
@@ -123,6 +125,9 @@ namespace DrillingCore.Infrastructure.Persistence
       .WithOne(r => r.FormDeliveryRule)
       .HasForeignKey(r => r.FormDeliveryRuleId);
 
+
+
+           
         }
 
 

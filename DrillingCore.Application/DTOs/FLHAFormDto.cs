@@ -9,7 +9,7 @@ namespace DrillingCore.Application.DTOs
     public class FLHAFormDto
     {
         public int Id { get; set; }
-        public DateTime DateFilled { get; set; }
+        public DateOnly DateFilled { get; set; }
         public string TaskDescription { get; set; }
         public string? OtherComments { get; set; }
         public string Status { get; set; }

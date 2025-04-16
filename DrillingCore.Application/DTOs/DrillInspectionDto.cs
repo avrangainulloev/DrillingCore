@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string CrewName { get; set; } = default!;
         public string UnitNumber { get; set; } = default!;
-        public DateTime DateFilled { get; set; }
+        public DateOnly DateFilled { get; set; }
         public string? OtherComments { get; set; }
         public int ProjectId { get; set; }
 

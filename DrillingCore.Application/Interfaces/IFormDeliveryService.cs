@@ -9,6 +9,8 @@ namespace DrillingCore.Application.Interfaces
 {
     public interface IFormDeliveryService
     {
-        Task TrySendOnFormCompleted(ProjectForm form, CancellationToken ct);
+        Task TrySendOnFormCompleted(int formId, CancellationToken ct);
+        Task TrySendOnAllParticipantsSigned(int projectId, int formTypeId, DateOnly dateFilled, FormDeliveryRule rule, CancellationToken cancellationToken);
+        Task<bool> CheckIfAllProjectParticipantsSigned(int projectId, int formTypeId, DateOnly dateFilled, CancellationToken cancellationToken);
     }
 }
