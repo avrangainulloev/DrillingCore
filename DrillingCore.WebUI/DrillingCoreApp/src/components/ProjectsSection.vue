@@ -54,24 +54,28 @@
 
     <!-- Modal for Forms -->
     <Modal v-if="showFormsModal" @close="closeFormsModal">
-      <FormsSection :user-id="userId" :project-id="selectedProjectId" />
+      <FormsSection
+        v-if="selectedProjectId !== null"
+        :user-id="userId"
+        :project-id="selectedProjectId"
+      />
     </Modal>
 
-  <!-- Modal for Delivery Settings -->
-  <Modal v-if="showDeliveryModal" @close="closeDeliveryModal">
-  <FormDeliverySettings
-    v-if="!showAddDeliveryForm"
-    :project-id="deliveryProjectId!"
-    @add-new="showAddDeliveryForm = true"
-    @edit-rule="handleEditDeliveryRule"
-  />
-  <FormDeliveryModal
-  v-else-if="editingRule !== null"
-  :project-id="deliveryProjectId!"
-  :rule="editingRule"
-  @close="handleDeliveryModalClosed"
-/>
-</Modal>
+    <!-- Modal for Delivery Settings + Form -->
+    <Modal v-if="showDeliveryModal" @close="closeDeliveryModal">
+      <FormDeliverySettings
+        v-if="!showFormDeliveryModal"
+        :project-id="deliveryProjectId!"
+        @add-new="onAddNewRule"
+        @edit-rule="onEditRule"
+      />
+      <FormDeliveryModal
+        v-if="showFormDeliveryModal"
+        :project-id="deliveryProjectId!"
+        :rule="editingRule"
+        @close="closeFormDeliveryModal"
+      />
+    </Modal>
   </div>
 </template>
 
@@ -79,12 +83,17 @@
 import { defineComponent } from 'vue';
 import Modal from './Modal.vue';
 import FormsSection from './FormsSection.vue';
-import FormDeliveryModal from './FormDeliveryModal.vue'; // ✅ импорт
+import FormDeliveryModal from './FormDeliveryModal.vue';
 import FormDeliverySettings from './FormDeliverySettings.vue';
 
 export default defineComponent({
   name: 'ProjectsSection',
-  components: { Modal, FormsSection, FormDeliveryModal,FormDeliverySettings  },
+  components: {
+    Modal,
+    FormsSection,
+    FormDeliveryModal,
+    FormDeliverySettings,
+  },
   data() {
     return {
       projects: [] as any[],
@@ -93,25 +102,18 @@ export default defineComponent({
       showFormsModal: false,
       selectedProjectId: null as number | null,
       userId: 1,
+
+      // Delivery settings and rule creation/editing
       showDeliveryModal: false,
       deliveryProjectId: null as number | null,
-      showAddDeliveryForm: false,
-      editingRule: null as any | null,
+      showFormDeliveryModal: false,
+      editingRule: null as any | null
     };
   },
   mounted() {
     this.loadProjects();
   },
   methods: {
-   handleEditDeliveryRule(rule: any) {
-  this.editingRule = rule;
-  this.showAddDeliveryForm = true;
-},
-handleDeliveryModalClosed() {
-  this.showAddDeliveryForm = false;
-  this.editingRule = null;
-  this.showDeliveryModal = false; // 👈 нужно обязательно
-},
     async loadProjects() {
       try {
         const params = new URLSearchParams();
@@ -147,10 +149,26 @@ handleDeliveryModalClosed() {
     openDeliveryModal(projectId: number) {
       this.deliveryProjectId = projectId;
       this.showDeliveryModal = true;
+      this.showFormDeliveryModal = false;
+      this.editingRule = null;
+    },
+    onAddNewRule() {
+      this.showFormDeliveryModal = true;
+      this.editingRule = null;
+    },
+    onEditRule(rule: any) {
+      this.showFormDeliveryModal = true;
+      this.editingRule = rule;
+    },
+    closeFormDeliveryModal() {
+      this.showFormDeliveryModal = false;
+      this.editingRule = null;
     },
     closeDeliveryModal() {
       this.showDeliveryModal = false;
       this.deliveryProjectId = null;
+      this.editingRule = null;
+      this.showFormDeliveryModal = false;
     },
     formatDate(dateStr: string) {
       if (!dateStr) return '';
@@ -159,6 +177,7 @@ handleDeliveryModalClosed() {
   }
 });
 </script>
+
 
 <style scoped>
 .projects-section {

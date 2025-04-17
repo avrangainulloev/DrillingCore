@@ -17,5 +17,6 @@ namespace DrillingCore.Core.Entities
         public DateTime CreatedDate { get; set; }
 
         public ProjectForm ProjectForm { get; set; } = default!;
+        public Participant Participant { get; set; } = null!;
     }
 }

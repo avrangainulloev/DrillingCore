@@ -38,6 +38,8 @@ namespace DrillingCore.Infrastructure
             services.AddScoped<FormPdfBuilder>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddHostedService<QueuedHostedService>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IExcelReportBuilder, ExcelReportBuilder>();
 
             return services;
         }

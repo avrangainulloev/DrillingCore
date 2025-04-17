@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using DrillingCore.Application.DTOs;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,6 @@ namespace DrillingCore.Application.Forms.Commands
         public string OtherComments { get; set; } = string.Empty;
         public int TotalWells { get; set; }
         public double TotalMeters { get; set; }
-        public List<int> ParticipantIds { get; set; } = new();
+        public List<FormParticipantDto> Participants { get; set; } = new();
     }
 }

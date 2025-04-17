@@ -30,7 +30,7 @@ namespace DrillingCore.Infrastructure.Repositories
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task AddAsync(User user)
@@ -100,5 +100,7 @@ namespace DrillingCore.Infrastructure.Repositories
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
+
+       
     }
 }

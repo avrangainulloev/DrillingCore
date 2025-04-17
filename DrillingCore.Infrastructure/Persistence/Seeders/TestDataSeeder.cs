@@ -56,6 +56,7 @@ namespace DrillingCore.Infrastructure.Persistence.Seeders
                         RoleId = 2,
                         Email = $"testuser{i}@example.com",
                         Mobile = $"555-010{i:D2}", // 555-01001, 555-01002, ...
+                        JobTitle="Helper",
                         IsActive = true
                     });
                 }

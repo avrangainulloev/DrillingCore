@@ -79,136 +79,170 @@
       </div>
     </div>
   </template>
-  
-  <script lang="ts">
-  import { defineComponent } from 'vue';
-  import SignatureModal from './SignatureModal.vue';
-  
-  export default defineComponent({
-    name: 'DrillingFormModal',
-    emits: ['close'],
-    components: { SignatureModal },
-    props: {
-      userId: { type: Number, required: true },
-      projectId: { type: Number, required: true }
+<script lang="ts">
+import { defineComponent } from 'vue';
+import SignatureModal from './SignatureModal.vue';
+
+export default defineComponent({
+  name: 'DrillingFormModal',
+  emits: ['close'],
+  components: { SignatureModal },
+  props: {
+    userId: { type: Number, required: true },
+    projectId: { type: Number, required: true },
+    formId: { type: Number, required: false }
+  },
+  data() {
+    return {
+      dateFilled: new Date().toISOString().split('T')[0],
+      totalWells: 0,
+      totalMeters: 0,
+      otherComments: '',
+      participantSearch: '',
+      allParticipants: [] as any[],
+      selectedParticipantIds: [] as number[],
+      signatures: {} as Record<number, string>,
+      currentSignatureParticipantId: null as number | null,
+      showSignatureModal: false,
+      photos: [] as { name: string; preview: string; file: File | null }[],
+      photoToView: '',
+      apiBase: 'https://localhost:7200/'
+    };
+  },
+  computed: {
+    filteredParticipants() {
+      const term = this.participantSearch.toLowerCase();
+      return this.allParticipants.filter(p => p.fullName.toLowerCase().includes(term));
+    }
+  },
+  async mounted() {
+    await this.loadParticipants();
+    if (this.formId) {
+      await this.loadFormData(this.formId);
+    }
+  },
+  methods: {
+    closeModal() {
+      this.$emit('close');
     },
-    data() {
-      return {
-        dateFilled: new Date().toISOString().split('T')[0],
-        totalWells: 0,
-        totalMeters: 0,
-        otherComments: '',
-        participantSearch: '',
-        allParticipants: [] as any[],
-        selectedParticipantIds: [] as number[],
-        photos: [] as { name: string; preview: string; file: File | null }[],
-        signatures: {} as Record<number, string>,
-        photoToView: '',
-        showSignatureModal: false,
-        currentSignatureParticipantId: null as number | null
-      };
+    async loadParticipants() {
+      const res = await fetch(`/api/projects/${this.projectId}/groups`);
+      const groups = await res.json();
+      const flat = groups.flatMap((g: any) => g.participants);
+      this.allParticipants = flat;
     },
-    computed: {
-      filteredParticipants() {
-        return this.allParticipants.filter(p =>
-          p.fullName.toLowerCase().includes(this.participantSearch.toLowerCase())
-        );
+    getParticipantName(id: number) {
+      const p = this.allParticipants.find(x => x.id === id);
+      return p?.fullName || 'Unknown';
+    },
+    openSignatureModal(participantId: number) {
+      this.currentSignatureParticipantId = participantId;
+      this.showSignatureModal = true;
+    },
+    onSignatureSaved(payload: { participantId: number; signatureData: string }) {
+      this.signatures[payload.participantId] = payload.signatureData;
+      this.showSignatureModal = false;
+    },
+    onPhotosSelected(event: any) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.photos.push({ name: file.name, preview: e.target.result, file });
+        };
+        reader.readAsDataURL(file);
       }
     },
-    methods: {
-      closeModal() {
-        this.$emit('close');
-      },
-      async loadParticipants() {
-        const res = await fetch(`/api/projects/${this.projectId}/groups`);
-        const groups = await res.json();
-        this.allParticipants = groups.flatMap((g: any) => g.participants);
-      },
-      getParticipantName(id: number) {
-        const p = this.allParticipants.find(x => x.id === id);
-        return p?.fullName || 'Unknown';
-      },
-      onPhotosSelected(event: any) {
-        const files = event.target.files;
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const reader = new FileReader();
-          reader.onload = (e: any) => {
-            this.photos.push({ name: file.name, preview: e.target.result, file });
-          };
-          reader.readAsDataURL(file);
-        }
-      },
-      removePhoto(index: number) {
-        this.photos.splice(index, 1);
-      },
-      viewPhoto(url: string) {
-        this.photoToView = url;
-      },
-      openSignatureModal(participantId: number) {
-        this.currentSignatureParticipantId = participantId;
-        this.showSignatureModal = true;
-      },
-      onSignatureSaved(payload: { participantId: number; signatureData: string }) {
-        this.signatures[payload.participantId] = payload.signatureData;
-        this.showSignatureModal = false;
-      },
-      async saveForm() {
-        const payload = {
-          projectId: this.projectId,
-          creatorId: this.userId,
-          dateFilled: this.dateFilled,
-          totalWells: this.totalWells,
-          totalMeters: this.totalMeters,
-          otherComments: this.otherComments,
-          participantIds: this.selectedParticipantIds
-        };
-  
+    removePhoto(index: number) {
+      this.photos.splice(index, 1);
+    },
+    viewPhoto(url: string) {
+      this.photoToView = url;
+    },
+    async loadFormData(formId: number) {
+      const res = await fetch(`/api/forms/drilling/${formId}`);
+      const form = await res.json();
+
+      this.dateFilled = form.dateFilled;
+      this.totalWells = form.totalWells;
+      this.totalMeters = form.totalMeters;
+      this.otherComments = form.otherComments;
+
+      this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
+      this.signatures = {};
+      for (const sig of form.signatures) {
+        this.signatures[sig.participantId] = this.apiBase + sig.signatureUrl;
+      }
+
+      this.photos = form.photoUrls.map((url: string) => ({
+        name: '',
+        preview: this.apiBase + url,
+        file: null
+      }));
+    },
+    async saveForm() {
+      const payload = {
+        projectId: this.projectId,
+        creatorId: this.userId,
+        dateFilled: this.dateFilled,
+        totalWells: this.totalWells,
+        totalMeters: this.totalMeters,
+        otherComments: this.otherComments,
+        participants: this.selectedParticipantIds.map(id => ({
+          participantId: id,
+          signature: this.signatures[id] || null
+        }))
+      };
+
+      let formId = this.formId;
+
+      if (this.formId) {
+        await fetch('/api/forms/drilling', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ formId: this.formId, ...payload })
+        });
+
+        
+      } else {
         const res = await fetch('/api/forms/drilling', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-  
-        if (!res.ok) {
-          alert('Failed to save form');
-          return;
-        }
-  
         const result = await res.json();
-        const formId = result.formId;
-  
-        for (const photo of this.photos) {
-          if (!photo.file) continue;
-          const formData = new FormData();
-          formData.append('file', photo.file);
-          await fetch(`/api/forms/${formId}/photos`, {
-            method: 'POST',
-            body: formData
-          });
-        }
-  
-        for (const [participantId, signature] of Object.entries(this.signatures)) {
-          if (signature.startsWith('http')) continue;
-          const blob = await fetch(signature).then(res => res.blob());
-          const formData = new FormData();
-          formData.append('participantId', participantId);
-          formData.append('file', new File([blob], 'signature.png', { type: 'image/png' }));
-          await fetch(`/api/forms/${formId}/signatures`, {
-            method: 'POST',
-            body: formData
-          });
-        }
-  
-        this.closeModal();
+        formId = result.formId;
       }
-    },
-    async mounted() {
-      await this.loadParticipants();
+
+      for (const photo of this.photos) {
+        if (!photo.file) continue;
+        const formData = new FormData();
+        formData.append('file', photo.file);
+        await fetch(`/api/forms/${formId}/photos`, {
+          method: 'POST',
+          body: formData
+        });
+      }
+
+      for (const [participantId, signature] of Object.entries(this.signatures)) {
+        if (signature.startsWith('http')) continue;
+        const blob = await fetch(signature).then(res => res.blob());
+        const formData = new FormData();
+        formData.append('participantId', participantId);
+        formData.append('file', new File([blob], 'signature.png', { type: 'image/png' }));
+        await fetch(`/api/forms/${formId}/signatures`, {
+          method: 'POST',
+          body: formData
+        });
+      }
+
+      this.closeModal();
     }
-  });
-  </script>
-  
+  }
+});
+</script>
+
   <style scoped>
   /* ❗ Используется тот же стиль, что и у DrillInspectionModal.vue */
   .modal-overlay {

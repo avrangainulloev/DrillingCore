@@ -10,7 +10,7 @@ namespace DrillingCore.Application.Interfaces
     public interface IFormDeliveryRepository
     {
         Task AddRuleAsync(FormDeliveryRule rule, CancellationToken cancellationToken);
-        Task<FormDeliveryRule?> GetRuleAsync(int projectId, int formTypeId, CancellationToken cancellationToken);
+        Task<List<FormDeliveryRule?>> GetRulesAsync(int projectId, int formTypeId, CancellationToken cancellationToken);
         Task<List<FormDeliveryRule>> GetRulesByProjectIdAsync(int projectId, CancellationToken cancellationToken);
 
         Task<FormDeliveryRule?> GetRuleByIdAsync(int id, CancellationToken cancellationToken);

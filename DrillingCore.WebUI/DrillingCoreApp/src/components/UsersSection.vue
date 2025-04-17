@@ -52,7 +52,10 @@
             {{ user.isActive ? 'Active' : 'Inactive' }}
           </td>
           <td>
-            <button class="btn btn-sm btn-primary" @click="openUserModal(user.id)">Edit</button>
+            <div class="d-flex flex-wrap align-items-center">
+              <button class="btn btn-sm btn-primary me-2" @click="openUserModal(user.id)">Edit</button>
+              <button class="btn btn-sm btn-success" @click="openTimesheetModal(user.id, user.fullName)">Timesheet</button>
+            </div>
           </td>
         </tr>
         <tr v-if="users.length === 0">
@@ -63,10 +66,17 @@
     </div>
 
     <UserModal 
-      v-if="showUserModal" 
-      editingUserId: undefined as number 
-      @close="closeUserModal" 
-      @user-saved="handleUserSaved" 
+  v-if="showUserModal"
+  :editingUserId="editingUserId ?? undefined"
+  @close="closeUserModal" 
+  @user-saved="handleUserSaved" 
+/>
+
+    <TimesheetModal 
+      v-if="showTimesheetModal"
+      :user-id="selectedUserId"
+      :user-full-name="selectedUserFullName"
+      @close="showTimesheetModal = false"
     />
   </div>
 </template>
@@ -74,10 +84,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import UserModal from './UserModal.vue';
+import TimesheetModal from './TimesheetModal.vue';
 
 export default defineComponent({
   name: 'UsersSection',
-  components: { UserModal },
+  components: { UserModal, TimesheetModal },
   data() {
     return {
       users: [] as any[],
@@ -86,6 +97,9 @@ export default defineComponent({
       selectedRole: '',
       showUserModal: false,
       editingUserId: null as number | null,
+      showTimesheetModal: false,
+      selectedUserId: null as number | null,
+      selectedUserFullName: ''
     };
   },
   async mounted() {
@@ -129,6 +143,11 @@ export default defineComponent({
     handleUserSaved() {
       this.loadUsers();
       this.closeUserModal();
+    },
+    openTimesheetModal(userId: number, fullName: string) {
+      this.selectedUserId = userId;
+      this.selectedUserFullName = fullName;
+      this.showTimesheetModal = true;
     }
   }
 });
@@ -152,4 +171,12 @@ export default defineComponent({
   background-color: #f7f7f7;
   z-index: 1;
 }
+action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+ 
 </style>

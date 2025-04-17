@@ -65,7 +65,7 @@ namespace DrillingCore.Infrastructure.Persistence
                     new() {  Name = "Truck Inspection" },
                     new() {  Name = "Drill Inspection" },
                     new() {  Name = "FLHA" },
-                    new() {  Name = "ATV/UTV" },
+                    new() {  Name = "ATV/UTV Inspection" },
                     new() {  Name = "Drilling" }
                 });
 
@@ -80,8 +80,10 @@ namespace DrillingCore.Infrastructure.Persistence
 
             await FLHAHazardSeeder.SeedAsync(context);
             await DrillCheckListSeeder.SeedAsync(context);
+            await ATVCheckListSeeder.SeedAsync(context);
             await TruckInspecttionCheckListSeeder.SeedAsync(context);
             await TestDataSeeder.SeedAsync(context);
+            
         }
     }
 }

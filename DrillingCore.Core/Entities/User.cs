@@ -13,6 +13,7 @@
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Mobile { get; set; } = string.Empty;
+        public string JobTitle { get; set; } = string.Empty;
 
         // Новое поле для хранения статуса пользователя (по умолчанию активен)
         public bool IsActive { get; set; } = true;

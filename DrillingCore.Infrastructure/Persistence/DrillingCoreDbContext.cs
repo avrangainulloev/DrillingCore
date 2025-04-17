@@ -52,6 +52,14 @@ namespace DrillingCore.Infrastructure.Persistence
                 .HasForeignKey(fp => fp.ParticipantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+
+            modelBuilder.Entity<FormSignature>()
+    .HasOne(f => f.Participant)
+    .WithMany()
+    .HasForeignKey(f => f.ParticipantId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+
             modelBuilder.Entity<FormSignature>()
     .HasOne(fs => fs.ProjectForm)
     .WithMany(pf => pf.FormSignatures)

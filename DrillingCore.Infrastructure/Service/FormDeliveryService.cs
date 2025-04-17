@@ -29,21 +29,20 @@ namespace DrillingCore.Infrastructure.Service
             _taskQueue = taskQueue;
         }
 
-        public async Task TrySendOnFormCompleted(int formId, CancellationToken ct)
+        public async Task TrySendOnFormCompleted(int formId, FormDeliveryRule rule, CancellationToken ct)
         {
-
             var form = await _context.ProjectForms
-       .Include(p => p.Project)
-       .Include(p => p.FormType)
-       .Include(p => p.FormParticipants).ThenInclude(p => p.Participant).ThenInclude(u => u.User)
-       .Include(p => p.FormSignatures)
-       .Include(p => p.Creator)
-       .Include(p => p.FormChecklistResponses).ThenInclude(r => r.ChecklistItem)
-       .FirstOrDefaultAsync(p => p.Id == formId, ct);
+                .Include(p => p.Project)
+                .Include(p => p.FormType)
+                .Include(p => p.FormParticipants).ThenInclude(p => p.Participant).ThenInclude(u => u.User)
+                .Include(p => p.FormSignatures)
+                .Include(p => p.Creator)
+                .Include(p => p.FormChecklistResponses).ThenInclude(r => r.ChecklistItem)
+                .FirstOrDefaultAsync(p => p.Id == formId, ct);
 
-            if (form == null) return; 
-            // 🔍 Проверка правила отправки
-            var rule = await _repository.GetRuleAsync(form.ProjectId, form.FormTypeId, ct);
+            if (form == null) return;
+
+          
             if (rule == null || rule.Condition != FormDeliveryCondition.AfterEachFormCompleted)
                 return;
 
@@ -55,35 +54,45 @@ namespace DrillingCore.Infrastructure.Service
             string subject = $"Form Completed: {form.FormType?.Name}";
             string body = $"Attached is the completed form for {form.DateFilled:yyyy-MM-dd}.";
 
-            // 🧠 Определяем тип формы
-            if (form.FormType?.Name?.Equals("FLHA", StringComparison.OrdinalIgnoreCase) == true)
+            switch (form.FormType?.Name)
             {
-                // Загрузка данных FLHA
-                var flhaForm = await _context.FLHAForms
-                    .FirstOrDefaultAsync(f => f.ProjectFormId == form.Id, ct);
-                if (flhaForm == null) return;
+                case "FLHA":
+                    var flhaForm = await _context.FLHAForms
+                        .FirstOrDefaultAsync(f => f.ProjectFormId == form.Id, ct);
+                    if (flhaForm == null) return;
 
-                var hazards = await _context.FLHAFormHazards
-                    .Where(h => h.FLHAFormId== flhaForm.ProjectFormId)
-                    .ToListAsync(ct);
+                    var hazards = await _context.FLHAFormHazards
+                        .Where(h => h.FLHAFormId == flhaForm.ProjectFormId)
+                        .ToListAsync(ct);
 
-                pdfBytes = _formPdfBuilder.BuildFlhaPdf(form, flhaForm, hazards);
-                fileName = $"FLHA_{form.DateFilled:yyyyMMdd}_{form.Project?.Name}.pdf";
+                    pdfBytes = _formPdfBuilder.BuildFlhaPdf(form, flhaForm, hazards);
+                    fileName = $"FLHA_{form.DateFilled:yyyyMMdd}_{form.Project?.Name}.pdf";
+                    break;
+
+                case "Drilling":
+                    var drillingForm = await _context.DrillingForms
+                        .FirstOrDefaultAsync(x => x.ProjectFormId == form.Id, ct);
+
+                    if (drillingForm == null)
+                        return;
+
+                    pdfBytes = _formPdfBuilder.BuildDrillingFormPdf(form, drillingForm);
+                    fileName = $"Drilling_{form.DateFilled:yyyyMMdd}_{form.Project?.Name}.pdf";
+                    break;
+
+                default:
+                    var checklistItems = await _context.ChecklistItems
+                        .Where(x => x.FormTypeId == form.FormTypeId)
+                        .ToListAsync(ct);
+
+                    pdfBytes = _formPdfBuilder.BuildDrillInspectionPdf(form, checklistItems);
+                    fileName = $"Form_{form.FormType?.Name}_{form.DateFilled:yyyyMMdd}.pdf";
+                    break;
             }
-            else
-            {
-                // Загрузка чеклистов
-                var checklistItems = await _context.ChecklistItems
-                    .Where(x => x.FormTypeId == form.FormTypeId)
-                    .ToListAsync(ct);
 
-                pdfBytes = _formPdfBuilder.BuildDrillInspectionPdf(form, checklistItems);
-                fileName = $"Form_{form.FormType?.Name}_{form.DateFilled:yyyyMMdd}.pdf";
-            }
-
-            // ✉️ Отправка письма
             await _emailSender.SendEmailWithAttachmentAsync(recipients, subject, body, pdfBytes, fileName);
         }
+
 
 
         public async Task<bool> CheckIfAllProjectParticipantsSigned(int projectId, int formTypeId, DateOnly dateFilled, CancellationToken cancellationToken)
@@ -131,18 +140,17 @@ namespace DrillingCore.Infrastructure.Service
             {
                 await HandleFlhaFormDelivery(projectId, formTypeId, dateFilled, rule, cancellationToken);
             }
-            else if (formTypeName.Contains("Inspection", StringComparison.OrdinalIgnoreCase))
+            else if (formTypeName.Equals("Drilling", StringComparison.OrdinalIgnoreCase))
+            {
+                await HandleDrillingFormDelivery(projectId, formTypeId, dateFilled, rule, cancellationToken);
+            }
+            else if (formTypeName.Contains("Inspection", StringComparison.OrdinalIgnoreCase) ||
+                     formTypeName.Equals("ATV/UTV", StringComparison.OrdinalIgnoreCase))
             {
                 await HandleDrillInspectionDelivery(projectId, formTypeId, dateFilled, rule, cancellationToken);
             }
         }
-
-        private async Task HandleFlhaFormDelivery(
-    int projectId,
-    int formTypeId,
-    DateOnly dateFilled,
-    FormDeliveryRule rule,
-    CancellationToken cancellationToken)
+        private async Task HandleFlhaFormDelivery(int projectId, int formTypeId,DateOnly dateFilled,FormDeliveryRule rule, CancellationToken cancellationToken)
         {
             var recipients = rule.Recipients.Select(r => r.Email).ToList();
             if (!recipients.Any()) return;
@@ -189,12 +197,7 @@ namespace DrillingCore.Infrastructure.Service
         }
 
 
-        private async Task HandleDrillInspectionDelivery(
-    int projectId,
-    int formTypeId,
-    DateOnly dateFilled,
-    FormDeliveryRule rule,
-    CancellationToken cancellationToken)
+        private async Task HandleDrillInspectionDelivery(int projectId,int formTypeId,DateOnly dateFilled,FormDeliveryRule rule,CancellationToken cancellationToken)
         {
             var recipients = rule.Recipients.Select(r => r.Email).ToList();
             if (!recipients.Any()) return;
@@ -225,5 +228,57 @@ namespace DrillingCore.Infrastructure.Service
 
             await _emailSender.SendEmailWithAttachmentAsync(recipients, subject, body, pdf, filename);
         }
+
+        private async Task HandleDrillingFormDelivery(
+    int projectId,
+    int formTypeId,
+    DateOnly dateFilled,
+    FormDeliveryRule rule,
+    CancellationToken cancellationToken)
+        {
+            var recipients = rule.Recipients.Select(r => r.Email).ToList();
+            if (!recipients.Any()) return;
+
+            // Загружаем все ProjectForms
+            var projectForms = await _context.ProjectForms
+                .Where(f =>
+                    f.ProjectId == projectId &&
+                    f.FormTypeId == formTypeId &&
+                    f.DateFilled == dateFilled &&
+                    f.Status == "Completed")
+                .Include(f => f.Creator)
+                .Include(f => f.FormParticipants).ThenInclude(p => p.Participant).ThenInclude(u => u.User)
+                .Include(f => f.FormSignatures)
+                .Include(f => f.Project)
+                .ToListAsync(cancellationToken);
+
+            if (!projectForms.Any()) return;
+
+            var formIds = projectForms.Select(f => f.Id).ToList();
+
+            // Загружаем все DrillingForms по ID
+            var drillingForms = await _context.DrillingForms
+                .Where(d => formIds.Contains(d.ProjectFormId))
+                .ToListAsync(cancellationToken);
+
+            var combined = projectForms
+                .Select(f => (
+                    Form: f,
+                    Drilling: drillingForms.FirstOrDefault(d => d.ProjectFormId == f.Id)
+                ))
+                .Where(x => x.Drilling != null)
+                .ToList();
+
+            if (!combined.Any()) return;
+
+            var pdf = _formPdfBuilder.BuildCombinedDrillingPdf(combined);
+
+            var subject = $"Drilling Forms - {dateFilled:yyyy-MM-dd}";
+            var filename = $"Drilling_{dateFilled:yyyyMMdd}_{projectForms.First().Project?.Name ?? "Project"}.pdf";
+            var body = $"Attached are all Drilling forms completed for {dateFilled:yyyy-MM-dd}.";
+
+            await _emailSender.SendEmailWithAttachmentAsync(recipients, subject, body, pdf, filename);
+        }
+
     }
 }

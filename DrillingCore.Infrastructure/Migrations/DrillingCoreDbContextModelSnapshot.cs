@@ -353,6 +353,8 @@ namespace DrillingCore.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParticipantId");
+
                     b.HasIndex("ProjectFormId");
 
                     b.ToTable("FormSignatures");
@@ -594,6 +596,9 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("text");
+
                     b.Property<string>("Mobile")
                         .HasColumnType("text");
 
@@ -805,11 +810,19 @@ namespace DrillingCore.Infrastructure.Migrations
 
             modelBuilder.Entity("DrillingCore.Core.Entities.FormSignature", b =>
                 {
+                    b.HasOne("DrillingCore.Core.Entities.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("DrillingCore.Core.Entities.ProjectForm", "ProjectForm")
                         .WithMany("FormSignatures")
                         .HasForeignKey("ProjectFormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Participant");
 
                     b.Navigation("ProjectForm");
                 });

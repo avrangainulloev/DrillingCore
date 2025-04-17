@@ -30,6 +30,10 @@ namespace DrillingCore.Application.Interfaces
         Task<int> CreateDrillingFormAsync(ProjectForm form, DrillingForm drillingForm, List<FormParticipant> participants, CancellationToken cancellationToken);
         Task<ProjectForm?> GetDrillingFormWithDetailsAsync(int formId, CancellationToken ct);
         Task UpdateDrillingFormAsync(UpdateDrillingFormCommand request, CancellationToken cancellationToken);
+        
+        Task<DrillingFormFullDto> GetDrillingFormByIdAsync(int formId, CancellationToken cancellationToken);
+        Task<List<DrillingForm>> GetDrillingFormsByProjectAsync(int projectId, CancellationToken cancellationToken);
+
 
 
     }

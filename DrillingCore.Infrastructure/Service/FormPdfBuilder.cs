@@ -573,6 +573,209 @@ namespace DrillingCore.Infrastructure.Service
             }
         }
 
+        public byte[] BuildDrillingFormPdf(ProjectForm form, DrillingForm drillingForm)
+        {
+            try
+            {
+                var signatureMap = form.FormSignatures
+                    .ToDictionary(s => s.ParticipantId, s => s.SignatureUrl);
+
+                var doc = Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Margin(40);
+                        page.Size(PageSizes.A4);
+                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.PageColor(Colors.White);
+
+                        page.Header().Text("Drilling Report")
+                            .FontSize(18).Bold().AlignCenter();
+
+                        page.Content().Column(col =>
+                        {
+                            col.Spacing(14);
+
+                            // 📄 Информация о проекте
+                            col.Item().Border(1).Background(Colors.Grey.Lighten3).Padding(10).Column(info =>
+                            {
+                                info.Spacing(4);
+                                info.Item().Text($"Project: {form.Project?.Name ?? "N/A"}").Bold();
+                                info.Item().Text($"Date Filled: {form.DateFilled:yyyy-MM-dd}");
+                                info.Item().Text($"Created By: {form.Creator?.FullName ?? "N/A"}");
+                            });
+
+                            // 📊 Бурение — отдельным блоком
+                            col.Item().Border(1).BorderColor(Colors.Blue.Medium)
+                                .Background(Colors.Grey.Lighten4)
+                                .Padding(12).Column(stats =>
+                                {
+                                    stats.Spacing(6);
+                                    stats.Item().Text("Drilling Summary").FontSize(14).Bold().FontColor(Colors.Blue.Medium);
+                                    stats.Item().Text($"Total Wells: {drillingForm.NumberOfWells}").FontSize(12).Bold();
+                                    stats.Item().Text($"Total Meters: {drillingForm.TotalMeters}").FontSize(12).Bold();
+                                });
+
+                            // 💬 Комментарии
+                            if (!string.IsNullOrWhiteSpace(form.OtherComments))
+                            {
+                                col.Item().PaddingTop(10).Column(c =>
+                                {
+                                    c.Item().Text("Other Comments").FontSize(13).Bold();
+                                    c.Item().Text(form.OtherComments).Italic();
+                                });
+                            }
+
+                            // ✍️ Подписавшиеся
+                            if (form.FormParticipants.Any())
+                            {
+                                col.Item().PaddingTop(10).Text("Participants & Signatures").FontSize(14).Bold();
+
+                                col.Item().Grid(grid =>
+                                {
+                                    grid.Columns(2);
+                                    grid.Spacing(10);
+
+                                    foreach (var fp in form.FormParticipants)
+                                    {
+                                        var name = fp.Participant?.User?.FullName ?? $"Participant #{fp.ParticipantId}";
+
+                                        grid.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(6).Column(sig =>
+                                        {
+                                            sig.Item().Text(name).Bold();
+
+                                            if (signatureMap.TryGetValue(fp.ParticipantId, out var sigPath))
+                                            {
+                                                var fullPath = Path.Combine(_env.WebRootPath, sigPath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                                                if (File.Exists(fullPath))
+                                                {
+                                                    var bytes = File.ReadAllBytes(fullPath);
+                                                    sig.Item().Height(30).MaxWidth(100).Image(bytes, ImageScaling.FitHeight);
+                                                }
+                                                else
+                                                {
+                                                    sig.Item().Text("[missing image]").Italic().FontColor(Colors.Grey.Darken2);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                sig.Item().Text("[no signature]").Italic().FontColor(Colors.Grey.Darken2);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+
+                        page.Footer().AlignCenter().Text("Generated by DrillingCore System").Italic().FontSize(10);
+                    });
+                });
+
+                using var stream = new MemoryStream();
+                doc.GeneratePdf(stream);
+                return stream.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Drilling PDF generation failed: " + ex.Message);
+                throw;
+            }
+        }
+
+        public byte[] BuildCombinedDrillingPdf(List<(ProjectForm Form, DrillingForm Drilling)> forms)
+        {
+            try
+            {
+                var date = forms.FirstOrDefault().Form.DateFilled.ToString("yyyy-MM-dd");
+                var totalWells = forms.Sum(f => f.Drilling.NumberOfWells);
+                var totalMeters = forms.Sum(f => f.Drilling.TotalMeters);
+
+                var doc = Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Margin(40);
+                        page.Size(PageSizes.A4);
+                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.PageColor(Colors.White);
+
+                        page.Header().Text($"Drilling Report for {date}")
+                            .FontSize(18).Bold().AlignCenter();
+
+                        page.Content().Column(col =>
+                        {
+                            col.Spacing(15);
+
+                            // 📋 Таблица бурения
+                            col.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(30);   // #
+                                    columns.RelativeColumn(3);    // Creator
+                                    columns.RelativeColumn(2);    // Date
+                                    columns.RelativeColumn(2);    // Wells
+                                    columns.RelativeColumn(2);    // Meters
+                                });
+
+                                // 🔠 Заголовок
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(CellStyle).Text("#").Bold();
+                                    header.Cell().Element(CellStyle).Text("Creator").Bold();
+                                    header.Cell().Element(CellStyle).Text("Date").Bold();
+                                    header.Cell().Element(CellStyle).Text("Wells").Bold();
+                                    header.Cell().Element(CellStyle).Text("Meters").Bold();
+                                });
+
+                                int index = 1;
+                                foreach (var (form, drilling) in forms)
+                                {
+                                    table.Cell().Element(CellStyle).Text(index++.ToString());
+                                    table.Cell().Element(CellStyle).Text(form.Creator?.FullName ?? "-");
+                                    table.Cell().Element(CellStyle).Text(form.DateFilled.ToString("yyyy-MM-dd"));
+                                    table.Cell().Element(CellStyle).Text(drilling.NumberOfWells.ToString());
+                                    table.Cell().Element(CellStyle).Text($"{drilling.TotalMeters:F2}");
+                                }
+
+                                // ➖ Разделитель
+                                table.Cell().ColumnSpan(5).Element(CellStyle).PaddingVertical(3).BorderBottom(1).Text("");
+
+                                // ➕ Итоговая строка с фоном
+                                table.Cell().Element(cell => CellStyle(cell).Background(Colors.Grey.Lighten3)).Text("");
+                                table.Cell().Element(cell => CellStyle(cell).Background(Colors.Grey.Lighten3)).Text("");
+                                table.Cell().Element(cell => CellStyle(cell).Background(Colors.Grey.Lighten3)).Text("Total")
+                                    .Bold().AlignRight();
+                                table.Cell().Element(cell => CellStyle(cell).Background(Colors.Grey.Lighten3)).Text(totalWells.ToString()).Bold();
+                                table.Cell().Element(cell => CellStyle(cell).Background(Colors.Grey.Lighten3)).Text($"{totalMeters:F2}").Bold();
+                            });
+                        });
+
+                        page.Footer().AlignCenter().Text("Generated by DrillingCore System").Italic().FontSize(10);
+                    });
+                });
+
+                using var stream = new MemoryStream();
+                doc.GeneratePdf(stream);
+                return stream.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Drilling Combined PDF generation failed: " + ex.Message);
+                throw;
+            }
+
+            // 🧱 Стиль ячеек
+            static IContainer CellStyle(IContainer container)
+            {
+                return container
+                    .Border(1)
+                    .BorderColor(Colors.Grey.Lighten2)
+                    .PaddingVertical(4)
+                    .PaddingHorizontal(6)
+                    .AlignMiddle();
+            }
+        }
 
 
     }

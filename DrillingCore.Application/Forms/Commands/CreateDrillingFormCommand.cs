@@ -17,7 +17,7 @@ namespace DrillingCore.Application.Forms.Commands
         public string? UnitNumber { get; set; }
         public string? CrewName { get; set; }
 
-        public int NumberOfWells { get; set; }
+        public int TotalWells { get; set; }
         public double TotalMeters { get; set; }
 
         public List<FormParticipantDto> Participants { get; set; } = new();

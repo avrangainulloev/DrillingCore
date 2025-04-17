@@ -33,13 +33,14 @@
 
                 var drilling = new DrillingForm
                 {
-                    NumberOfWells = request.NumberOfWells,
+                    NumberOfWells = request.TotalWells,
                     TotalMeters = request.TotalMeters
                 };
 
                 var participants = request.Participants.Select(p => new FormParticipant
                 {
-                    ParticipantId = p.ParticipantId
+                    ParticipantId = p.ParticipantId,
+                     AttachDate = DateTime.UtcNow
                 }).ToList();
 
                 return await _repository.CreateDrillingFormAsync(form, drilling, participants, cancellationToken);

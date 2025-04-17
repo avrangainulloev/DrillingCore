@@ -20,11 +20,12 @@ namespace DrillingCore.Infrastructure.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<FormDeliveryRule?> GetRuleAsync(int projectId, int formTypeId, CancellationToken cancellationToken)
+        public async Task<List<FormDeliveryRule>?> GetRulesAsync(int projectId, int formTypeId, CancellationToken cancellationToken)
         {
             return await _context.FormDeliveryRules
-                .Include(r => r.Recipients)
-                .FirstOrDefaultAsync(r => r.ProjectId == projectId && r.FormTypeId == formTypeId, cancellationToken);
+          .Include(r => r.Recipients)
+          .Where(r => r.ProjectId == projectId && r.FormTypeId == formTypeId)
+          .ToListAsync(cancellationToken);
         }
 
         public async Task<List<FormDeliveryRule>> GetRulesByProjectIdAsync(int projectId, CancellationToken cancellationToken)

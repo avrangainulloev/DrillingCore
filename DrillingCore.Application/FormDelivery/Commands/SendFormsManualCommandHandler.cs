@@ -23,18 +23,20 @@ namespace DrillingCore.Application.FormDelivery.Commands
 
         public async Task<Unit> Handle(SendFormsManualCommand request, CancellationToken cancellationToken)
         {
-            var rule = await _repository.GetRuleAsync(request.ProjectId, request.FormTypeId, cancellationToken);
+            var rules = await _repository.GetRulesAsync(request.ProjectId, request.FormTypeId, cancellationToken);
+            foreach (var rule in rules)
+            {
+                if (rule == null || rule.Recipients == null || !rule.Recipients.Any())
+                    return Unit.Value;
 
-            if (rule == null || rule.Recipients == null || !rule.Recipients.Any())
-                return Unit.Value;
-
-            await _formDeliveryService.TrySendOnAllParticipantsSigned(
-                request.ProjectId,
-                request.FormTypeId,
-                request.DateFilled,
-                rule,
-                cancellationToken
-            );
+                await _formDeliveryService.TrySendOnAllParticipantsSigned(
+                    request.ProjectId,
+                    request.FormTypeId,
+                    request.DateFilled,
+                    rule,
+                    cancellationToken
+                );
+            }
 
             return Unit.Value;
         }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -142,41 +143,43 @@ namespace DrillingCore.Infrastructure.Repositories
             if (projectForm.Status == "Completed")
             {
                 // Загружаем правило
-                var rule = await _formDeliveryRepository.GetRuleAsync(
+                var rules = await _formDeliveryRepository.GetRulesAsync(
                     projectForm.ProjectId,
                     projectForm.FormTypeId,
                     cancellationToken);
-
-                if (rule?.Condition == FormDeliveryCondition.AfterEachFormCompleted)
+                foreach (var rule in rules)
                 {
-                    await _taskQueue.QueueBackgroundWorkItem(async (sp, token) =>
-                    {
-                        var deliveryService = sp.GetRequiredService<IFormDeliveryService>();
-                        await deliveryService.TrySendOnFormCompleted(projectForm.Id, token);
-                    });
-
-                }
-                else if (rule?.Condition == FormDeliveryCondition.AfterAllParticipantsSigned)
-                {
-                    var allSigned = await _formDeliveryService.CheckIfAllProjectParticipantsSigned(
-                        projectForm.ProjectId,
-                        projectForm.FormTypeId,
-                        projectForm.DateFilled,
-                      
-                        cancellationToken);
-
-                    if (allSigned)
+                    if (rule?.Condition == FormDeliveryCondition.AfterEachFormCompleted)
                     {
                         await _taskQueue.QueueBackgroundWorkItem(async (sp, token) =>
                         {
                             var deliveryService = sp.GetRequiredService<IFormDeliveryService>();
-                            await deliveryService.TrySendOnAllParticipantsSigned(
+                            await deliveryService.TrySendOnFormCompleted(projectForm.Id, rule, token);
+                        });
+
+                    }
+                    else if (rule?.Condition == FormDeliveryCondition.AfterAllParticipantsSigned)
+                    {
+                        var allSigned = await _formDeliveryService.CheckIfAllProjectParticipantsSigned(
                             projectForm.ProjectId,
                             projectForm.FormTypeId,
                             projectForm.DateFilled,
-                            rule,
+
                             cancellationToken);
-                        });
+
+                        if (allSigned)
+                        {
+                            await _taskQueue.QueueBackgroundWorkItem(async (sp, token) =>
+                            {
+                                var deliveryService = sp.GetRequiredService<IFormDeliveryService>();
+                                await deliveryService.TrySendOnAllParticipantsSigned(
+                                projectForm.ProjectId,
+                                projectForm.FormTypeId,
+                                projectForm.DateFilled,
+                                rule,
+                                cancellationToken);
+                            });
+                        }
                     }
                 }
             }
@@ -309,15 +312,62 @@ namespace DrillingCore.Infrastructure.Repositories
             form.DrillingForm.NumberOfWells = command.TotalWells;
             form.DrillingForm.TotalMeters = command.TotalMeters;
 
-            // Обновляем участников
+            
+            // Обновим участников
             _context.FormParticipants.RemoveRange(form.FormParticipants);
-            _context.FormParticipants.AddRange(command.ParticipantIds.Select(pid => new FormParticipant
+            _context.FormParticipants.AddRange(command.Participants.Select(p => new FormParticipant
             {
                 ProjectFormId = form.Id,
-                ParticipantId = pid
+                ParticipantId = p.ParticipantId
             }));
 
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        // Infrastructure/Repositories/FormRepository.cs
+        public async Task<DrillingFormFullDto> GetDrillingFormByIdAsync(int formId, CancellationToken cancellationToken)
+        {
+            var form = await _context.ProjectForms
+                .Include(f => f.DrillingForm)
+                .Include(f => f.FormParticipants)
+                .Include(f => f.FormPhotos)
+                .Include(f => f.FormSignatures)
+                .FirstOrDefaultAsync(f => f.Id == formId, cancellationToken);
+
+            if (form == null || form.DrillingForm == null)
+                throw new Exception("Drilling form not found");
+
+            return new DrillingFormFullDto
+            {
+                Id = form.Id,
+                ProjectId = form.ProjectId,
+                DateFilled = form.DateFilled,
+                TotalWells = form.DrillingForm.NumberOfWells,
+                TotalMeters = form.DrillingForm.TotalMeters,
+                OtherComments = form.OtherComments,
+                Participants = form.FormParticipants.Select(p => new FormParticipantDto
+                {
+                    ParticipantId = p.ParticipantId,
+                    Signature = p.Signature
+                }).ToList(),
+                PhotoUrls = form.FormPhotos.Select(p => p.PhotoUrl).ToList(),
+                Signatures = form.FormSignatures.Select(s => new FormSignatureDto
+                {
+                    ParticipantId = s.ParticipantId,
+                    SignatureUrl = s.SignatureUrl
+                }).ToList()
+            };
+        }
+
+        public async Task<List<DrillingForm>> GetDrillingFormsByProjectAsync(int projectId, CancellationToken cancellationToken)
+        {
+            return await _context.DrillingForms
+                .Include(f => f.ProjectForm)
+                .ThenInclude(pf=>pf.Creator)
+                .Include(f=>f.ProjectForm.Creator)
+                .Where(f => f.ProjectForm.ProjectId == projectId)
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

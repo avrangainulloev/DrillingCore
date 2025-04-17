@@ -183,16 +183,39 @@ namespace DrillingCore.WebAPI.Controllers
         /// <summary>
         /// Updates an existing Drilling Form.
         /// </summary>
-        [HttpPut("drilling/{formId}")]
+        [HttpPut("drilling")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateDrillingForm(int formId, [FromBody] UpdateDrillingFormCommand command, CancellationToken ct)
+        public async Task<IActionResult> UpdateDrillingForm( [FromBody] UpdateDrillingFormCommand command, CancellationToken ct)
         {
-            if (formId != command.FormId)
-                return BadRequest("Form ID mismatch");
 
             await _mediator.Send(command, ct);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Получить форму бурения по ID
+        /// </summary>
+        [HttpGet("drilling/{formId}")]
+        public async Task<ActionResult<DrillingFormDto>> GetDrillingFormById(int formId, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetDrillingFormByIdQuery(formId), cancellationToken);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get all Drilling Forms for a project
+        /// </summary>
+        /// <param name="projectId">ID of the project</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>List of Drilling Forms with Total Wells and Meters</returns>
+        [HttpGet("project/{projectId}/drilling")]
+        public async Task<ActionResult<List<DrillingFormListDto>>> GetDrillingFormsByProject(
+            int projectId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetDrillingFormsByProjectQuery(projectId), cancellationToken);
+            return Ok(result);
         }
     }
 }
