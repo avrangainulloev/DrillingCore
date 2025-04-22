@@ -35,23 +35,26 @@ export default defineComponent({
   methods: {
     async login() {
   try {
-    const response = await fetch('https://localhost:7200/api/Auth/login', {
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // добавлено для отправки/приема куки
       body: JSON.stringify({ username: this.username, password: this.password })
     });
+    
     if (!response.ok) {
       const errorData = await response.json();
       alert(errorData.message || "Ошибка авторизации");
       return;
     }
-    const data = await response.json();
+    //const data = await response.json();
     // Токен устанавливается сервером в HttpOnly куку, поэтому здесь он не возвращается
     this.$router.push('/dashboard');
   } catch (error) {
     console.error("Ошибка при запросе:", error);
     alert("Ошибка соединения");
+    
   }
     }}
 });

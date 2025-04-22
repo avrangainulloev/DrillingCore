@@ -33,6 +33,8 @@ namespace DrillingCore.Application.Interfaces
         
         Task<DrillingFormFullDto> GetDrillingFormByIdAsync(int formId, CancellationToken cancellationToken);
         Task<List<DrillingForm>> GetDrillingFormsByProjectAsync(int projectId, CancellationToken cancellationToken);
+        Task<List<UnsignedFormDto>> GetUnsignedFormsAsync(int userId, CancellationToken ct);
+
 
 
 

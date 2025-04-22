@@ -121,7 +121,7 @@ export default defineComponent({
         if (this.searchTerm) params.append('searchTerm', this.searchTerm);
         if (this.selectedStatus) params.append('status', this.selectedStatus);
 
-        const url = `https://localhost:7200/api/Projects?${params.toString()}`;
+        const url = `${import.meta.env.VITE_API_BASE_URL}/Projects?${params.toString()}`;
         const response = await fetch(url, { credentials: 'include' });
 
         if (response.ok) {

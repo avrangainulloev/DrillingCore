@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35219.272
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrillingCore.WebAPI", "DrillingCore.WebAPI\DrillingCore.WebAPI.csproj", "{EA67B671-BB04-4492-881E-1AE7334B2201}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DrillingCore.WebAPI", "DrillingCore.WebAPI\DrillingCore.WebAPI.csproj", "{EA67B671-BB04-4492-881E-1AE7334B2201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrillingCore.Application", "DrillingCore.Application\DrillingCore.Application.csproj", "{075DAA30-9401-44E9-B5B7-3ADE4FB67D15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DrillingCore.Application", "DrillingCore.Application\DrillingCore.Application.csproj", "{075DAA30-9401-44E9-B5B7-3ADE4FB67D15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrillingCore.Core", "DrillingCore.Core\DrillingCore.Core.csproj", "{9BDB301C-08DA-46F9-8804-829707B979CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DrillingCore.Core", "DrillingCore.Core\DrillingCore.Core.csproj", "{9BDB301C-08DA-46F9-8804-829707B979CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrillingCore.Infrastructure", "DrillingCore.Infrastructure\DrillingCore.Infrastructure.csproj", "{DB205560-4932-4578-97E2-F5C0CCBC4E46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DrillingCore.Infrastructure", "DrillingCore.Infrastructure\DrillingCore.Infrastructure.csproj", "{DB205560-4932-4578-97E2-F5C0CCBC4E46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

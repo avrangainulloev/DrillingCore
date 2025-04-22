@@ -11,7 +11,8 @@ export default defineConfig({
     https: false, // сам Vite не будет https
     proxy: {
       '/api': {
-        target: 'https://localhost:7200',
+       // target: 'https://localhost:7200',
+         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false // <--- Важно! отключает проверку SSL
       }

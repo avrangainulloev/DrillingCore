@@ -141,10 +141,10 @@ export default defineComponent({
   methods: {
     loadParticipantGroups() {
       const projectId = this.projectId;
-      fetch(`https://localhost:7200/api/Projects/${projectId}/Groups`, { credentials: 'include' })
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${projectId}/Groups`, { credentials: 'include' })
         .then(response => response.json())
         .then(data => {
-          console.log("Loaded participant groups:", data);
+          console.log("Loaded participant groupssssss:", data);
           this.participantGroups = data;
         })
         .catch(err => console.error("Error loading participant groups:", err));

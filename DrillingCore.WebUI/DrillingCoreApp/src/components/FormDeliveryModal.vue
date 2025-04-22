@@ -92,7 +92,7 @@
   
       const loadFormTypes = async () => {
         try {
-          const res = await fetch('/api/forms/form-types');
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/form-types`);
           if (!res.ok) throw new Error('Failed to load form types');
           formTypes.value = await res.json();
         } catch (err) {
@@ -144,8 +144,8 @@
   
         try {
           const url = props.rule?.id
-            ? `/api/FormDeliveryRules/${props.rule.id}`
-            : `/api/FormDeliveryRules`;
+            ? `${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules/${props.rule.id}`
+            : `${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules`;
           const method = props.rule?.id ? 'PUT' : 'POST';
   
           const res = await fetch(url, {

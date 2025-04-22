@@ -79,7 +79,7 @@
       async loadEmptyGroups() {
         this.loading = true;
         try {
-          const response = await fetch(`https://localhost:7200/api/Projects/${this.projectId}/Groups/emptygroups`, { credentials: 'include' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups/emptygroups`, { credentials: 'include' });
           if (response.ok) {
             const data = await response.json();
             this.emptyGroups = data;
@@ -104,7 +104,7 @@
         }
         this.isDeleting = true;
         try {
-          const response = await fetch(`https://localhost:7200/api/Projects/${this.projectId}/Groups/emptygroups`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups/emptygroups`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ projectId: this.projectId, groups: this.selectedGroups })

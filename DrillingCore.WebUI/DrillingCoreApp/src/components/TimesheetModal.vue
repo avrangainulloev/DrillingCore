@@ -87,7 +87,7 @@ const generatePreview = async () => {
   preview.value = [];
   previewRequested.value = true;
 
-  const res = await fetch(`https://localhost:7200/api/Report/timesheet/preview`, {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Report/timesheet/preview`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -102,7 +102,7 @@ const generatePreview = async () => {
 };
 
 const exportToExcel = async () => {
-  const res = await fetch(`https://localhost:7200/api/Report/timesheet/excel`, {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Report/timesheet/excel`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

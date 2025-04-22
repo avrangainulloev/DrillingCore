@@ -120,12 +120,12 @@ app.UseStaticFiles(new StaticFileOptions
         }
     }
 });
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
+app.UseCors("AllowLocalhost");
+//if (app.Environment.IsDevelopment())
+//{
+app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 
@@ -136,5 +136,12 @@ app.MapControllers();
 
 // SPA fallback
 app.MapFallbackToFile("index.html");
-
+// Configure server URLs
+var config = app.Configuration;
+var env = app.Environment;
+//if (!env.IsDevelopment())
+//{
+    // В продакшене — слушать на всех интерфейсах
+    builder.WebHost.UseUrls("http://0.0.0.0:5000");
+//}
 app.Run();

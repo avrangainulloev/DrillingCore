@@ -73,7 +73,7 @@ export default defineComponent({
   },
   methods: {
     loadProjectData(projectId: number) {
-      fetch(`https://localhost:7200/api/Projects/${projectId}`, { credentials: 'include' })
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${projectId}`, { credentials: 'include' })
         .then(response => response.json())
         .then(data => {
           console.log("Loaded project data:", data);
@@ -114,8 +114,8 @@ export default defineComponent({
 
       const method = this.project.id ? 'PUT' : 'POST';
       const url = this.project.id 
-        ? `https://localhost:7200/api/Projects/${this.project.id}` 
-        : 'https://localhost:7200/api/Projects';
+        ? `${import.meta.env.VITE_API_BASE_URL}/Projects/${this.project.id}` 
+        : `${import.meta.env.VITE_API_BASE_URL}/Projects`;
       
       console.log("Submitting project payload:", payload, "Method:", method, "URL:", url);
       

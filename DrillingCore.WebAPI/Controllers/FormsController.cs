@@ -217,5 +217,21 @@ namespace DrillingCore.WebAPI.Controllers
             var result = await _mediator.Send(new GetDrillingFormsByProjectQuery(projectId), cancellationToken);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Получает список форм, в которых указанный пользователь является участником,
+        /// но ещё не подписал.
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя, для которого требуется получить неподписанные формы.</param>
+        /// <param name="ct">Токен отмены для асинхронной операции.</param>
+        /// <returns>Список форм, ожидающих подписи данного пользователя.</returns>
+        [HttpGet("unsigned/{userId}")]
+        [ProducesResponseType(typeof(List<UnsignedFormDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<UnsignedFormDto>>> GetUnsignedForms(int userId, CancellationToken ct)
+        {
+            var result = await _mediator.Send(new GetUnsignedFormsQuery { UserId = userId }, ct);
+            return Ok(result);
+        }
     }
 }

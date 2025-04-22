@@ -63,5 +63,33 @@ namespace DrillingCore.Infrastructure.Services
                 Role = user.Role.Name
             };
         }
+
+        public async Task<LoginResponse> AuthenticateMobileAsync(LoginRequest request)
+        {
+            var user = await _userRepository.AuthenticateAsync(request);
+            if (user == null)
+            {
+                return new LoginResponse
+                {
+                    IsAuthenticated = false,
+                    Token = string.Empty,
+                    Username = string.Empty,
+                    Role = string.Empty
+                };
+            }
+
+            var token = _tokenService.GenerateToken(user);
+
+            // ❗ Не устанавливаем куку для мобилки
+
+            return new LoginResponse
+            {
+                UserId = user.Id,
+                IsAuthenticated = true,
+                Token = token, // ← токен теперь ВОЗВРАЩАЕМ в теле
+                Username = user.Username,
+                Role = user.Role.Name
+            };
+        }
     }
 }

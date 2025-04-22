@@ -89,7 +89,7 @@
             FinishDate: this.finishDate
           };
           const response = await fetch(
-            `https://localhost:7200/api/Projects/${this.projectId}/Participants/${this.participantId}/Finish`,
+            `${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Participants/${this.participantId}/Finish`,
             {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },

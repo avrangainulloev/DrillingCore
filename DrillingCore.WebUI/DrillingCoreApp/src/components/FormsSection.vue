@@ -89,7 +89,7 @@
     </transition>
 
     <!-- Modals -->
-    <DrillInspectionModal v-if="showDrillInspectionModal" :user-id="userId" :form-type-id="selectedType!.id" :form-id="editingFormId ?? undefined" @close="onModalClosed" />
+    <DrillInspectionModal v-if="showDrillInspectionModal" :user-id="userId" :projectId="projectId" :form-type-id="selectedType!.id" :form-id="editingFormId ?? undefined" @close="onModalClosed" />
     <FLHAModal v-if="showFLHAModal" :user-id="userId" :project-id="projectId" :form-id="editingFormId ?? undefined" @close="onModalClosed" />
     <DrillingFormModal v-if="showDrillingFormModal" :user-id="userId" :project-id="projectId" :form-id="editingFormId ?? undefined" @close="onModalClosed" />
 
@@ -240,11 +240,11 @@ export default defineComponent({
       try {
         const url =
           this.selectedType.id === 3
-            ? `/api/flha/project/${this.projectId}`
+            ? `${import.meta.env.VITE_API_BASE_URL}/flha/project/${this.projectId}`
             : this.selectedType.id === 5
-              ? `/api/forms/project/${this.projectId}/drilling`
-              : `/api/forms/project/${this.projectId}/type/${this.selectedType.id}`;
-
+              ? `${import.meta.env.VITE_API_BASE_URL}/forms/project/${this.projectId}/drilling`
+              : `${import.meta.env.VITE_API_BASE_URL}/forms/project/${this.projectId}/type/${this.selectedType.id}`;
+        console.log(url);
         const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to load forms');
         this.forms = await res.json();
@@ -269,7 +269,7 @@ export default defineComponent({
       this.sendSuccess = false;
 
       try {
-        const res = await fetch('https://localhost:7200/api/FormDeliveryRules/send-manual', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules/send-manual`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -396,7 +396,7 @@ export default defineComponent({
   opacity: 0;
 }
 .scrollable-forms {
-  max-height: calc(100vh - 280px);
+  max-height: calc(100vh - 160px);
   overflow-y: auto;
   border: 1px solid #ccc;
   border-radius: 6px;

@@ -72,7 +72,7 @@
     methods: {
       async loadEquipmentTypes() {
         try {
-          const response = await fetch('https://localhost:7200/api/EquipmentType', { credentials: 'include' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/EquipmentType`, { credentials: 'include' });
           if (response.ok) {
             this.equipmentTypes = await response.json();
           } else {
@@ -84,7 +84,7 @@
       },
       async loadEquipmentData(id: number) {
         try {
-          const response = await fetch(`https://localhost:7200/api/Equipment/${id}`, { credentials: 'include' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Equipment/${id}`, { credentials: 'include' });
           if (response.ok) {
             const data = await response.json();
             this.equipment = {
@@ -105,8 +105,8 @@
         this.errorMessage = '';
         try {
           const url = this.equipmentId
-            ? `https://localhost:7200/api/Equipment/${this.equipmentId}`
-            : `https://localhost:7200/api/Equipment`;
+            ? `${import.meta.env.VITE_API_BASE_URL}/Equipment/${this.equipmentId}`
+            : `${import.meta.env.VITE_API_BASE_URL}/Equipment`;
           const method = this.equipmentId ? 'PUT' : 'POST';
           const response = await fetch(url, {
             method,

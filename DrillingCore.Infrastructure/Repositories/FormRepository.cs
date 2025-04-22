@@ -369,5 +369,25 @@ namespace DrillingCore.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<UnsignedFormDto>> GetUnsignedFormsAsync(int userId, CancellationToken ct)
+        {
+            return await _context.FormParticipants
+                .Where(fp => fp.Participant.UserId == userId && !_context.FormSignatures
+                    .Any(fs => fs.ProjectFormId == fp.ProjectFormId && fs.ParticipantId == fp.ParticipantId))
+                .Select(fp => new UnsignedFormDto
+                {
+                    FormId = fp.ProjectForm.Id,
+                    ProjectId = fp.ProjectForm.ProjectId,
+                    ProjectName = fp.ProjectForm.Project.Name,
+                    FormTypeId = fp.ProjectForm.FormTypeId,
+                    FormTypeName = fp.ProjectForm.FormType.Name,
+                    CreatorName = fp.ProjectForm.Creator.FullName,
+                    OtherComments = fp.ProjectForm.OtherComments,
+                    UpdatedAt = fp.ProjectForm.UpdateAt
+                })
+                .AsNoTracking()
+                .ToListAsync(ct);
+        }
+
     }
 }

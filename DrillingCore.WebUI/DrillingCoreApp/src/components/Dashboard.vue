@@ -105,7 +105,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        const res = await fetch('/api/users/current', { credentials: 'include' });
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/current`, { credentials: 'include' });
         if (!res.ok) throw new Error("Not authorized");
         const user = await res.json();
         userId.value = user.id;

@@ -109,11 +109,12 @@ export default defineComponent({
   props: {
     userId: { type: Number, required: true },
     formTypeId: { type: Number, required: true },
+    projectId: { type: Number, required: true },
     formId: { type: Number, required: false }
   },
   data() {
     return {
-      projectId: 0,
+      // projectId: 0,
       crewName: '',
       unitNumber: '',
       dateFilled: new Date().toISOString().split('T')[0], // yyyy-MM-dd
@@ -151,11 +152,12 @@ export default defineComponent({
       immediate: true,
       async handler(newVal: number | null) {
         this.resetForm();
+        
         if (newVal != null) {
           await this.loadFormData(newVal);
           await this.loadChecklist();
         } else {
-          await this.loadActiveProject();
+          // await this.loadActiveProject();
           await this.loadParticipants();
           await this.loadChecklist();
           await this.loadEquipment();
@@ -187,17 +189,17 @@ export default defineComponent({
       const p = this.allParticipants.find(x => x.id === id);
       return p?.fullName || 'Unknown';
     },
-    async loadActiveProject() {
-      const res = await fetch(`/api/users/${this.userId}/active-project`, { credentials: 'include' });
-      const data = await res.json();
-      this.projectId = data.projectId ?? data.id;
-    },
+    // async loadActiveProject() {
+    //   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/${this.userId}/active-project`, { credentials: 'include' });
+    //   const data = await res.json();
+    //   this.projectId = data.projectId ?? data.id;
+    // },
     async loadParticipants() {
-      const res = await fetch(`/api/projects/${this.projectId}/groups`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects/${this.projectId}/groups`);
       const groups = await res.json();
       const flatList = groups.flatMap((g: any) => g.participants);
 
-      const nowRes = await fetch('/api/Common/server-date');
+      const nowRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Common/server-date`);
       const now = new Date((await nowRes.json()).now);
 
       const grouped = new Map<number, any[]>();
@@ -226,32 +228,42 @@ export default defineComponent({
       }
     },
     async loadChecklist() {
-      const res = await fetch(`/api/checklist/by-form-type/${this.formTypeId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/checklist/by-form-type/${this.formTypeId}`);
       this.checklistItems = await res.json();
     },
     async loadEquipment() {
-      const currentParticipant = this.allParticipants.find(p => p.userId === this.userId) ?? this.allParticipants[0];
-      if (!currentParticipant) return;
+  const currentParticipant = this.allParticipants.find(p => p.userId === this.userId) ?? this.allParticipants[0];
+  if (!currentParticipant) return;
 
-      const participantId = currentParticipant.id;
+  const participantId = currentParticipant.id;
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
+
+    if (res.ok) {
+      const text = await res.text();
+
+      // Попробуем безопасно распарсить только если текст выглядит как JSON
       try {
-        const res = await fetch(`/api/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
-        if (res.ok) {
-          const equipment = await res.json();
-          this.unitNumber = equipment?.registrationNumber ?? '';
-        } else {
-          this.unitNumber = '';
-        }
-      } catch (err) {
-        console.error("Error loading equipment:", err);
+        const equipment = JSON.parse(text);
+        this.unitNumber = equipment?.registrationNumber ?? '';
+      } catch {
+        //console.warn(text);
+        this.unitNumber = '';
       }
-    },
+    } else {
+      this.unitNumber = '';
+    }
+  } catch (err) {
+    console.error("Error loading equipment:", err);
+    this.unitNumber = '';
+  }
+},
     async loadFormData(formId: number) {
-      const res = await fetch(`/api/forms/drill-inspection/${formId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection/${formId}`);
       const form = await res.json();
 
-      const API_BASE = 'http://localhost:5152/';
-      this.projectId = form.projectId;
+      const API_BASE = import.meta.env.VITE_FILE_BASE_URL;
+      // this.projectId = form.projectId;
       this.crewName = form.crewName;
       this.unitNumber = form.unitNumber;
       this.dateFilled = form.dateFilled; // already DateOnly as string
@@ -317,13 +329,13 @@ export default defineComponent({
       let formId = this.formId;
 
       if (this.formId) {
-        await fetch('/api/forms/drill-inspection', {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ formId: this.formId, ...payload })
         });
       } else {
-        const res = await fetch('/api/forms/drill-inspection', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ projectId: this.projectId, formTypeId: this.formTypeId, creatorId: this.userId, ...payload })
@@ -336,7 +348,7 @@ export default defineComponent({
         if (!photo.file) continue;
         const formData = new FormData();
         formData.append('file', photo.file);
-        await fetch(`/api/forms/${formId}/photos`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/photos`, {
           method: 'POST',
           body: formData
         });
@@ -348,7 +360,7 @@ export default defineComponent({
         const formData = new FormData();
         formData.append('participantId', participantId);
         formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
-        await fetch(`/api/forms/${formId}/signatures`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/signatures`, {
           method: 'POST',
           body: formData
         });

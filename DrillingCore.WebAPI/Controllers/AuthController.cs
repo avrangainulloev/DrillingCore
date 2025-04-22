@@ -15,6 +15,7 @@ namespace DrillingCore.WebAPI.Controllers
             _authService = userService;
         }
 
+
         //[HttpPost("login")]
         //public async Task<IActionResult> Login([FromBody] LoginRequest request)
         //{
@@ -34,5 +35,30 @@ namespace DrillingCore.WebAPI.Controllers
                 return Unauthorized(response);
             return Ok(response);
         }
+
+        /// <summary>
+        /// Mobile login endpoint — используется мобильным приложением (MAUI).
+        /// </summary>
+        /// <param name="request">Данные для входа (имя пользователя и пароль).</param>
+        /// <returns>
+        /// Возвращает <see cref="LoginResponse"/> с полями:
+        /// <list type="bullet">
+        /// <item><description><c>IsAuthenticated</c> — флаг успешной аутентификации</description></item>
+        /// <item><description><c>UserId</c>, <c>Username</c>, <c>Role</c></description></item>
+        /// <item><description><c>Token</c> — JWT-токен для использования в заголовке Authorization</description></item>
+        /// </list>
+        /// При неудачной попытке входа возвращает 401 Unauthorized.
+        /// </returns>
+        [HttpPost("mobile-login")]
+        public async Task<IActionResult> MobileLogin([FromBody] LoginRequest request)
+        {
+            var result = await _authService.AuthenticateMobileAsync(request);
+
+            if (!result.IsAuthenticated)
+                return Unauthorized();
+
+            return Ok(result); // возвращаем token в теле (для MAUI)
+        }
+
     }
 }

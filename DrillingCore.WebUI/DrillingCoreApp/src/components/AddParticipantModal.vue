@@ -173,7 +173,7 @@
       },
       async loadAvailableUsers() {
         try {
-          const url = `https://localhost:7200/api/Users/available?t=${new Date().getTime()}`;
+          const url = `${import.meta.env.VITE_API_BASE_URL}/Users/available?t=${new Date().getTime()}`;
           const response = await fetch(url, { cache: 'no-cache' });
           if (response.ok) {
             this.availableUsers = await response.json();
@@ -186,7 +186,7 @@
       },
       async loadParticipantRoles() {
         try {
-          const response = await fetch(`https://localhost:7200/api/Roles?t=${new Date().getTime()}`, { cache: 'no-cache' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles?t=${new Date().getTime()}`, { cache: 'no-cache' });
           if (response.ok) {
             const roles = await response.json();
             this.roles = roles;
@@ -199,7 +199,7 @@
       },
       async loadProjectGroups() {
         try {
-          const response = await fetch(`https://localhost:7200/api/Projects/${this.projectId}/Groups?t=${new Date().getTime()}`, { cache: 'no-cache' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups?t=${new Date().getTime()}`, { cache: 'no-cache' });
           if (response.ok) {
             const groups = await response.json();
             this.groups = groups;
@@ -247,7 +247,7 @@
           meterRate: this.meterRate
         };
         try {
-          const response = await fetch(`https://localhost:7200/api/Projects/${this.projectId}/Participants`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Participants`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)

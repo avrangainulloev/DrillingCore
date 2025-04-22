@@ -154,7 +154,7 @@
         }
         try {
           console.log(`Fetching groups for project ID: ${this.projectId}`);
-          const response = await fetch(`https://localhost:7200/api/Projects/${this.projectId}/Groups`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('jwtToken') }
           });
           if (!response.ok) {
@@ -182,7 +182,7 @@
         }
         this.isSaving = true;
         try {
-          const response = await fetch(`https://localhost:7200/api/Projects/${this.projectId}/Groups`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ projectId: parseInt(this.projectId as string), groupName: this.groupName.trim() })

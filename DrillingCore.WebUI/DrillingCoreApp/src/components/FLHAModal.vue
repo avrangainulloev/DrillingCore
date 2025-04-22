@@ -153,6 +153,7 @@
       formId: {
         immediate: true,
         handler: async function (newVal: number | undefined) {
+      
           if (newVal) await this.loadFormData(newVal);
         }
       },
@@ -181,13 +182,13 @@
         return p?.fullName || 'Unknown';
       },
       async getServerDate(): Promise<Date> {
-        const res = await fetch('/api/Common/server-date');
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Common/server-date`);
 
         const data = await res.json();
         return new Date(data.now);
       },
       async loadParticipants(now: Date) {
-        const res = await fetch(`/api/projects/${this.projectId}/groups`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects/${this.projectId}/groups`);
         const groups = await res.json();
         const flatList = groups.flatMap((g: any) => g.participants);
   
@@ -212,18 +213,18 @@
         }
       },
       async loadHazards() {
-        const res = await fetch(`/api/flha/hazards/2`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/flha/hazards/2`);
         this.hazardTemplates = await res.json();
       },
       async loadFormData(formId: number) {
-        const res = await fetch(`/api/flha/${formId}`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/flha/${formId}`);
         const form = await res.json();
   
         this.taskDescription = form.taskDescription;
         this.dateFilled = form.dateFilled.split("T")[0];
         this.otherComments = form.otherComments;
         this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
-        const API_BASE = 'http://localhost:5152/';
+        const API_BASE = import.meta.env.VITE_FILE_BASE_URL;
         this.signatures = {};
         for (const p of form.participants) {
           if (p.signatureUrl) this.signatures[p.participantId] = API_BASE + p.signatureUrl;
@@ -296,7 +297,7 @@
   
         let formId = this.formId;
         const method = formId ? 'PUT' : 'POST';
-        const url = formId ? `/api/flha/${formId}` : `/api/flha`;
+        const url = formId ? `${import.meta.env.VITE_API_BASE_URL}/flha/${formId}` : `${import.meta.env.VITE_API_BASE_URL}/flha`;
   
         const res = await fetch(url, {
           method,
@@ -319,7 +320,7 @@
           if (!photo.file) continue;
           const formData = new FormData();
           formData.append('file', photo.file);
-          await fetch(`/api/forms/${formId}/photos`, { method: 'POST', body: formData });
+          await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/photos`, { method: 'POST', body: formData });
         }
   
         for (const [participantId, signature] of Object.entries(this.signatures)) {
@@ -328,7 +329,7 @@
           const formData = new FormData();
           formData.append('participantId', participantId);
           formData.append('file', new File([blob], 'signature.png', { type: 'image/png' }));
-          await fetch(`/api/forms/${formId}/signatures`, { method: 'POST', body: formData });
+          await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/signatures`, { method: 'POST', body: formData });
         }
         this.isSaving = false;
         this.closeModal();

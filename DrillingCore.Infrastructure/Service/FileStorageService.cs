@@ -19,15 +19,25 @@ namespace DrillingCore.Infrastructure.Services
 
         public async Task<string> SaveFileAsync(IFormFile file, string subDirectory)
         {
-            var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), subDirectory);
-            Directory.CreateDirectory(uploadsFolder);
-
-            var uniqueFileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-            var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+            string uniqueFileName = "";
+            try
             {
-                await file.CopyToAsync(fileStream);
+               
+                var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), subDirectory);
+                Directory.CreateDirectory(uploadsFolder);
+
+                uniqueFileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error on saving file " + ex.ToString());
             }
 
             // Вернуть относительный путь, пригодный для хранения в БД

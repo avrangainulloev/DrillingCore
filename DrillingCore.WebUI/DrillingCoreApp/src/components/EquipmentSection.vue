@@ -59,7 +59,7 @@
     <!-- Equipment Modal -->
     <EquipmentModal
       v-if="showEquipmentModal"
-      :equipmentId="editingEquipmentId"
+      :equipmentId="editingEquipmentId ?? undefined" 
       @close="closeEquipmentModal"
       @equipment-saved="handleEquipmentSaved"
     />
@@ -108,7 +108,7 @@ export default defineComponent({
   methods: {
     async loadEquipmentTypes() {
       try {
-        const response = await fetch('https://localhost:7200/api/EquipmentType', { credentials: 'include' });
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/EquipmentType`, { credentials: 'include' });
         if (response.ok) {
           this.equipmentTypes = await response.json();
         } else {
@@ -128,7 +128,7 @@ export default defineComponent({
           params.append('equipmentTypeId', this.selectedTypeId);
         }
         params.append('limit', '1000');
-        const url = `https://localhost:7200/api/Equipment?${params.toString()}`;
+        const url = `${import.meta.env.VITE_API_BASE_URL}/Equipment?${params.toString()}`;
         const response = await fetch(url, { credentials: 'include' });
         if (response.ok) {
           this.equipmentList = await response.json();

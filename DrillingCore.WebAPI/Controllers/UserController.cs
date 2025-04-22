@@ -102,5 +102,7 @@ namespace DrillingCore.WebAPI.Controllers
 
             return Ok(user);
         }
+
+
     }
 }

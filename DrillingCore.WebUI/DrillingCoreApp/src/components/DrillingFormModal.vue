@@ -106,7 +106,7 @@ export default defineComponent({
       showSignatureModal: false,
       photos: [] as { name: string; preview: string; file: File | null }[],
       photoToView: '',
-      apiBase: 'https://localhost:7200/'
+      apiBase: import.meta.env.VITE_API_BASE_URL
     };
   },
   computed: {
@@ -126,7 +126,7 @@ export default defineComponent({
       this.$emit('close');
     },
     async loadParticipants() {
-      const res = await fetch(`/api/projects/${this.projectId}/groups`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects/${this.projectId}/groups`);
       const groups = await res.json();
       const flat = groups.flatMap((g: any) => g.participants);
       this.allParticipants = flat;
@@ -161,7 +161,7 @@ export default defineComponent({
       this.photoToView = url;
     },
     async loadFormData(formId: number) {
-      const res = await fetch(`/api/forms/drilling/${formId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drilling/${formId}`);
       const form = await res.json();
 
       this.dateFilled = form.dateFilled;
@@ -172,12 +172,12 @@ export default defineComponent({
       this.selectedParticipantIds = form.participants.map((p: any) => p.participantId);
       this.signatures = {};
       for (const sig of form.signatures) {
-        this.signatures[sig.participantId] = this.apiBase + sig.signatureUrl;
+        this.signatures[sig.participantId] = `${import.meta.env.VITE_FILE_BASE_URL}` + sig.signatureUrl;
       }
 
       this.photos = form.photoUrls.map((url: string) => ({
         name: '',
-        preview: this.apiBase + url,
+        preview: `${import.meta.env.VITE_FILE_BASE_URL}` + url,
         file: null
       }));
     },
@@ -198,7 +198,7 @@ export default defineComponent({
       let formId = this.formId;
 
       if (this.formId) {
-        await fetch('/api/forms/drilling', {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drilling`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ formId: this.formId, ...payload })
@@ -206,7 +206,7 @@ export default defineComponent({
 
         
       } else {
-        const res = await fetch('/api/forms/drilling', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drilling`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -219,7 +219,7 @@ export default defineComponent({
         if (!photo.file) continue;
         const formData = new FormData();
         formData.append('file', photo.file);
-        await fetch(`/api/forms/${formId}/photos`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/photos`, {
           method: 'POST',
           body: formData
         });
@@ -231,7 +231,7 @@ export default defineComponent({
         const formData = new FormData();
         formData.append('participantId', participantId);
         formData.append('file', new File([blob], 'signature.png', { type: 'image/png' }));
-        await fetch(`/api/forms/${formId}/signatures`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/signatures`, {
           method: 'POST',
           body: formData
         });

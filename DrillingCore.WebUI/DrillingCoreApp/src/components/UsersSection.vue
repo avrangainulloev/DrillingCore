@@ -74,7 +74,7 @@
 
     <TimesheetModal 
       v-if="showTimesheetModal"
-      :user-id="selectedUserId"
+      :user-id="selectedUserId ?? 0"
       :user-full-name="selectedUserFullName"
       @close="showTimesheetModal = false"
     />
@@ -109,7 +109,7 @@ export default defineComponent({
   methods: {
     async loadRoles() {
       try {
-        const response = await fetch('https://localhost:7200/api/Roles');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles`);
         if (response.ok) {
           this.roles = await response.json();
         }
@@ -118,7 +118,7 @@ export default defineComponent({
       }
     },
     async loadUsers() {
-      let url = `https://localhost:7200/api/Users?searchTerm=${encodeURIComponent(this.searchTerm)}`;
+      let url = `${import.meta.env.VITE_API_BASE_URL}/Users?searchTerm=${encodeURIComponent(this.searchTerm)}`;
       if (this.selectedRole) {
         url += `&roleId=${this.selectedRole}`;
       }

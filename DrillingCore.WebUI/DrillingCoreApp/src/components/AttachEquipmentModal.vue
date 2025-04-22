@@ -205,7 +205,7 @@
     methods: {
       async loadEquipmentTypes() {
         try {
-          const response = await fetch('https://localhost:7200/api/EquipmentType', { credentials: 'include' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/EquipmentType`, { credentials: 'include' });
           if (response.ok) {
             this.equipmentTypes = await response.json();
           } else {
@@ -217,7 +217,7 @@
       },
       async loadAttachedEquipment() {
         try {
-          const url = `https://localhost:7200/api/ParticipantEquipment/${this.participantId}?projectId=${this.projectId}`;
+          const url = `${import.meta.env.VITE_API_BASE_URL}/ParticipantEquipment/${this.participantId}?projectId=${this.projectId}`;
           const response = await fetch(url, { credentials: 'include' });
           if (response.ok) {
             this.attachedEquipment = await response.json();
@@ -234,7 +234,7 @@
           if (this.freeSelectedTypeId) {
             params.append('equipmentTypeId', this.freeSelectedTypeId);
           }
-          const url = `https://localhost:7200/api/Equipment/free?${params.toString()}`;
+          const url = `${import.meta.env.VITE_API_BASE_URL}/Equipment/free?${params.toString()}`;
           const response = await fetch(url, { credentials: 'include' });
           if (response.ok) {
             this.freeEquipmentList = await response.json();
@@ -271,7 +271,7 @@
       },
       async onEquipmentAttached(payload: any) {
         try {
-          const response = await fetch(`https://localhost:7200/api/ParticipantEquipment/attach`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ParticipantEquipment/attach`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -299,7 +299,7 @@
       },
       async onEquipmentDetached(payload: any) {
         try {
-          const response = await fetch(`https://localhost:7200/api/ParticipantEquipment/detach/${payload.id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ParticipantEquipment/detach/${payload.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
