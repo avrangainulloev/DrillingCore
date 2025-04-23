@@ -8,6 +8,7 @@ using DrillingCore.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DrillingCore.WebAPI.Controllers
 {
@@ -26,16 +27,24 @@ namespace DrillingCore.WebAPI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetProjects(
-      [FromQuery] int limit = 30,
+      [FromQuery] int limit = 30,   
       [FromQuery] string? searchTerm = null,
       [FromQuery] string? status = null)
         {
-            var query = new GetProjectsQuery
+
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (currentUserRole != "Administrator")
+            {
+                currentUserId = 0;
+            }
+                var query = new GetProjectsQuery
             {
                 Limit = limit,
                 SearchTerm = searchTerm,
-                Status = status
-            };
+                Status = status,
+                UserId = currentUserId
+                };
             var projects = await _mediator.Send(query);
             return Ok(projects);
         }

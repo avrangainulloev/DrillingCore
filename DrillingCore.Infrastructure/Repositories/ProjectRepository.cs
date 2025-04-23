@@ -22,10 +22,11 @@ namespace DrillingCore.Infrastructure.Repositories
             return await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Project>> GetAllAsync(int limit, string? searchTerm = null, string? status = null)
+        public async Task<IEnumerable<Project>> GetAllAsync(int limit, int userId, string? searchTerm = null, string? status = null)
         {
             var query = _dbContext.Projects
                                   .Include(p => p.Status)
+                                  .Include(p => p.Participants)
                                   .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -38,6 +39,12 @@ namespace DrillingCore.Infrastructure.Repositories
             {
                 query = query.Where(p => p.Status.Name == status);
             }
+
+            if (userId != 0)
+            {
+                query = query.Where(p => p.Participants.Any(pp => pp.UserId == userId));
+            }
+
 
             return await query.OrderByDescending(p => p.StartDate)
                               .Take(limit)

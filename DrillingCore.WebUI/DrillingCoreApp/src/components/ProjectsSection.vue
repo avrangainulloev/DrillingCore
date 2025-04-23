@@ -85,7 +85,7 @@ import Modal from './Modal.vue';
 import FormsSection from './FormsSection.vue';
 import FormDeliveryModal from './FormDeliveryModal.vue';
 import FormDeliverySettings from './FormDeliverySettings.vue';
-
+import { useUserStore } from '../stores/userStore'
 export default defineComponent({
   name: 'ProjectsSection',
   components: {
@@ -117,7 +117,7 @@ export default defineComponent({
     async loadProjects() {
       try {
         const params = new URLSearchParams();
-        params.append('limit', '30');
+        params.append('limit', '30');      
         if (this.searchTerm) params.append('searchTerm', this.searchTerm);
         if (this.selectedStatus) params.append('status', this.selectedStatus);
 

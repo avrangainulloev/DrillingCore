@@ -77,7 +77,7 @@ Future<void> _pickImage(DrillInspectionViewModel notifier) async {
   try {
     if (source == ImageSource.gallery) {
       final pickedFiles = await _picker.pickMultiImage();
-      if (pickedFiles == null || pickedFiles.isEmpty) return;
+      if (pickedFiles.isEmpty) return;
 
       for (final file in pickedFiles) {
         final processed = await compressAndConvertToJpeg(File(file.path));

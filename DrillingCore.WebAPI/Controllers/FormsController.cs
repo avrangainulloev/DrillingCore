@@ -2,12 +2,15 @@
 using DrillingCore.Application.Forms.Commands;
 using DrillingCore.Application.Forms.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DrillingCore.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class FormsController : Controller
     {
         private readonly IMediator _mediator;
@@ -230,7 +233,9 @@ namespace DrillingCore.WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<List<UnsignedFormDto>>> GetUnsignedForms(int userId, CancellationToken ct)
         {
-            var result = await _mediator.Send(new GetUnsignedFormsQuery { UserId = userId }, ct);
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var result = await _mediator.Send(new GetUnsignedFormsQuery { UserId = currentUserId }, ct);
             return Ok(result);
         }
     }

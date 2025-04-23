@@ -17,7 +17,7 @@ class AuthService {
         'username': username,
         'password': password,
       });
-      print("FINAL :  ${response.toString()}");
+      // print("FINAL :  ${response.toString()}");
 
       return response.data; // должен вернуть токен, роль и т.д.
     } on DioException catch (e) {

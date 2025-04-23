@@ -1,11 +1,37 @@
 import 'package:dio/dio.dart';
-
+import 'package:drillingcoreamobile/core/router/navigation_key.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 class ApiClient {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://10.0.0.80:5000/api/', // заменишь при необходимости
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
-    ),
-  );
+  final Dio dio;
+  final _storage = const FlutterSecureStorage();
+
+  ApiClient()
+      : dio = Dio(
+          BaseOptions(
+            baseUrl: 'http://10.0.0.80:5000/api/',
+            connectTimeout: const Duration(seconds: 5),
+            receiveTimeout: const Duration(seconds: 5),
+          ),
+        ) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await _storage.read(key: 'token');
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) async {
+  if (e.response?.statusCode == 401) {
+    await _storage.delete(key: 'token');
+    // ❗ перенаправление на login
+    navigatorKey.currentContext?.go('/login');
+  }
+  return handler.next(e);
+}
+      ),
+    );
+  }
 }

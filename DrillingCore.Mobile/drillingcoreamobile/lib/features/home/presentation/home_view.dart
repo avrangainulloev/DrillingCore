@@ -1,3 +1,4 @@
+import 'package:drillingcoreamobile/features/profile/presentation/profile_view.dart';
 import 'package:flutter/material.dart';
 import '../../todo/presentation/todo_page.dart';
 
@@ -14,7 +15,7 @@ class _HomeViewState extends State<HomeView> {
   final _pages = const [
     ToDoPage(),
     Center(child: Text('Projects Page')),
-    Center(child: Text('Profile Page')),
+    ProfileView(),
   ];
 
   @override

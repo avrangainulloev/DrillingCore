@@ -1,16 +1,27 @@
+import 'package:drillingcoreamobile/core/services/user_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: DrillingCoreApp()));
+  final session = UserSession();
+  final token = await session.getToken();
+
+  final initialRoute = (token != null && token.isNotEmpty) ? '/home' : '/login';
+
+  runApp(
+    ProviderScope(
+      child: DrillingCoreApp(initialRoute: initialRoute),
+    ),
+  );
 }
 
 class DrillingCoreApp extends StatelessWidget {
-  const DrillingCoreApp({super.key});
+  final String initialRoute;
 
-  @override
+  const DrillingCoreApp({super.key, required this.initialRoute});
+ @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'DrillingCore',
@@ -18,10 +29,8 @@ class DrillingCoreApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      routerConfig: AppRouter.router,
+      routerConfig: AppRouter.getRouter(initialRoute),
       debugShowCheckedModeBanner: false,
-      // 👇 для показа диалогов в ViewModel
-     
     );
   }
 }

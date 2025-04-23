@@ -67,7 +67,7 @@ namespace DrillingCore.Infrastructure.Persistence
 
             modelBuilder.Entity<Participant>()
             .HasOne(p => p.Project)
-            .WithMany() // или .WithMany(p => p.Participants) если есть
+            .WithMany(p => p.Participants) //если есть
             .HasForeignKey(p => p.ProjectId);
 
             modelBuilder.Entity<FormTypeEquipmentType>()

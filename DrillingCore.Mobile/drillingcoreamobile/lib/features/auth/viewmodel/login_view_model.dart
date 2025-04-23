@@ -1,3 +1,4 @@
+ 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/user_session.dart';
@@ -16,8 +17,9 @@ class LoginState {
   final bool isLoading;
 
   const LoginState({
-    this.username = 'admin',
-    this.password = 'admin',
+    
+    this.username = '',
+    this.password = '',
     this.isLoading = false,
   });
 
@@ -51,12 +53,17 @@ class LoginViewModel extends StateNotifier<LoginState> {
   Future<void> login() async {
     state = state.copyWith(isLoading: true);
 
-    final result = await _authService.login(state.username, state.password);
+     // ✅ Если пусто — установить admin/admin
+  final username = state.username.trim().isEmpty ? 'admin' : state.username;
+  final password = state.password.trim().isEmpty ? 'admin' : state.password;
+
+  final result = await _authService.login(username, password);
     state = state.copyWith(isLoading: false);
-    print("Login REsponse : ${result.toString()}");
+    // print("Login REsponse : ${result.toString()}");
     if (result != null && result['isAuthenticated'] == true) {
       await _session.saveSession(result);
-
+     
+ 
       // Навигация на HomeView
       GoRouter.of(navigatorKey.currentContext!).go('/home');
     } else {

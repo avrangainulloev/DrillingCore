@@ -14,6 +14,7 @@ namespace DrillingCore.Core.Entities
         // Новый внешний ключ и навигационное свойство
         public int StatusId { get; set; }
         public ProjectStatus Status { get; set; } = null!;
+        public virtual ICollection<Participant> Participants { get; set; } = new List<Participant>();
     }
 
 }

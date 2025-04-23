@@ -7,7 +7,7 @@ namespace DrillingCore.Application.Interfaces
     public interface IProjectRepository
     {
         Task<Project?> GetByIdAsync(int id);
-        Task<IEnumerable<Project>> GetAllAsync(int limit, string? searchTerm = null, string? status = null);
+        Task<IEnumerable<Project>> GetAllAsync(int limit, int userId, string? searchTerm = null, string? status = null);
         Task AddAsync(Project project);
         Task UpdateAsync(Project project);
         Task DeleteAsync(Project project);

@@ -18,7 +18,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
-
+import { useUserStore } from '../stores/userStore'
 export default defineComponent({
   name: 'Login',
   data() {
@@ -35,28 +35,38 @@ export default defineComponent({
   methods: {
     async login() {
   try {
-    
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // добавлено для отправки/приема куки
-      body: JSON.stringify({ username: this.username, password: this.password })
+      credentials: 'include',
+      body: JSON.stringify({
+        username: this.username,
+        password: this.password
+      })
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       alert(errorData.message || "Ошибка авторизации");
       return;
     }
-    //const data = await response.json();
-    // Токен устанавливается сервером в HttpOnly куку, поэтому здесь он не возвращается
+
+    const data = await response.json();
+    
+    const userStore = useUserStore();
+    userStore.setUser({
+      userId: data.userId,
+      fullName: data.fullname,
+      role: data.role,
+      roleId: data.roleId
+    });
+   
     this.$router.push('/dashboard');
   } catch (error) {
     console.error("Ошибка при запросе:", error);
     alert("Ошибка соединения");
-    
   }
-    }}
+}}
 });
 </script>
 

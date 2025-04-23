@@ -20,7 +20,7 @@ namespace DrillingCore.Application.Projects.Queries.Handlers
 
         public async Task<IEnumerable<ProjectDto>> Handle(GetProjectsQuery request, CancellationToken cancellationToken)
         {
-            var projects = await _projectRepository.GetAllAsync(request.Limit, request.SearchTerm, request.Status);
+            var projects = await _projectRepository.GetAllAsync(request.Limit, request.UserId, request.SearchTerm, request.Status);
 
             // Маппинг сущностей Project в ProjectDto. В данном случае Status маппится через p.Status.Name.
             return projects.Select(p => new ProjectDto

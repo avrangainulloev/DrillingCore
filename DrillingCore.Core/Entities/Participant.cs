@@ -19,5 +19,6 @@ namespace DrillingCore.Core.Entities
         public decimal? DailyRate { get; set; }
         public decimal? MeterRate { get; set; }
         public DateTime DateAdded { get; set; }
+        
     }
 }

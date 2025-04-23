@@ -3,6 +3,7 @@ using System;
 using DrillingCore.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DrillingCore.Infrastructure.Migrations
 {
     [DbContext(typeof(DrillingCoreDbContext))]
-    partial class DrillingCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250423035545_GetProjectsByUserId")]
+    partial class GetProjectsByUserId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -420,6 +423,9 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ProjectId1")
+                        .HasColumnType("integer");
+
                     b.Property<DateOnly?>("StartDate")
                         .HasColumnType("date");
 
@@ -431,6 +437,8 @@ namespace DrillingCore.Infrastructure.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("ProjectId1");
 
                     b.HasIndex("UserId");
 
@@ -853,10 +861,14 @@ namespace DrillingCore.Infrastructure.Migrations
                         .HasForeignKey("GroupId");
 
                     b.HasOne("DrillingCore.Core.Entities.Project", "Project")
-                        .WithMany("Participants")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("DrillingCore.Core.Entities.Project", null)
+                        .WithMany("Participants")
+                        .HasForeignKey("ProjectId1");
 
                     b.HasOne("DrillingCore.Core.Entities.User", "User")
                         .WithMany()

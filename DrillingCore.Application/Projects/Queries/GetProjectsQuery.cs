@@ -10,5 +10,6 @@ namespace DrillingCore.Application.Projects.Queries
         public int Limit { get; set; } = 30;
         public string? SearchTerm { get; set; }
         public string? Status { get; set; }
+        public int UserId { get; set; }
     }
 }
