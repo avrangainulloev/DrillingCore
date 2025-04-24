@@ -1,3 +1,4 @@
+import 'package:drillingcoreamobile/features/projects/viewmodel/project_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/user_session.dart';
@@ -104,6 +105,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                  // 🧹 сбрасываем все провайдеры
                  ref.invalidate(todoViewModelProvider);
                   ref.invalidate(loginViewModelProvider);
+                  ref.invalidate(projectViewModelProvider);
                 if (mounted) context.go('/login');
               },
             ),

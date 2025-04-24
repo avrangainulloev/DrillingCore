@@ -60,5 +60,20 @@ namespace DrillingCore.WebAPI.Controllers
             return Ok(result); // возвращаем token в теле (для MAUI)
         }
 
+        /// <summary>
+        /// Завершает текущую сессию пользователя, удаляя JWT cookie.
+        /// </summary>
+        /// <remarks>
+        /// Этот метод используется для logout на клиенте. Он удаляет cookie "AuthToken",
+        /// которая содержит JWT токен, и завершает сессию пользователя.
+        /// </remarks>
+        /// <response code="200">Кука успешно удалена. Пользователь деавторизован.</response>
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("AuthToken"); // Удаление куки
+            return Ok(new { message = "Logged out successfully" });
+        }
+
     }
 }

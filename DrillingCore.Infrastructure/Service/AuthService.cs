@@ -50,7 +50,7 @@ namespace DrillingCore.Infrastructure.Services
                 Expires = DateTime.UtcNow.AddHours(1),
                 SameSite = SameSiteMode.None // Важно
             };
-
+            _httpContextAccessor.HttpContext.Response.Cookies.Delete("AuthToken");
             _httpContextAccessor.HttpContext.Response.Cookies.Append("AuthToken", token, cookieOptions);
 
             // Возвращаем данные пользователя без токена в теле ответа

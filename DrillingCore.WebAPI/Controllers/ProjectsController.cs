@@ -34,7 +34,7 @@ namespace DrillingCore.WebAPI.Controllers
 
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (currentUserRole != "Administrator")
+            if (currentUserRole == "Administrator")
             {
                 currentUserId = 0;
             }

@@ -168,11 +168,20 @@ export default defineComponent({
       closeParticipantModal();
     }
 
-    function logout() {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('userId');
-      router.push('/');
-    }
+    const logout = async () => {
+  try {
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (e) {
+    console.warn("Logout failed", e);
+  }
+
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('userId');
+  router.push('/');
+};
 
     return {
       currentSection,
