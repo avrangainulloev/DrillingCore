@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../viewmodel/project_view_model.dart';
 import '../models/project_model.dart';
@@ -37,44 +38,49 @@ class _ProjectCard extends StatelessWidget {
     final startDate = dateFormat.format(project.startDate);
     final endDate = project.endDate != null ? dateFormat.format(project.endDate!) : '—';
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              project.name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.teal,
+    return InkWell(
+  onTap: () {
+    GoRouter.of(context).push('/form-types?projectId=${project.id}');
+  },
+  child: Card(
+    elevation: 2,
+    margin: const EdgeInsets.only(bottom: 12),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: BorderSide(color: Colors.grey.shade300),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            project.name,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.teal,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildRow('📍 Location', project.location),
+          _buildRow('📅 Start', startDate),
+          _buildRow('🏁 End', endDate),
+          _buildRow('🏢 Client', project.client),
+          _buildRow('📌 Status', project.status),
+          if (project.hasCampOrHotel)
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Text(
+                '🏕️ Includes Camp or Hotel',
+                style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
               ),
             ),
-            const SizedBox(height: 8),
-            _buildRow('📍 Location', project.location),
-            _buildRow('📅 Start', startDate),
-            _buildRow('🏁 End', endDate),
-            _buildRow('🏢 Client', project.client),
-            _buildRow('📌 Status', project.status),
-            if (project.hasCampOrHotel)
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Text(
-                  '🏕️ Includes Camp or Hotel',
-                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildRow(String label, String value) {

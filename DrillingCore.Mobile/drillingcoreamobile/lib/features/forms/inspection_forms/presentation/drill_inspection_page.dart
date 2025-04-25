@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:typed_data'; 
  
 import 'package:drillingcoreamobile/core/constants/constants.dart';
-import 'package:drillingcoreamobile/features/forms/presentation/signaturemodal.dart';
+import 'package:drillingcoreamobile/features/forms/common/widgets/signaturemodal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -237,17 +237,31 @@ Future<File?> compressAndConvertToJpeg(File file) async {
                 context: context,
                 builder: (_) => Dialog(
                   backgroundColor: Colors.transparent,
-                  child: isLocal
-                      ? Image.file(File(p.preview), fit: BoxFit.contain)
-                      : Image.network(networkUrl, fit: BoxFit.contain),
-                ),
-              );
+                child: isLocal
+    ? Image.file(File(p.preview), fit: BoxFit.contain)
+    : Image.network(
+        networkUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60, color: Colors.grey),
+      ),
+              ));
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: isLocal
                   ? Image.file(File(p.preview), width: 100, height: 100, fit: BoxFit.cover)
-                  : Image.network(networkUrl, width: 100, height: 100, fit: BoxFit.cover),
+                  : Image.network(
+    networkUrl,
+    width: 100,
+    height: 100,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => Container(
+      width: 100,
+      height: 100,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.broken_image, color: Colors.grey),
+    ),
+  ),
             ),
           ),
           Positioned(
@@ -293,6 +307,8 @@ _sectionLabel('✍️ Signatures'),
       participantId: id,
       userId: 0,
       fullName: 'Unknown',
+       groupName: null, // или '', если хочешь пустую строку
+  endDate: null,
     ),
   );
   final signature = formState.signatures[id];
@@ -427,7 +443,13 @@ Row(
     const SizedBox(width: 12), // отступ между кнопками
     Expanded(
       child: ElevatedButton.icon(
-        onPressed: () => context.go('/home'),
+       onPressed: () {
+  if (Navigator.of(context).canPop()) {
+    context.pop();
+  } else {
+    context.go('/home');
+  }
+},
         icon: const Icon(Icons.close),
         label: const Text('Close'),
         style: ElevatedButton.styleFrom(

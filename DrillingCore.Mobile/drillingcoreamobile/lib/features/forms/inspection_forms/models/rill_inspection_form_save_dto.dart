@@ -1,5 +1,5 @@
-import 'package:drillingcoreamobile/features/forms/models/checklist_response_dto.dart';
-import 'package:drillingcoreamobile/features/forms/models/form_participant_dto.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/checklist_response_dto.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/form_participant_dto.dart';
 
 class DrillInspectionFormSaveDto {
   final int? formId;
@@ -11,6 +11,7 @@ class DrillInspectionFormSaveDto {
   final List<FormParticipantDto> participants;
   final List<ChecklistResponseDto> checklistResponses;
   final String otherComments;
+  final int creatorId;
 
   DrillInspectionFormSaveDto({
     this.formId,
@@ -22,6 +23,7 @@ class DrillInspectionFormSaveDto {
     required this.participants,
     required this.checklistResponses,
     required this.otherComments,
+    required this.creatorId
   });
 
   Map<String, dynamic> toJson() => {
@@ -34,6 +36,7 @@ class DrillInspectionFormSaveDto {
         'participants': participants.map((p) => p.toJson()).toList(),
         'checklistResponses': checklistResponses.map((c) => c.toJson()).toList(),
         'otherComments': otherComments,
+        'creatorId': creatorId,
       };
 }
 

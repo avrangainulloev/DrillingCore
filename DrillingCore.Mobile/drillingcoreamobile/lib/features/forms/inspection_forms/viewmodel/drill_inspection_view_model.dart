@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'package:drillingcoreamobile/features/forms/models/checklist_response_dto.dart';
-import 'package:drillingcoreamobile/features/forms/models/form_participant_dto.dart';
-import 'package:drillingcoreamobile/features/forms/models/rill_inspection_form_save_dto.dart';
+import 'package:drillingcoreamobile/core/services/user_session.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/checklist_response_dto.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/form_participant_dto.dart';
+import 'package:drillingcoreamobile/features/forms/inspection_forms/models/rill_inspection_form_save_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/drill_inspection_form_model.dart';
-import '../data/form_service.dart';
+import '../../data/form_service.dart';
 import 'dart:typed_data';
 import 'dart:convert';
 
@@ -42,18 +43,69 @@ class DrillInspectionParams {
 
 class DrillInspectionViewModel extends StateNotifier<DrillInspectionFormModel> {
   final FormService _formService;
+  int userId = 0;
+  
   late DrillInspectionParams _params;
 
   DrillInspectionViewModel(this._formService)
       : super(DrillInspectionFormModel.initial());
 
   Future<void> initialize(DrillInspectionParams params) async {
-    _params = params;
-    final participants = await _formService.getProjectParticipants(params.projectId);
-    final checklist = await _formService.getChecklistItems(params.formTypeId);
+  _params = params;
+  final _session = UserSession();
+  final session = await _session.getSession();
+  if (session == null) return;
+  userId = session['userId'] as int;
+  final participants = await _formService.getProjectParticipants(params.projectId, userId);
+  final checklist = await _formService.getChecklistItems(params.formTypeId);
+
+  if (params.formId == 0) {
+    // 🆕 Новая форма
+    String? crewName;
+    String unitNumber = '';
+    List<int> selectedParticipantIds = [];
+
+    // 1️⃣ Найдём текущего участника
+    final current = participants.firstWhere(
+      (p) => p.userId == userId,
+      orElse: () => participants.isNotEmpty ? participants.first : ProjectParticipant(participantId: 0, userId: 0, fullName: '', groupName: '', endDate: null),
+    );
+
+    // 2️⃣ Найдём всех из его группы
+    if (current.groupName != null && current.groupName!.isNotEmpty) {
+      final groupParticipants = participants
+          .where((p) => p.groupName == current.groupName)
+          .toList();
+      selectedParticipantIds = groupParticipants.map((p) => p.participantId).toList();
+      crewName = current.groupName;
+    }
+
+    // 3️⃣ Загрузим unitNumber
+    unitNumber = await _formService.getUnitNumber(
+      formTypeId: params.formTypeId,
+      projectId: params.projectId,
+      participantId: current.participantId,
+    );
+
+    state = state.copyWith(
+      formId: 0,
+      crewName: crewName ?? '',
+      unitNumber: unitNumber,
+      dateFilled: DateTime.now().toIso8601String().split('T').first,
+      otherComments: '',
+      allParticipants: participants,
+      checklistItems: checklist,
+      selectedParticipantIds: selectedParticipantIds,
+      checkedItemIds: [],
+      signatures: {},
+      photos: [],
+    );
+  } else {
+    // ✏️ Редактируем существующую форму
     final form = await _formService.getDrillInspectionById(params.formId);
 
     state = state.copyWith(
+      formId: form.formId,
       crewName: form.crewName,
       unitNumber: form.unitNumber,
       dateFilled: form.dateFilled,
@@ -69,9 +121,13 @@ class DrillInspectionViewModel extends StateNotifier<DrillInspectionFormModel> {
       signatures: {
         for (final sig in form.signatures) sig.participantId: sig.signatureUrl,
       },
-      photos: form.photoUrls.map((url) => DrillInspectionPhoto(preview: url, file: null)).toList(),
+      photos: form.photoUrls
+          .map((url) => DrillInspectionPhoto(preview: url, file: null))
+          .toList(),
     );
   }
+}
+
 
   void toggleChecklistItem(int itemId, bool isChecked) {
     final updated = [...state.checkedItemIds];
@@ -148,6 +204,7 @@ class DrillInspectionViewModel extends StateNotifier<DrillInspectionFormModel> {
             ))
         .toList(),
     otherComments: state.otherComments,
+    creatorId: userId
   );
 
   final savedFormId = await _formService.saveDrillInspectionForm(dto);

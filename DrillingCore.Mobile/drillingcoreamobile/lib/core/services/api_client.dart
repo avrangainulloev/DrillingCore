@@ -10,8 +10,8 @@ class ApiClient {
       : dio = Dio(
           BaseOptions(
             baseUrl: 'http://10.0.0.80:5000/api/',
-            connectTimeout: const Duration(seconds: 5),
-            receiveTimeout: const Duration(seconds: 5),
+            connectTimeout: const Duration(seconds: 25),
+            receiveTimeout: const Duration(seconds: 25),
           ),
         ) {
     dio.interceptors.add(

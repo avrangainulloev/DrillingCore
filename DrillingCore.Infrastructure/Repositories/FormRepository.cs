@@ -1,4 +1,5 @@
-﻿using DrillingCore.Application.DTOs;
+﻿using DrillingCore.Application.Common;
+using DrillingCore.Application.DTOs;
 using DrillingCore.Application.Forms.Commands;
 using DrillingCore.Application.Interfaces;
 using DrillingCore.Core.Entities;
@@ -388,6 +389,51 @@ namespace DrillingCore.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync(ct);
         }
+
+        public async Task<PaginatedList<FormListItemDto>> GetFormsByProjectAsync(
+    int projectId, int? formTypeId, int? userId, int page, int limit)
+        {
+            var query = _context.ProjectForms
+                .Include(pf => pf.FormType)
+                .Include(pf => pf.Creator)
+                .Where(pf => pf.ProjectId == projectId)
+                .AsQueryable();
+
+            if (formTypeId.HasValue)
+                query = query.Where(pf => pf.FormTypeId == formTypeId.Value);
+
+            if (userId.HasValue)
+                query = query.Where(pf => pf.CreatorId == userId.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(pf => pf.UpdateAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .Select(pf => new FormListItemDto
+                {
+                    Id = pf.Id,
+                    FormType = pf.FormType.Name,
+                    CreatorName = pf.Creator.FullName,
+                    CrewName = pf.CrewName,
+                    DateFilled = pf.UpdateAt,
+                    Status = pf.Status,
+                    UserId = pf.CreatorId
+
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return new PaginatedList<FormListItemDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                Limit = limit
+            };
+        }
+
 
     }
 }

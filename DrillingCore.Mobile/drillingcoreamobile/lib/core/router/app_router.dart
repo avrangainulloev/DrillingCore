@@ -1,8 +1,10 @@
+import 'package:drillingcoreamobile/features/forms/presentation/filled_forms_view.dart';
+import 'package:drillingcoreamobile/features/forms/presentation/form_type_selector_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/auth/presentation/login_view.dart';
 import '../../../features/home/presentation/home_view.dart';
-import '../../features/forms/presentation/drill_inspection_page.dart'; 
+import '../../features/forms/inspection_forms/presentation/drill_inspection_page.dart'; 
 import 'navigation_key.dart';
 
 
@@ -38,6 +40,21 @@ class AppRouter {
             );
           },
         ),
+        GoRoute(
+            path: '/form-types',
+            builder: (context, state) {
+              final projectId = int.parse(state.uri.queryParameters['projectId'] ?? '0');
+              return FormTypeSelectorView(projectId: projectId);
+            },
+          ),
+          GoRoute(
+            path: '/forms',
+            builder: (context, state) {
+              final projectId = int.parse(state.uri.queryParameters['projectId'] ?? '0');
+              final formTypeId = int.parse(state.uri.queryParameters['formTypeId'] ?? '0');
+              return FilledFormsView(projectId: projectId, formTypeId: formTypeId);
+            },
+),
       ],
     );
   }

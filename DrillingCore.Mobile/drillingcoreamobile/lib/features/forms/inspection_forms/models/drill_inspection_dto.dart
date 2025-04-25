@@ -1,6 +1,6 @@
-import 'package:drillingcoreamobile/features/forms/models/form_signature_dto.dart';
-import 'package:drillingcoreamobile/features/forms/models/checklist_response_dto.dart';
-import 'package:drillingcoreamobile/features/forms/models/form_participant_dto.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/form_signature_dto.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/checklist_response_dto.dart';
+import 'package:drillingcoreamobile/features/forms/data/dtos/form_participant_dto.dart';
 
 
 class DrillInspectionDto {

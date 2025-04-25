@@ -74,18 +74,24 @@ class ProjectParticipant {
   final int participantId;
   final int userId;
   final String fullName;
+  final String? groupName;
+  final String? endDate;
 
   ProjectParticipant({
     required this.participantId,
     required this.userId,
     required this.fullName,
+    required this.groupName,
+    required this.endDate,
   });
 
-  factory ProjectParticipant.fromJson(Map<String, dynamic> json) {
+  factory ProjectParticipant.fromJson(Map<String, dynamic> json, String groupName) {
     return ProjectParticipant(
       participantId: json['id'],
       userId: json['userId'],
       fullName: json['fullName'],
+      groupName: groupName,
+      endDate: json['endDate'],
     );
   }
 }

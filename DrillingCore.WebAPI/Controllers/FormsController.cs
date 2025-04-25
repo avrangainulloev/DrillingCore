@@ -238,5 +238,38 @@ namespace DrillingCore.WebAPI.Controllers
             var result = await _mediator.Send(new GetUnsignedFormsQuery { UserId = currentUserId }, ct);
             return Ok(result);
         }
+
+
+        /// <summary>
+        /// Получает список форм проекта с возможностью фильтрации по типу формы и постраничной навигацией.
+        /// </summary>
+        /// <param name="projectId">Идентификатор проекта.</param>
+        /// <param name="formTypeId">Необязательный параметр: ID типа формы (например, Drill, FLHA).</param>
+        /// <param name="page">Номер страницы (по умолчанию 1).</param>
+        /// <param name="limit">Количество элементов на странице (по умолчанию 30).</param>
+        /// <returns>Пагинированный список форм с полями: Тип формы, Автор, Название бригады, Дата.</returns>
+        /// <response code="200">Возвращает список форм с учётом фильтрации и пагинации.</response>
+        /// <response code="404">Если проект не найден (опционально в будущем).</response>
+        [HttpGet("project/{projectId}/list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetFormsByProject(int projectId,[FromQuery] int? formTypeId, [FromQuery] bool OnlyMine, [FromQuery] int page = 1,[FromQuery] int limit = 30)
+        {             
+
+            var query = new GetFormsByProjectQuery
+            {
+                ProjectId = projectId,
+                FormTypeId = formTypeId,
+                Page = page,
+                Limit = limit
+            };
+            if(OnlyMine)
+            {
+                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                query.UserId = currentUserId;
+            }
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
     }
 }

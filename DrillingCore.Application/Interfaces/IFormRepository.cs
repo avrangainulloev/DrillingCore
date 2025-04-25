@@ -1,4 +1,5 @@
-﻿using DrillingCore.Application.DTOs;
+﻿using DrillingCore.Application.Common;
+using DrillingCore.Application.DTOs;
 using DrillingCore.Application.Forms.Commands;
 using DrillingCore.Core.Entities;
 using System;
@@ -13,14 +14,8 @@ namespace DrillingCore.Application.Interfaces
     {
         Task<List<ProjectForm>> GetFormsByProjectAndTypeAsync(int projectId, int formTypeId);
 
-        Task<int> CreateDrillInspectionAsync(ProjectForm form,
-     List<FormChecklistResponse> checklistResponses,
-     List<FormParticipant> participants,
-    
-     CancellationToken cancellationToken);
-
+        Task<int> CreateDrillInspectionAsync(ProjectForm form,List<FormChecklistResponse> checklistResponses,List<FormParticipant> participants,CancellationToken cancellationToken);
         Task<int?> GetEquipmentTypeIdForFormTypeAsync(int formTypeId);     
-
         Task SavePhotoAsync(FormPhoto photo);
         Task SaveSignatureAsync(FormSignature signature, CancellationToken cancellationToken);
         Task<DrillInspectionDto> GetDrillInspectionByIdAsync(int formId, CancellationToken cancellationToken);
@@ -29,13 +24,11 @@ namespace DrillingCore.Application.Interfaces
         Task<List<FormType>> GetFormTypesAsync();
         Task<int> CreateDrillingFormAsync(ProjectForm form, DrillingForm drillingForm, List<FormParticipant> participants, CancellationToken cancellationToken);
         Task<ProjectForm?> GetDrillingFormWithDetailsAsync(int formId, CancellationToken ct);
-        Task UpdateDrillingFormAsync(UpdateDrillingFormCommand request, CancellationToken cancellationToken);
-        
+        Task UpdateDrillingFormAsync(UpdateDrillingFormCommand request, CancellationToken cancellationToken);        
         Task<DrillingFormFullDto> GetDrillingFormByIdAsync(int formId, CancellationToken cancellationToken);
         Task<List<DrillingForm>> GetDrillingFormsByProjectAsync(int projectId, CancellationToken cancellationToken);
         Task<List<UnsignedFormDto>> GetUnsignedFormsAsync(int userId, CancellationToken ct);
-
-
+        Task<PaginatedList<FormListItemDto>> GetFormsByProjectAsync(int projectId,int? formTypeId, int? userId, int page,int limit);
 
 
     }
