@@ -174,7 +174,7 @@
       async loadAvailableUsers() {
         try {
           const url = `${import.meta.env.VITE_API_BASE_URL}/Users/available?t=${new Date().getTime()}`;
-          const response = await fetch(url, { cache: 'no-cache' });
+          const response = await fetch(url, { cache: 'no-cache',  credentials: 'include'} );
           if (response.ok) {
             this.availableUsers = await response.json();
           } else {
@@ -186,7 +186,7 @@
       },
       async loadParticipantRoles() {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles?t=${new Date().getTime()}`, { cache: 'no-cache' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles?t=${new Date().getTime()}`, { cache: 'no-cache', credentials: 'include' });
           if (response.ok) {
             const roles = await response.json();
             this.roles = roles;
@@ -199,7 +199,7 @@
       },
       async loadProjectGroups() {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups?t=${new Date().getTime()}`, { cache: 'no-cache' });
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups?t=${new Date().getTime()}`, { cache: 'no-cache', credentials: 'include' });
           if (response.ok) {
             const groups = await response.json();
             this.groups = groups;
@@ -250,7 +250,8 @@
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Participants`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
+            credentials: 'include'
           });
           if (response.ok) {
             this.notificationMessage = "Participants added successfully!";

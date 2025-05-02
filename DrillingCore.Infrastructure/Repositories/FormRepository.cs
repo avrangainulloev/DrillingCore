@@ -56,6 +56,7 @@ namespace DrillingCore.Infrastructure.Repositories
       
        CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(form.Status)) form.Status = "Pending";
             _context.ProjectForms.Add(form);
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -267,6 +268,7 @@ namespace DrillingCore.Infrastructure.Repositories
 
         public async Task<int> CreateDrillingFormAsync(ProjectForm form, DrillingForm drillingForm, List<FormParticipant> participants, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(form.Status)) form.Status = "Pending";
             _context.ProjectForms.Add(form);
             await _context.SaveChangesAsync(cancellationToken); // Чтобы получить form.Id
 
@@ -315,12 +317,12 @@ namespace DrillingCore.Infrastructure.Repositories
 
             
             // Обновим участников
-            _context.FormParticipants.RemoveRange(form.FormParticipants);
-            _context.FormParticipants.AddRange(command.Participants.Select(p => new FormParticipant
-            {
-                ProjectFormId = form.Id,
-                ParticipantId = p.ParticipantId
-            }));
+            //_context.FormParticipants.RemoveRange(form.FormParticipants);
+            //_context.FormParticipants.AddRange(command.Participants.Select(p => new FormParticipant
+            //{
+            //    ProjectFormId = form.Id,
+            //    ParticipantId = p.ParticipantId
+            //}));
 
             await _context.SaveChangesAsync(cancellationToken);
         }

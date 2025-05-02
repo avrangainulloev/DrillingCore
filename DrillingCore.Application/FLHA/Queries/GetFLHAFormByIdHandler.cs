@@ -27,6 +27,7 @@ namespace DrillingCore.Application.FLHA.Queries
             return new FLHAFormDto
             {
                 Id = form.ProjectFormId,
+                CrewName = projectForm.CrewName,
                 DateFilled = projectForm.DateFilled,
                 TaskDescription = form.TaskDescription,
                 OtherComments = projectForm.OtherComments,

@@ -92,7 +92,9 @@
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectId: this.projectId, groupName: this.groupName.trim() })
+            body: JSON.stringify({ projectId: this.projectId, groupName: this.groupName.trim() }),
+            credentials: 'include'
+            
           });
           if (response.ok) {
             this.notificationMessage = "Group created successfully!";

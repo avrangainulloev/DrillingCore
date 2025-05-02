@@ -8,6 +8,7 @@ namespace DrillingCore.Application.DTOs
 {
     public class FLHAFormCreateDto
     {
+        public string CrewName { get; set; }
         public int ProjectId { get; set; }
         public int FormTypeId { get; set; } = 3; // FLHA (например)
         public int CreatorId { get; set; }

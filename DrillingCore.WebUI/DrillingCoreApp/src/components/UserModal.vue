@@ -99,7 +99,7 @@ export default defineComponent({
   methods: {
     async loadRoles() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles`, { credentials: 'include' });
         this.roles = await res.json();
       } catch (error) {
         this.errorMessage = 'Failed to load roles';
@@ -107,7 +107,7 @@ export default defineComponent({
     },
     async loadUserData(userId: number) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Users/${userId}`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Users/${userId}`, { credentials: 'include' });
         const data = await res.json();
         this.user = { ...data, password: '' };
       } catch (error) {
@@ -125,7 +125,8 @@ export default defineComponent({
         const res = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.user)
+          body: JSON.stringify(this.user),
+          credentials: 'include'
         });
         if (res.ok) {
           this.notificationMessage = 'User saved successfully';

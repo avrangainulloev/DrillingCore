@@ -38,26 +38,40 @@ class _DrillInspectionPageState extends ConsumerState<DrillInspectionPage> {
    bool _isSaving = false; 
   String participantSearch = '';
   final ImagePicker _picker = ImagePicker();
+  late final TextEditingController crewNameController;
+late final TextEditingController dateFilledController;
+late final TextEditingController unitNumberController;
+late final TextEditingController otherCommentsController;
 
-  @override
-  void initState() {
-    super.initState();
-    _participantsScrollController = ScrollController();
-    _params = DrillInspectionParams(
-      formId: widget.formId,
-      formTypeId: widget.formTypeId,
-      projectId: widget.projectId,
-    );
-    Future.microtask(() {
-      ref.read(drillInspectionViewModelProvider(_params).notifier).initialize(_params);
-    });
-  }
+@override
+void initState() {
+  super.initState();
+  _participantsScrollController = ScrollController();
+  _params = DrillInspectionParams(
+    formId: widget.formId,
+    formTypeId: widget.formTypeId,
+    projectId: widget.projectId,
+  );
+  
+  crewNameController = TextEditingController();
+  dateFilledController = TextEditingController();
+  unitNumberController = TextEditingController();
+  otherCommentsController = TextEditingController();
 
-  @override
-  void dispose() {
-    _participantsScrollController.dispose();
-    super.dispose();
-  }
+  Future.microtask(() {
+    ref.read(drillInspectionViewModelProvider(_params).notifier).initialize(_params);
+  });
+}
+
+@override
+void dispose() {
+  _participantsScrollController.dispose();
+  crewNameController.dispose();
+  dateFilledController.dispose();
+  unitNumberController.dispose();
+  otherCommentsController.dispose();
+  super.dispose();
+}
 
 Future<void> _pickImage(DrillInspectionViewModel notifier) async {
   final source = await showDialog<ImageSource>(
@@ -134,7 +148,10 @@ Future<File?> compressAndConvertToJpeg(File file) async {
         return 0;
       })
       ..retainWhere((p) => p.fullName.toLowerCase().contains(participantSearch.toLowerCase()));
-
+        crewNameController.text = formState.crewName;
+        dateFilledController.text = formState.dateFilled;
+        unitNumberController.text = formState.unitNumber;
+        otherCommentsController.text = formState.otherComments;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -146,11 +163,52 @@ Future<File?> compressAndConvertToJpeg(File file) async {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            _readonlyField('👷 Crew Name', formState.crewName),
+           TextFormField(
+                          controller: crewNameController,
+                          decoration: InputDecoration(
+                            labelText: '👷 Crew Name',
+                            filled: true,
+                            fillColor: const Color(0xFFECEFF1),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onChanged: (value) => notifier.updateCrewName(value),
+                        ),
             const SizedBox(height: 10),
-            _readonlyField('📅 Date Filled', formState.dateFilled),
+           TextFormField(
+                          controller: dateFilledController,
+                          readOnly: true, // ⬅️ Делаем поле нередактируемым вручную, только через календарь
+                          decoration: InputDecoration(
+                            labelText: '📅 Date Filled',
+                            filled: true,
+                            fillColor: const Color(0xFFECEFF1),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            suffixIcon: const Icon(Icons.calendar_today),
+                          ),
+                          onTap: () async {
+                            DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.tryParse(dateFilledController.text) ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              final formatted = "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                              dateFilledController.text = formatted;
+                              notifier.updateDateFilled(formatted);
+                            }
+                          },
+                        ),
             const SizedBox(height: 10),
-            _readonlyField('🚛 Unit Number', formState.unitNumber),
+            TextFormField(
+                          controller: unitNumberController,
+                          decoration: InputDecoration(
+                            labelText: '🚛 Unit Number',
+                            filled: true,
+                            fillColor: const Color(0xFFECEFF1),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onChanged: (value) => notifier.updateUnitNumber(value),
+                        ),
             const SizedBox(height: 20),
             _sectionLabel('🧑‍🤝‍🧑 Participants'),
             const SizedBox(height: 4),
@@ -205,17 +263,17 @@ Future<File?> compressAndConvertToJpeg(File file) async {
             ..._buildChecklistGroups(formState, notifier),
             const SizedBox(height: 20),
             _sectionLabel('📝 Other Comments'),
-            TextFormField(
-              initialValue: formState.otherComments,
-              maxLines: 3,
-              readOnly: true,
-              decoration: InputDecoration(
-                hintText: 'Add any notes...',
-                filled: true,
-                fillColor: const Color(0xFFE3F2FD),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
+         TextFormField(
+                        controller: otherCommentsController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: '📝 Add any notes...',
+                          filled: true,
+                          fillColor: const Color(0xFFE3F2FD),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onChanged: (value) => notifier.updateOtherComments(value),
+                      ),
             const SizedBox(height: 20),
             _sectionLabel('📷 Photos'),
           
@@ -400,27 +458,75 @@ Row(
    Expanded(
   child: ElevatedButton.icon(
     onPressed: _isSaving
-        ? null
-        : () async {
-            setState(() => _isSaving = true);
-            try {
-              await notifier.saveAsync();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('✅ Drill Inspection saved')),
-                );
-              }
-            } catch (e) {
-              print(e);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('❌ Save failed: $e')),
-                );
-              }
-            } finally {
-              if (mounted) setState(() => _isSaving = false);
+    ? null
+    : () async {
+        setState(() => _isSaving = true);
+        try {
+          if (formState.selectedParticipantIds.isEmpty) {
+            if (context.mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: const Text('❗ Please select at least one participant'),
+    behavior: SnackBarBehavior.floating, // 🔥 делает его "плавающим"
+    margin: const EdgeInsets.only(
+      bottom: 70, // 🔥 отступ от нижнего края, чтобы не наезжал на кнопки
+      right: 16,
+      left: 16,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+);
             }
-          },
+            setState(() => _isSaving = false);
+            return;
+          }
+
+          await notifier.saveAsync();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: const Text('✅ Drill Inspection saved'),
+    behavior: SnackBarBehavior.floating, // 🔥 делает его "плавающим"
+    margin: const EdgeInsets.only(
+      bottom: 70, // 🔥 отступ от нижнего края, чтобы не наезжал на кнопки
+      right: 16,
+      left: 16,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+);
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   const SnackBar(content: Text('✅ Drill Inspection saved')),
+            // );
+            // context.pop(true); // не забудь возвращать true после успешного сохранения!
+          }
+        } catch (e) {
+          print(e);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content:  Text('❌ Save failed: $e'),
+    behavior: SnackBarBehavior.floating, // 🔥 делает его "плавающим"
+    margin: const EdgeInsets.only(
+      bottom: 70, // 🔥 отступ от нижнего края, чтобы не наезжал на кнопки
+      right: 16,
+      left: 16,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+);
+           
+          }
+        } finally {
+          if (mounted) setState(() => _isSaving = false);
+        }
+      },
     icon: _isSaving
         ? const SizedBox(
             width: 20,
@@ -445,7 +551,7 @@ Row(
       child: ElevatedButton.icon(
        onPressed: () {
   if (Navigator.of(context).canPop()) {
-    context.pop();
+    context.pop(true);
   } else {
     context.go('/home');
   }
@@ -468,24 +574,7 @@ Row(
     );
   }
 
-  Widget _readonlyField(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        TextFormField(
-          initialValue: value,
-          readOnly: true,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: const Color(0xFFECEFF1),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Widget _sectionLabel(String label) {
     return Text(

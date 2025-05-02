@@ -94,7 +94,8 @@ const generatePreview = async () => {
       userId: props.userId,
       fromDate: fromDate.value,
       toDate: toDate.value
-    })
+    }),
+    credentials:'include'
   });
 
   if (res.ok) preview.value = await res.json();
@@ -109,7 +110,9 @@ const exportToExcel = async () => {
       userId: props.userId,
       fromDate: fromDate.value,
       toDate: toDate.value
-    })
+    }),
+    credentials: 'include'
+    
   });
 
   if (res.ok) {

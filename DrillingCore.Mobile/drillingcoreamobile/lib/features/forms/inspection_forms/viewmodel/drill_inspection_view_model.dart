@@ -45,15 +45,31 @@ class DrillInspectionViewModel extends StateNotifier<DrillInspectionFormModel> {
   final FormService _formService;
   int userId = 0;
   
-  late DrillInspectionParams _params;
+  void updateCrewName(String value) {
+  state = state.copyWith(crewName: value);
+}
 
+void updateDateFilled(String value) {
+  state = state.copyWith(dateFilled: value);
+}
+
+void updateUnitNumber(String value) {
+  state = state.copyWith(unitNumber: value);
+}
+
+void updateOtherComments(String value) {
+  state = state.copyWith(otherComments: value);
+}
+
+  late DrillInspectionParams _params;
+   
   DrillInspectionViewModel(this._formService)
       : super(DrillInspectionFormModel.initial());
 
   Future<void> initialize(DrillInspectionParams params) async {
   _params = params;
-  final _session = UserSession();
-  final session = await _session.getSession();
+  final session0 = UserSession();
+  final session = await session0.getSession();
   if (session == null) return;
   userId = session['userId'] as int;
   final participants = await _formService.getProjectParticipants(params.projectId, userId);
@@ -237,5 +253,7 @@ class DrillInspectionViewModel extends StateNotifier<DrillInspectionFormModel> {
       await _formService.uploadFormSignature(formId, participantId, bytes);
     }
   }
+
+  
 }
 }

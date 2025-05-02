@@ -51,7 +51,9 @@ namespace DrillingCore.Infrastructure.Service
 
             byte[] pdfBytes;
             string fileName;
-            string subject = $"Form Completed: {form.FormType?.Name}";
+            string subject = string.IsNullOrWhiteSpace(form.UnitNumber)
+                 ? $"Form Completed: {form.FormType?.Name} (No Unit Number) on {form.DateFilled:yyyy-MM-dd}."
+                 : $"Form Completed: {form.FormType?.Name} for {form.UnitNumber} on {form.DateFilled:yyyy-MM-dd}.";
             string body = $"Attached is the completed form for {form.DateFilled:yyyy-MM-dd}.";
 
             switch (form.FormType?.Name)
@@ -86,7 +88,9 @@ namespace DrillingCore.Infrastructure.Service
                         .ToListAsync(ct);
 
                     pdfBytes = _formPdfBuilder.BuildDrillInspectionPdf(form, checklistItems);
-                    fileName = $"Form_{form.FormType?.Name}_{form.DateFilled:yyyyMMdd}.pdf";
+                    string unitPart = string.IsNullOrWhiteSpace(form.UnitNumber) ? "NoUnit" : form.UnitNumber;
+                    fileName = $"Form_{form.FormType?.Name}_{unitPart}_{form.DateFilled:yyyyMMdd}.pdf";
+                    //fileName = $"Form_{form.FormType?.Name}_{form.DateFilled:yyyyMMdd}.pdf";
                     break;
             }
 

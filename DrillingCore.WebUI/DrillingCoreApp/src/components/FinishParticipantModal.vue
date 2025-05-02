@@ -93,7 +93,8 @@
             {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(command)
+              body: JSON.stringify(command),
+              credentials: 'include'
             }
           );
           if (response.ok) {

@@ -111,7 +111,8 @@
           const response = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(this.equipment)
+            body: JSON.stringify(this.equipment),
+            credentials: 'include'
           });
           if (response.ok) {
             this.notificationMessage = "Equipment saved successfully!";

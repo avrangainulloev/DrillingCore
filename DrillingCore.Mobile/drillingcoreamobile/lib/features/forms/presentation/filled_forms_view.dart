@@ -55,14 +55,18 @@ class _FilledFormsViewState extends ConsumerState<FilledFormsView> {
           ),
         ],
       ),
-      body: forms.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.separated(
-              padding: const EdgeInsets.only(top: 12, bottom: 80),
-              itemCount: forms.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (_, index) {
-                final form = forms[index];
+    body: forms.isEmpty
+    ? const Center(child: CircularProgressIndicator())
+    : RefreshIndicator(
+        onRefresh: () async {
+          ref.refresh(filledFormsProvider(filter));
+        },
+        child: ListView.separated(
+          padding: const EdgeInsets.only(top: 12, bottom: 80),
+          itemCount: forms.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (_, index) {
+            final form = forms[index];
 
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -97,15 +101,12 @@ class _FilledFormsViewState extends ConsumerState<FilledFormsView> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  onTap: () {
-                    if ([1, 2, 4].contains(widget.formTypeId)) {
-                      // context.push(
-                      //   '/form',
-                      //   extra: {
-                      //     'formId': form.id,
-                      //     'formTypeId': widget.formTypeId,
-                      //     'projectId': widget.projectId,
-                       context.push('/form?formId=${form.id}&formTypeId=${widget.formTypeId}&projectId=${widget.projectId}');
+                 onTap: () async {
+                    if ([1, 2,3, 4,5].contains(widget.formTypeId)) {
+                      final result = await context.push('/form?formId=${form.id}&formTypeId=${widget.formTypeId}&projectId=${widget.projectId}');
+                      if (result == true) {
+                        ref.refresh(filledFormsProvider(filter));
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('This form type is not yet supported')),
@@ -114,13 +115,18 @@ class _FilledFormsViewState extends ConsumerState<FilledFormsView> {
                   },
                 );
               },
+        ) 
+
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if ([1, 2, 4].contains(widget.formTypeId)) {
-           context.push('/form?formId=0&formTypeId=${widget.formTypeId}&projectId=${widget.projectId}');
-          }
-        },
+     onPressed: () async {
+                    if ([1, 2, 3, 4,5].contains(widget.formTypeId)) {
+                      final result = await context.push('/form?formId=0&formTypeId=${widget.formTypeId}&projectId=${widget.projectId}');
+                      if (result == true) {
+                        ref.refresh(filledFormsProvider(filter));
+                      }
+                    }
+                  },
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add),
       ),

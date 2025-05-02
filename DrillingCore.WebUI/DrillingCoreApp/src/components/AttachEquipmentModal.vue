@@ -274,7 +274,8 @@
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ParticipantEquipment/attach`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            credentials: 'include'
           });
           if (response.ok) {
             alert("Equipment attached successfully!");
@@ -302,7 +303,8 @@
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ParticipantEquipment/detach/${payload.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            credentials: 'include'
           });
           if (response.ok) {
             alert("Equipment detached successfully!");

@@ -69,7 +69,7 @@
       const loadRules = async () => {
         loading.value = true;
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules/project/${props.projectId}`);
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules/project/${props.projectId}`, {credentials: 'include'});
           rules.value = await res.json();
         } catch (err) {
           console.error(err);
@@ -103,7 +103,7 @@
   
       const deleteRule = async () => {
         try {
-          await fetch(`${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules/${ruleToDeleteId.value}`, { method: 'DELETE' });
+          await fetch(`${import.meta.env.VITE_API_BASE_URL}/FormDeliveryRules/${ruleToDeleteId.value}`, { method: 'DELETE', credentials:'include' });
           await loadRules();
         } catch (e) {
           console.error(e);

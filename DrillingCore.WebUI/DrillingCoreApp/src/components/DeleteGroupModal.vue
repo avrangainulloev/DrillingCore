@@ -107,7 +107,8 @@
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups/emptygroups`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectId: this.projectId, groups: this.selectedGroups })
+            body: JSON.stringify({ projectId: this.projectId, groups: this.selectedGroups }),
+            credentials: 'include'
           });
           if (response.ok) {
             this.notificationMessage = "Selected group(s) deleted successfully!";

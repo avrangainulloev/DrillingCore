@@ -92,7 +92,7 @@
   
       const loadFormTypes = async () => {
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/form-types`);
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/form-types`, {credentials: 'include'});
           if (!res.ok) throw new Error('Failed to load form types');
           formTypes.value = await res.json();
         } catch (err) {
@@ -151,7 +151,9 @@
           const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...payload, id: props.rule?.id })
+            body: JSON.stringify({ ...payload, id: props.rule?.id }),
+            credentials: 'include'
+
           });
   
           if (!res.ok) throw new Error('Failed to save settings');

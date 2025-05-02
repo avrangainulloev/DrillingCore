@@ -155,8 +155,8 @@
         try {
           console.log(`Fetching groups for project ID: ${this.projectId}`);
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('jwtToken') }
-          });
+            credentials: 'include' }
+          );
           if (!response.ok) {
             console.error("Error loading participant groups:", response.statusText);
             return;
@@ -185,7 +185,8 @@
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Projects/${this.projectId}/Groups`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectId: parseInt(this.projectId as string), groupName: this.groupName.trim() })
+            body: JSON.stringify({ projectId: parseInt(this.projectId as string), groupName: this.groupName.trim() }),
+            credentials: 'include'
           });
           if (response.ok) {
             this.notificationMessage = "Group created successfully!";

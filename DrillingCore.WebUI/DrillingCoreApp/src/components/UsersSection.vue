@@ -109,7 +109,7 @@ export default defineComponent({
   methods: {
     async loadRoles() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Roles`, { credentials: 'include' });
         if (response.ok) {
           this.roles = await response.json();
         }
@@ -123,7 +123,7 @@ export default defineComponent({
         url += `&roleId=${this.selectedRole}`;
       }
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { credentials: 'include' });
         if (response.ok) {
           this.users = await response.json();
         } else {

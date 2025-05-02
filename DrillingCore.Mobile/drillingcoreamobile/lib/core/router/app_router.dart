@@ -1,3 +1,5 @@
+import 'package:drillingcoreamobile/features/forms/drilling_form/presentation/drilling_log_page.dart';
+import 'package:drillingcoreamobile/features/forms/flha/presentation/flha_inspection_page.dart';
 import 'package:drillingcoreamobile/features/forms/presentation/filled_forms_view.dart';
 import 'package:drillingcoreamobile/features/forms/presentation/form_type_selector_view.dart';
 import 'package:flutter/material.dart';
@@ -32,13 +34,33 @@ class AppRouter {
             if (formId == null || formTypeId == null || projectId == null) {
               return const Scaffold(body: Center(child: Text('Invalid form parameters')));
             }
-
-            return DrillInspectionPage(
-              formId: formId,
-              formTypeId: formTypeId,
-              projectId: projectId,
-            );
-          },
+             // ⬇️ Выбираем экран в зависимости от типа формы
+            if (formTypeId == 3) { // FLHA — FormTypeId == 3
+              return FLHAInspectionPage(
+                formId: formId,
+                formTypeId: formTypeId,
+                projectId: projectId,
+              );
+            } else if (formTypeId == 5) {
+      return DrillingLogPage(
+        formId: formId,
+        formTypeId: formTypeId,
+        projectId: projectId,
+      );
+    } else {
+              return DrillInspectionPage(
+                formId: formId,
+                formTypeId: formTypeId,
+                projectId: projectId,
+              );
+            }
+          }
+          //   return DrillInspectionPage(
+          //     formId: formId,
+          //     formTypeId: formTypeId,
+          //     projectId: projectId,
+          //   );
+          // },
         ),
         GoRoute(
             path: '/form-types',

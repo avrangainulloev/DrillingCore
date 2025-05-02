@@ -195,11 +195,11 @@ export default defineComponent({
     //   this.projectId = data.projectId ?? data.id;
     // },
     async loadParticipants() {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects/${this.projectId}/groups`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects/${this.projectId}/groups`, {credentials: 'include'});
       const groups = await res.json();
       const flatList = groups.flatMap((g: any) => g.participants);
 
-      const nowRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Common/server-date`);
+      const nowRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Common/server-date`, {credentials: 'include'});
       const now = new Date((await nowRes.json()).now);
 
       const grouped = new Map<number, any[]>();
@@ -228,7 +228,7 @@ export default defineComponent({
       }
     },
     async loadChecklist() {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/checklist/by-form-type/${this.formTypeId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/checklist/by-form-type/${this.formTypeId}`, {credentials: 'include'});
       this.checklistItems = await res.json();
     },
     async loadEquipment() {
@@ -237,7 +237,7 @@ export default defineComponent({
 
   const participantId = currentParticipant.id;
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/equipment?formTypeId=${this.formTypeId}&participantId=${participantId}&projectId=${this.projectId}`, {credentials: 'include'});
 
     if (res.ok) {
       const text = await res.text();
@@ -259,7 +259,7 @@ export default defineComponent({
   }
 },
     async loadFormData(formId: number) {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection/${formId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection/${formId}`, {credentials: 'include'});
       const form = await res.json();
 
       const API_BASE = import.meta.env.VITE_FILE_BASE_URL;
@@ -332,13 +332,15 @@ export default defineComponent({
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ formId: this.formId, ...payload })
+          body: JSON.stringify({ formId: this.formId, ...payload }),
+          credentials: 'include'
         });
       } else {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/drill-inspection`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ projectId: this.projectId, formTypeId: this.formTypeId, creatorId: this.userId, ...payload })
+          body: JSON.stringify({ projectId: this.projectId, formTypeId: this.formTypeId, creatorId: this.userId, ...payload }),
+          credentials: 'include'
         });
         const result = await res.json();
         formId = result.formId;
@@ -350,7 +352,8 @@ export default defineComponent({
         formData.append('file', photo.file);
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/photos`, {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
       }
 
@@ -362,7 +365,8 @@ export default defineComponent({
         formData.append('file', new File([blob], "signature.png", { type: 'image/png' }));
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/forms/${formId}/signatures`, {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
       }
 
