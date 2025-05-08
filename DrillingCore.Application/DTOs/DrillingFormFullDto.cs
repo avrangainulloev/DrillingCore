@@ -10,6 +10,7 @@ namespace DrillingCore.Application.DTOs
     {
         public int Id { get; set; }
         public int ProjectId { get; set; }
+        public string CrewName { get; set; }
         public DateOnly DateFilled { get; set; }
         public int TotalWells { get; set; }
         public double TotalMeters { get; set; }

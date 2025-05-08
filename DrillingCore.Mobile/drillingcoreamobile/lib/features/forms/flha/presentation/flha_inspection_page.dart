@@ -92,20 +92,48 @@ class _FLHAInspectionPageState extends ConsumerState<FLHAInspectionPage> {
     );
   }
 
-  Widget _buildCrewNameAndTaskDescription(FLHAInspectionViewModel notifier) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionLabel('👷 Crew Name'),
-        const SizedBox(height: 4),
-        _readonlyInput(_crewNameController, notifier.updateCrewName),
-        const SizedBox(height: 10),
-        _sectionLabel('📝 Task Description'),
-        const SizedBox(height: 4),
-        _readonlyInput(_taskDescriptionController, notifier.updateTaskDescription, maxLines: 2),
-      ],
-    );
-  }
+Widget _buildCrewNameAndTaskDescription(FLHAInspectionViewModel notifier) {
+  final formState = ref.watch(flhaInspectionViewModelProvider(_params)); // добавлено здесь!
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _sectionLabel('👷 Crew Name'),
+      const SizedBox(height: 4),
+      _readonlyInput(_crewNameController, notifier.updateCrewName),
+      const SizedBox(height: 10),
+
+      _sectionLabel('📅 Date Filled'),
+      const SizedBox(height: 4),
+      TextField(
+        readOnly: true,
+        controller: TextEditingController(text: formState.dateFilled),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: const Color(0xFFE3F2FD),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          suffixIcon: const Icon(Icons.calendar_today),
+        ),
+        onTap: () async {
+          final selected = await showDatePicker(
+            context: context,
+            initialDate: DateTime.tryParse(formState.dateFilled) ?? DateTime.now(),
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+          );
+          if (selected != null) {
+            notifier.updateDateFilled(selected.toIso8601String().split('T').first);
+          }
+        },
+      ),
+
+      const SizedBox(height: 10),
+      _sectionLabel('📝 Task Description'),
+      const SizedBox(height: 4),
+      _readonlyInput(_taskDescriptionController, notifier.updateTaskDescription, maxLines: 2),
+    ],
+  );
+}
 
   Widget _buildParticipantsList(FLHAInspectionFormModel formState, FLHAInspectionViewModel notifier) {
     final filteredParticipants = [...formState.allParticipants]
@@ -477,36 +505,73 @@ Widget _buildSignatures(FLHAInspectionFormModel formState, FLHAInspectionViewMod
 }
 
 
-  Widget _buildSaveAndCloseButtons(FLHAInspectionViewModel notifier) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _isSaving
-                ? null
-                : () async {
-                    setState(() => _isSaving = true);
-                    await notifier.saveAsync();
-                    if (mounted) context.pop(true);
-                  },
-            icon: _isSaving ? const CircularProgressIndicator(color: Colors.white) : const Icon(Icons.save),
-            label: Text(_isSaving ? 'Saving...' : 'Save'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green,  foregroundColor: Colors.white),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => context.pop(),
-            icon: const Icon(Icons.close),
-            label: const Text('Close'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
-          ),
-        ),
-      ],
-    );
-  }
+ Widget _buildSaveAndCloseButtons(FLHAInspectionViewModel notifier) {
+  return Row(
+    children: [
+      Expanded(
+        child: ElevatedButton.icon(
+          onPressed: _isSaving
+              ? null
+              : () async {
+                  final state = ref.read(flhaInspectionViewModelProvider(_params));
 
+                  if (state.crewName.trim().isEmpty) {
+                    _showError('❗ Crew name is required.');
+                    return;
+                  }
+
+                  if (state.selectedParticipantIds.isEmpty) {
+                    _showError('❗ At least one participant must be selected.');
+                    return;
+                  }
+
+                  final hasTemplateHazard = state.selectedHazardIds.isNotEmpty;
+                  final hasCustomHazard = state.customHazards.isNotEmpty;
+                  if (!hasTemplateHazard && !hasCustomHazard) {
+                    _showError('❗ Please add at least one hazard (template or custom).');
+                    return;
+                  }
+
+                  setState(() => _isSaving = true);
+                  await notifier.saveAsync();
+                  if (mounted) context.pop(true);
+                },
+          icon: _isSaving
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Icon(Icons.save),
+          label: Text(_isSaving ? 'Saving...' : 'Save'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: ElevatedButton.icon(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.close),
+          label: const Text('Close'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red.shade600,
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+void _showError(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.only(bottom: 70, left: 16, right: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: Colors.red.shade700,
+    ),
+  );
+}
   Widget _readonlyInput(TextEditingController controller, void Function(String) onChanged, {int maxLines = 1}) {
     return TextField(
       controller: controller,

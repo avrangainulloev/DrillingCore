@@ -255,7 +255,6 @@ export default defineComponent({
 
 /* Sidebar */
 .sidebar {
-   
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--general-border-color-light);
   padding: 1.5rem 1rem;
@@ -270,7 +269,6 @@ export default defineComponent({
   width: 260px;
   overflow-y: auto;
   z-index: 10;
-  
 }
 
 .dark-theme .sidebar {
@@ -400,9 +398,8 @@ export default defineComponent({
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 260px; /* чтобы не перекрывалось сайдбаром */
+  margin-left: 260px;
   height: 100vh;
- 
   overflow: hidden;
 }
 
@@ -454,10 +451,7 @@ export default defineComponent({
   padding: 2rem;
   background-color: var(--content-bg);
   animation: fadeIn 0.5s ease-in-out;
- 
   overflow-y: auto;
- 
- 
 }
 
 @keyframes fadeIn {
@@ -465,33 +459,79 @@ export default defineComponent({
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
+/* Mobile Responsive Styles */
 @media (max-width: 768px) {
   .dashboard-container {
     flex-direction: column;
   }
+
   .sidebar {
+    position: relative;
     width: 100%;
-    padding: 0.75rem 1rem;
+    height: auto;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    padding: 0.5rem 1rem;
+    box-shadow: none;
+    border-right: none;
+    border-bottom: 1px solid var(--general-border-color-light);
+    z-index: 5;
   }
+
+  .dark-theme .sidebar {
+    border-bottom: 1px solid var(--general-border-color-dark);
+  }
+
+  .sidebar-header {
+    margin: 0;
+  }
+
   .sidebar-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+    margin: 0;
+    white-space: nowrap;
   }
+
   .menu {
     display: flex;
-    flex-wrap: wrap;
+    flex: 1;
+    overflow-x: auto;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    padding: 0.5rem 0;
+    scrollbar-width: none;
   }
+
+  .menu::-webkit-scrollbar {
+    display: none;
+  }
+
   .menu-item {
-    margin: 0 0.25rem;
-    padding: 0.5rem;
-    font-size: 0.9rem;
+    flex: none;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+    margin: 0;
   }
+
+  .theme-toggle {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+    height: auto;
+  }
+
   .main-header {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
+
   .content-area {
     padding: 1rem;
   }

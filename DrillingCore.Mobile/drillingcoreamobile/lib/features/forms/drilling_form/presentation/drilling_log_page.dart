@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
-
+import 'package:flutter/services.dart';
 import '../../common/widgets/signaturemodal.dart';
 import '../models/drilling_log_form_model.dart';
 import '../viewmodel/drilling_log_viewmodel.dart';
@@ -39,16 +39,34 @@ class _DrillingLogPageState extends ConsumerState<DrillingLogPage> {
 
   bool _isSaving = false;
   String participantSearch = '';
+  bool _isEditingCrewName = false;
+bool _isEditingWells = false;
+bool _isEditingMeters = false;
   @override
-  void initState() {
-    super.initState();
-    _params = DrillingLogParams(
-      formId: widget.formId,
-      formTypeId: widget.formTypeId,
-      projectId: widget.projectId,
-    );
-    Future.microtask(() => ref.read(drillingLogViewModelProvider(_params).notifier).initialize(_params));
+void initState() {
+  super.initState();
+  _params = DrillingLogParams(
+    formId: widget.formId,
+    formTypeId: widget.formTypeId,
+    projectId: widget.projectId,
+  );
+  Future.microtask(() => ref.read(drillingLogViewModelProvider(_params).notifier).initialize(_params));
+
+  // 👇 Устанавливаем только если formId > 0 (редактирование)
+  if (widget.formId > 0) {
+    final state = ref.read(drillingLogViewModelProvider(_params));
+    // _crewNameController.text = state.crewName;
+    // _wellsController.text = state.totalWells > 0 ? state.totalWells.toString() : '';
+    // _metersController.text = state.totalMeters > 0 ? state.totalMeters.toString() : '';
   }
+
+  void _syncController(TextEditingController controller, String newValue, bool isEditingFlag) {
+  if (!isEditingFlag && controller.text != newValue) {
+    final selection = TextSelection.collapsed(offset: newValue.length);
+    controller.value = TextEditingValue(text: newValue, selection: selection);
+  }
+}
+}
 
   @override
   void dispose() {
@@ -65,9 +83,21 @@ class _DrillingLogPageState extends ConsumerState<DrillingLogPage> {
     final formState = ref.watch(drillingLogViewModelProvider(_params));
     final notifier = ref.read(drillingLogViewModelProvider(_params).notifier);
 
-    _crewNameController.text = formState.crewName;
-    _wellsController.text = formState.totalWells.toString();
-    _metersController.text = formState.totalMeters.toString();
+
+if (!_isEditingCrewName && _crewNameController.text != formState.crewName) {
+  _crewNameController.text = formState.crewName;
+}
+if (!_isEditingWells &&
+    _wellsController.text != (formState.totalWells > 0 ? formState.totalWells.toString() : '')) {
+  _wellsController.text = formState.totalWells > 0 ? formState.totalWells.toString() : '';
+}
+if (!_isEditingMeters &&
+    _metersController.text != (formState.totalMeters > 0 ? formState.totalMeters.toString() : '')) {
+  _metersController.text = formState.totalMeters > 0 ? formState.totalMeters.toString() : '';
+}
+    // _crewNameController.text = formState.crewName;
+    // _wellsController.text = formState.totalWells.toString();
+    // _metersController.text = formState.totalMeters.toString();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -82,15 +112,42 @@ class _DrillingLogPageState extends ConsumerState<DrillingLogPage> {
           children: [
             _sectionLabel('👷 Crew Name'),
             _readonlyInput(_crewNameController, notifier.updateCrewName),
+// Date Filled
+            _sectionLabel('📅 Date Filled'),
+TextField(
+  readOnly: true,
+  controller: TextEditingController(text: formState.dateFilled),
+  decoration: InputDecoration(
+    filled: true,
+    fillColor: const Color(0xFFE3F2FD),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+    suffixIcon: const Icon(Icons.calendar_today),
+  ),
+  onTap: () async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.tryParse(formState.dateFilled) ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (selectedDate != null) {
+      notifier.updateDateFilled(selectedDate.toIso8601String().split('T').first);
+    }
+  },
+),
+const SizedBox(height: 20),
                // 🧑‍🤝‍🧑 Добавь участников здесь
            _buildParticipantsList(formState, notifier),
             const SizedBox(height: 20),
             const SizedBox(height: 20),
-            _sectionLabel('🕳 Total Wells'),
-            _readonlyInput(_wellsController, (v) => notifier.updateTotalWells(int.tryParse(v) ?? 0)),
+            _sectionLabel('🕳 Total Wells'), _readonlyInput(_wellsController,(v) => notifier.updateTotalWells(int.tryParse(v) ?? 0),keyboardType: TextInputType.numberWithOptions(decimal: true),
+  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+),
             const SizedBox(height: 20),
             _sectionLabel('📏 Total Meters'),
-            _readonlyInput(_metersController, (v) => notifier.updateTotalMeters(double.tryParse(v) ?? 0.0)),
+           _readonlyInput(_metersController,(v) => notifier.updateTotalMeters(double.tryParse(v) ?? 0.0),keyboardType: TextInputType.numberWithOptions(decimal: true),
+  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+),
             const SizedBox(height: 20),
             _buildOtherComments(notifier),
             const SizedBox(height: 20),
@@ -104,19 +161,28 @@ class _DrillingLogPageState extends ConsumerState<DrillingLogPage> {
       ),
     );
   }
-
-  Widget _readonlyInput(TextEditingController controller, void Function(String) onChanged, {int maxLines = 1}) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFE3F2FD),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
+Widget _readonlyInput(
+  TextEditingController controller,
+  void Function(String) onChanged, {
+  int maxLines = 1,
+  List<TextInputFormatter>? inputFormatters,
+  TextInputType? keyboardType,
+  void Function()? onEditingComplete, // ✅ новое
+}) {
+  return TextField(
+    controller: controller,
+    maxLines: maxLines,
+    onChanged: onChanged,
+    onEditingComplete: onEditingComplete, // ✅ новое
+    keyboardType: keyboardType,
+    inputFormatters: inputFormatters,
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: const Color(0xFFE3F2FD),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+    ),
+  );
+}
 
   Widget _sectionLabel(String label) => Text(
     label,
@@ -392,31 +458,66 @@ class _DrillingLogPageState extends ConsumerState<DrillingLogPage> {
   );
 }
 
-  Widget _buildSaveAndCloseButtons(DrillingLogViewModel notifier) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _isSaving ? null : () async {
-              setState(() => _isSaving = true);
-              await notifier.saveAsync();
-              if (mounted) context.pop(true);
-            },
-            icon: _isSaving ? const CircularProgressIndicator(color: Colors.white) : const Icon(Icons.save),
-            label: Text(_isSaving ? 'Saving...' : 'Save'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-          ),
+Widget _buildSaveAndCloseButtons(DrillingLogViewModel notifier) {
+  final formState = ref.read(drillingLogViewModelProvider(_params));
+
+  return Row(
+    children: [
+      Expanded(
+        child: ElevatedButton.icon(
+          onPressed: _isSaving
+              ? null
+              : () async {
+                  if (formState.crewName.trim().isEmpty) {
+                    _showSnackBar('❗ Crew name is required.');
+                    return;
+                  }
+
+                  if (formState.selectedParticipantIds.isEmpty) {
+                    _showSnackBar('❗ At least one participant must be selected.');
+                    return;
+                  }
+
+                  if (formState.totalWells <= 0) {
+                    _showSnackBar('❗ Please enter total wells greater than zero.');
+                    return;
+                  }
+
+                  if (formState.totalMeters <= 0) {
+                    _showSnackBar('❗ Please enter total meters greater than zero.');
+                    return;
+                  }
+
+                  setState(() => _isSaving = true);
+                  await notifier.saveAsync();
+                  if (mounted) context.pop(true);
+                },
+          icon: _isSaving ? const CircularProgressIndicator(color: Colors.white) : const Icon(Icons.save),
+          label: Text(_isSaving ? 'Saving...' : 'Save'),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => context.pop(),
-            icon: const Icon(Icons.close),
-            label: const Text('Close'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
-          ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: ElevatedButton.icon(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.close),
+          label: const Text('Close'),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
+void _showSnackBar(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 70),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  );
+}
 }

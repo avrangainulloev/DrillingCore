@@ -344,6 +344,7 @@ namespace DrillingCore.Infrastructure.Repositories
             {
                 Id = form.Id,
                 ProjectId = form.ProjectId,
+                CrewName = form.CrewName,
                 DateFilled = form.DateFilled,
                 TotalWells = form.DrillingForm.NumberOfWells,
                 TotalMeters = form.DrillingForm.TotalMeters,

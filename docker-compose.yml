@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: drillingcore
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  webapi:
+    build:
+      context: .
+      dockerfile: DrillingCore.WebAPI/Dockerfile
+    ports:
+      - "5000:5000"
+    restart: always
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=drillingcore;Username=postgres;Password=postgres"
+
+  webui:
+    build:
+      context: ./DrillingCore.WebUI/DrillingCoreApp
+      dockerfile: ../Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - webapi
+    environment:
+      - VITE_API_BASE_URL=http://10.0.0.80:5000/api
+      - VITE_FILE_BASE_URL=http://10.0.0.80:5000/
+
+
+volumes:
+  dbdata:

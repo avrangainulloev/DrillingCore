@@ -82,7 +82,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowDev",
         policy => policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:8080",
+                "http://127.0.0.1:8080",
+                "http://10.0.0.80:8080")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -115,12 +117,20 @@ app.UseStaticFiles(new StaticFileOptions
         var path = ctx.Context.Request.Path.Value;
         if (path != null && (path.StartsWith("/photos") || path.StartsWith("/signatures")))
         {
-            ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = "http://localhost:5173";
-            ctx.Context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+
+            var origin = ctx.Context.Request.Headers["Origin"].ToString();
+            if (origin == "http://localhost:8080" || origin == "http://10.0.0.80:8080")
+            {
+                ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+                ctx.Context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+            }
+            //ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = "http://localhost:5173";
+            //ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = "http://localhost:8080";
+            //ctx.Context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
         }
     }
 });
-app.UseCors("AllowLocalhost");
+//app.UseCors("AllowLocalhost");
 //if (app.Environment.IsDevelopment())
 //{
 app.UseSwagger();

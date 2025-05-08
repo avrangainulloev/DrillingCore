@@ -42,17 +42,18 @@
             <td>{{ formatDate(project.endDate) }}</td>
             <td>{{ project.status }}</td>
             <td>
-              <button class="btn edit-btn" @click="openProjectModal(project.id)">Edit</button>
-              <button class="btn participant-btn" @click="openParticipants(project.id)">Participants</button>
-              <button class="btn forms-btn" @click="openFormsModal(project.id)">Forms</button>
-              <button class="btn delivery-btn" @click="openDeliveryModal(project.id)">Delivery Settings</button>
+              <div class="desktop-buttons">
+                <button class="btn edit-btn" @click="openProjectModal(project.id)">Edit</button>
+                <button class="btn participant-btn" @click="openParticipants(project.id)">Participants</button>
+                <button class="btn forms-btn" @click="openFormsModal(project.id)">Forms</button>
+                <button class="btn delivery-btn" @click="openDeliveryModal(project.id)">Delivery</button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Modal for Forms -->
     <Modal v-if="showFormsModal" @close="closeFormsModal">
       <FormsSection
         v-if="selectedProjectId !== null"
@@ -61,7 +62,6 @@
       />
     </Modal>
 
-    <!-- Modal for Delivery Settings + Form -->
     <Modal v-if="showDeliveryModal" @close="closeDeliveryModal">
       <FormDeliverySettings
         v-if="!showFormDeliveryModal"
@@ -85,7 +85,9 @@ import Modal from './Modal.vue';
 import FormsSection from './FormsSection.vue';
 import FormDeliveryModal from './FormDeliveryModal.vue';
 import FormDeliverySettings from './FormDeliverySettings.vue';
- 
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default defineComponent({
   name: 'ProjectsSection',
   components: {
@@ -102,12 +104,11 @@ export default defineComponent({
       showFormsModal: false,
       selectedProjectId: null as number | null,
       userId: 1,
-
-      // Delivery settings and rule creation/editing
       showDeliveryModal: false,
       deliveryProjectId: null as number | null,
       showFormDeliveryModal: false,
-      editingRule: null as any | null
+      editingRule: null as any | null,
+      activeDropdownId: null as number | null,
     };
   },
   mounted() {
@@ -117,11 +118,11 @@ export default defineComponent({
     async loadProjects() {
       try {
         const params = new URLSearchParams();
-        params.append('limit', '30');      
+        params.append('limit', '30');
         if (this.searchTerm) params.append('searchTerm', this.searchTerm);
         if (this.selectedStatus) params.append('status', this.selectedStatus);
 
-        const url = `${import.meta.env.VITE_API_BASE_URL}/Projects?${params.toString()}`;
+        const url = `${API_BASE_URL}/Projects?${params.toString()}`;
         const response = await fetch(url, { credentials: 'include' });
 
         if (response.ok) {
@@ -171,37 +172,60 @@ export default defineComponent({
       this.showFormDeliveryModal = false;
     },
     formatDate(dateStr: string) {
-      if (!dateStr) return '';
-      return new Date(dateStr).toLocaleDateString();
-    }
-  }
+      return dateStr ? new Date(dateStr).toLocaleDateString() : '';
+    },
+  },
 });
 </script>
-
 
 <style scoped>
 .projects-section {
   padding: 1rem;
+  background-color: var(--content-bg);
+  color: var(--menu-text-light);
 }
+
+.dark-theme .projects-section {
+  background-color: var(--content-bg);
+  color: var(--menu-text-dark);
+}
+
 .projects-header {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 0.5rem;
 }
+
 .filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  flex-grow: 1;
 }
+
 .search-input,
 .status-select {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  min-width: 140px;
+  background-color: #fff;
+  color: #333;
 }
-.search-btn {
+
+.dark-theme .search-input,
+.dark-theme .status-select {
+  background-color: #2c2c2c;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.search-btn,
+.create-btn {
   background-color: #1976d2;
   color: #ffffff;
   padding: 0.5rem 1rem;
@@ -209,77 +233,127 @@ export default defineComponent({
   border-radius: 4px;
   cursor: pointer;
 }
-.search-btn:hover {
+
+.search-btn:hover,
+.create-btn:hover {
   background-color: #1565c0;
 }
+
+.scrollable-projects {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
 .projects-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 768px;
 }
+
 .projects-table th,
 .projects-table td {
   border: 1px solid #333;
   padding: 0.75rem;
   text-align: left;
 }
+
 .projects-table thead th {
   position: sticky;
   top: 0;
   background-color: #f7f7f7;
   z-index: 2;
 }
-.create-btn {
-  background-color: #1976d2;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+
+.dark-theme .projects-table th,
+.dark-theme .projects-table td {
+  background-color: #1f1f1f;
+  color: #e0e0e0;
+  border-color: #444;
 }
-.create-btn:hover {
-  background-color: #1565c0;
-}
-.edit-btn {
-  background-color: #115293;
-  color: white;
+
+.edit-btn,
+.participant-btn,
+.forms-btn,
+.delivery-btn {
   padding: 0.3rem 0.75rem;
   border-radius: 4px;
+  font-size: 0.85rem;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+}
+
+.edit-btn {
+  background-color: #115293;
 }
 .edit-btn:hover {
   background-color: #0d3c73;
 }
+
 .participant-btn {
   background-color: #4caf50;
-  color: white;
-  padding: 0.3rem 0.75rem;
-  margin-left: 0.3rem;
-  border-radius: 4px;
 }
 .participant-btn:hover {
   background-color: #43a047;
 }
+
 .forms-btn {
   background-color: #ff9800;
-  color: white;
-  padding: 0.3rem 0.75rem;
-  margin-left: 0.3rem;
-  border-radius: 4px;
 }
 .forms-btn:hover {
   background-color: #fb8c00;
 }
+
 .delivery-btn {
   background-color: #f08d8d;
-  color: white;
-  padding: 0.3rem 0.75rem;
-  margin-left: 0.3rem;
-  border-radius: 4px;
 }
 .delivery-btn:hover {
   background-color: #7b1fa2;
 }
-.scrollable-projects {
-  max-height: calc(100vh - 220px);
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .projects-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .create-btn {
+    align-self: flex-end;
+    width: 100%;
+  }
+
+  .scrollable-projects {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .projects-table {
+    font-size: 0.85rem;
+    min-width: 700px;
+  }
+
+  .projects-table td button {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .desktop-buttons {
+    display: block;
+  }
+
+  .mobile-actions {
+    display: none;
+  }
 }
 </style>
+
