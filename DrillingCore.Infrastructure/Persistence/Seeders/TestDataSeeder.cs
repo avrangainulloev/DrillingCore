@@ -45,18 +45,18 @@ namespace DrillingCore.Infrastructure.Persistence.Seeders
 
                 }
                 var fullNames = new List<string>
-{
-    "Liam Johnson", "Olivia Smith", "Noah Williams", "Emma Brown",
-    "Oliver Jones", "Ava Davis", "Elijah Wilson", "Sophia Miller",
-    "James Taylor", "Charlotte Anderson", "Benjamin Thomas", "Amelia Moore",
-    "Lucas Martin", "Mia Jackson", "Henry White", "Harper Harris",
-    "Alexander Thompson", "Evelyn Lewis", "William Young", "Abigail Hall",
-    "Logan Allen", "Isabella Wright", "Jackson King", "Emily Scott",
-    "Daniel Green", "Scarlett Adams", "Sebastian Baker", "Ella Nelson",
-    "Jacob Carter", "Grace Mitchell", "Jack Perez", "Chloe Roberts",
-    "Owen Turner", "Lily Phillips", "Matthew Campbell", "Zoe Parker",
-    "Nathan Evans", "Victoria Stewart", "Leo Rivera", "Hannah Sanchez"
-};
+                    {
+                        "Liam Johnson", "Olivia Smith", "Noah Williams", "Emma Brown",
+                        "Oliver Jones", "Ava Davis", "Elijah Wilson", "Sophia Miller",
+                        "James Taylor", "Charlotte Anderson", "Benjamin Thomas", "Amelia Moore",
+                        "Lucas Martin", "Mia Jackson", "Henry White", "Harper Harris",
+                        "Alexander Thompson", "Evelyn Lewis", "William Young", "Abigail Hall",
+                        "Logan Allen", "Isabella Wright", "Jackson King", "Emily Scott",
+                        "Daniel Green", "Scarlett Adams", "Sebastian Baker", "Ella Nelson",
+                        "Jacob Carter", "Grace Mitchell", "Jack Perez", "Chloe Roberts",
+                        "Owen Turner", "Lily Phillips", "Matthew Campbell", "Zoe Parker",
+                        "Nathan Evans", "Victoria Stewart", "Leo Rivera", "Hannah Sanchez"
+                    };
 
                 var users = new List<User>();
 
@@ -78,6 +78,9 @@ namespace DrillingCore.Infrastructure.Persistence.Seeders
                         IsActive = true
                     });
                 }
+
+
+                context.Users.AddRange(users);
 
             }
 
