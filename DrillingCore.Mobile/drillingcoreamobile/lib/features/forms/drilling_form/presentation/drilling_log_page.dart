@@ -39,9 +39,9 @@ class _DrillingLogPageState extends ConsumerState<DrillingLogPage> {
 
   bool _isSaving = false;
   String participantSearch = '';
-  bool _isEditingCrewName = false;
-bool _isEditingWells = false;
-bool _isEditingMeters = false;
+  final bool _isEditingCrewName = false;
+final bool _isEditingWells = false;
+final bool _isEditingMeters = false;
   @override
 void initState() {
   super.initState();
@@ -55,12 +55,12 @@ void initState() {
   // 👇 Устанавливаем только если formId > 0 (редактирование)
   if (widget.formId > 0) {
     final state = ref.read(drillingLogViewModelProvider(_params));
-    // _crewNameController.text = state.crewName;
-    // _wellsController.text = state.totalWells > 0 ? state.totalWells.toString() : '';
-    // _metersController.text = state.totalMeters > 0 ? state.totalMeters.toString() : '';
+    _crewNameController.text = state.crewName;
+    _wellsController.text = state.totalWells > 0 ? state.totalWells.toString() : '';
+_metersController.text = state.totalMeters != 0 ? state.totalMeters.toString() : '';
   }
 
-  void _syncController(TextEditingController controller, String newValue, bool isEditingFlag) {
+  void syncController(TextEditingController controller, String newValue, bool isEditingFlag) {
   if (!isEditingFlag && controller.text != newValue) {
     final selection = TextSelection.collapsed(offset: newValue.length);
     controller.value = TextEditingValue(text: newValue, selection: selection);
@@ -144,10 +144,36 @@ const SizedBox(height: 20),
   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
 ),
             const SizedBox(height: 20),
-            _sectionLabel('📏 Total Meters'),
-           _readonlyInput(_metersController,(v) => notifier.updateTotalMeters(double.tryParse(v) ?? 0.0),keyboardType: TextInputType.numberWithOptions(decimal: true),
-  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+      _sectionLabel('📏 Total Meters'),
+StatefulBuilder(
+  builder: (context, setState) {
+    return TextField(
+      controller: _metersController,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFFE3F2FD),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onChanged: (value) {
+        // Заменяем запятую на точку, но не трогаем курсор
+        final newValue = value.replaceAll(',', '.');
+        if (newValue != value) {
+          final pos = _metersController.selection.baseOffset;
+          _metersController.value = TextEditingValue(
+            text: newValue,
+            selection: TextSelection.collapsed(
+              offset: pos > newValue.length ? newValue.length : pos,
+            ),
+          );
+        }
+        final parsed = double.tryParse(newValue);
+        if (parsed != null) notifier.updateTotalMeters(parsed);
+      },
+    );
+  },
 ),
+
             const SizedBox(height: 20),
             _buildOtherComments(notifier),
             const SizedBox(height: 20),

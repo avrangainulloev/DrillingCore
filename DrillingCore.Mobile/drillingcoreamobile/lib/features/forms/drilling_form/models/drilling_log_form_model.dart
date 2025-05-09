@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import '../../inspection_forms/models/drill_inspection_form_model.dart';
 
 class DrillingLogFormModel {

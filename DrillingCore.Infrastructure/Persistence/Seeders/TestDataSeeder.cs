@@ -44,47 +44,70 @@ namespace DrillingCore.Infrastructure.Persistence.Seeders
                     });
 
                 }
+                var fullNames = new List<string>
+{
+    "Liam Johnson", "Olivia Smith", "Noah Williams", "Emma Brown",
+    "Oliver Jones", "Ava Davis", "Elijah Wilson", "Sophia Miller",
+    "James Taylor", "Charlotte Anderson", "Benjamin Thomas", "Amelia Moore",
+    "Lucas Martin", "Mia Jackson", "Henry White", "Harper Harris",
+    "Alexander Thompson", "Evelyn Lewis", "William Young", "Abigail Hall",
+    "Logan Allen", "Isabella Wright", "Jackson King", "Emily Scott",
+    "Daniel Green", "Scarlett Adams", "Sebastian Baker", "Ella Nelson",
+    "Jacob Carter", "Grace Mitchell", "Jack Perez", "Chloe Roberts",
+    "Owen Turner", "Lily Phillips", "Matthew Campbell", "Zoe Parker",
+    "Nathan Evans", "Victoria Stewart", "Leo Rivera", "Hannah Sanchez"
+};
+
                 var users = new List<User>();
 
-                for (int i = 1; i <= 40; i++)
+                for (int i = 0; i < fullNames.Count; i++)
                 {
+                    var nameParts = fullNames[i].Split(' ');
+                    var firstName = nameParts[0].ToLower();
+                    var lastName = nameParts[1].ToLower();
+
                     users.Add(new User
                     {
-                        FullName = $"Test User {i}",
-                        Username = $"testuser{i}",
-                        PasswordHash = "hashedpassword", // или используйте хэширование, если нужно
+                        FullName = fullNames[i],
+                        Username = $"{firstName}.{lastName}",
+                        PasswordHash = "hashedpassword", // заменить на реальное хэширование при необходимости
                         RoleId = 2,
-                        Email = $"testuser{i}@example.com",
-                        Mobile = $"555-010{i:D2}", // 555-01001, 555-01002, ...
-                        JobTitle="Helper",
+                        Email = $"{firstName}.{lastName}@example.com",
+                        Mobile = $"555-01{i + 1:D2}", // например: 555-0101, 555-0102, ...
+                        JobTitle = "Helper",
                         IsActive = true
                     });
                 }
-
-                context.Users.AddRange(users);
 
             }
 
             if (!await context.Projects.AnyAsync())
             {
-                var projects = new List<Project>();
-
-                for (int i = 1; i <= 20; i++)
-                {
-                    projects.Add(new Project
-                    {
-                        Name = $"Project {i}",
-                        Location = $"Location {i}",
-                        StartDate = DateTime.UtcNow.AddDays(-i * 10), // старт каждый на 10 дней раньше
-                        EndDate = i % 3 == 0 ? DateTime.UtcNow.AddDays(i * 5) : null, // некоторые без даты окончания
-                        Client = $"Client {i}",
-                        HasCampOrHotel = i % 2 == 0, // чередование true/false
-                        StatusId = i % 2 == 0 ? 1 : 2 // например: 1 = Open, 2 = Completed
-                    });
-                }
+                var projects = new List<Project>
+    {
+        new() { Name = "Swan Hills Infill Program", Location = "Swan Hills, AB", StartDate = DateTime.UtcNow.AddDays(-30), EndDate = null, Client = "Cenovus Energy", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Kaybob Duvernay Pad A", Location = "Fox Creek, AB", StartDate = DateTime.UtcNow.AddDays(-60), EndDate = DateTime.UtcNow.AddDays(15), Client = "Chevron Canada", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Fort Hills SAGD Expansion", Location = "Fort McMurray, AB", StartDate = DateTime.UtcNow.AddDays(-120), EndDate = null, Client = "Suncor", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Leduc County Waterline Bore", Location = "Leduc, AB", StartDate = DateTime.UtcNow.AddDays(-90), EndDate = DateTime.UtcNow.AddDays(-10), Client = "Alberta Infrastructure", HasCampOrHotel = false, StatusId = 2 },
+        new() { Name = "Peace River Horizontal Wells", Location = "Peace River, AB", StartDate = DateTime.UtcNow.AddDays(-75), EndDate = null, Client = "Baytex Energy", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Trans Mountain Pump Station", Location = "Kamloops, BC", StartDate = DateTime.UtcNow.AddDays(-150), EndDate = DateTime.UtcNow.AddDays(30), Client = "Trans Mountain Corp", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Medicine Hat Geotech Survey", Location = "Medicine Hat, AB", StartDate = DateTime.UtcNow.AddDays(-40), EndDate = null, Client = "City of Medicine Hat", HasCampOrHotel = false, StatusId = 1 },
+        new() { Name = "SaskPower Wind Monitoring", Location = "Swift Current, SK", StartDate = DateTime.UtcNow.AddDays(-20), EndDate = null, Client = "SaskPower", HasCampOrHotel = false, StatusId = 1 },
+        new() { Name = "Grande Prairie Pad B Drilling", Location = "Grande Prairie, AB", StartDate = DateTime.UtcNow.AddDays(-85), EndDate = null, Client = "Ovintiv", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Regina Pipeline Integrity", Location = "Regina, SK", StartDate = DateTime.UtcNow.AddDays(-50), EndDate = DateTime.UtcNow.AddDays(10), Client = "Enbridge", HasCampOrHotel = false, StatusId = 2 },
+        new() { Name = "Athabasca Regional Boreholes", Location = "Athabasca, AB", StartDate = DateTime.UtcNow.AddDays(-100), EndDate = null, Client = "Teck Resources", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Calgary Ring Road Geotechnical", Location = "Calgary, AB", StartDate = DateTime.UtcNow.AddDays(-45), EndDate = DateTime.UtcNow.AddDays(20), Client = "Alberta Transportation", HasCampOrHotel = false, StatusId = 1 },
+        new() { Name = "Whitecourt Landfill Survey", Location = "Whitecourt, AB", StartDate = DateTime.UtcNow.AddDays(-70), EndDate = null, Client = "Town of Whitecourt", HasCampOrHotel = false, StatusId = 1 },
+        new() { Name = "Drayton Valley Well Re-Entry", Location = "Drayton Valley, AB", StartDate = DateTime.UtcNow.AddDays(-110), EndDate = null, Client = "Tamarack Valley Energy", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Edson Industrial Expansion", Location = "Edson, AB", StartDate = DateTime.UtcNow.AddDays(-35), EndDate = DateTime.UtcNow.AddDays(25), Client = "Obsidian Energy", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Cold Lake Disposal Well", Location = "Cold Lake, AB", StartDate = DateTime.UtcNow.AddDays(-90), EndDate = null, Client = "Imperial Oil", HasCampOrHotel = true, StatusId = 1 },
+        new() { Name = "Brooks Wind Farm Support", Location = "Brooks, AB", StartDate = DateTime.UtcNow.AddDays(-20), EndDate = null, Client = "BluEarth Renewables", HasCampOrHotel = false, StatusId = 1 },
+        new() { Name = "Hardisty Terminal Pad Survey", Location = "Hardisty, AB", StartDate = DateTime.UtcNow.AddDays(-130), EndDate = DateTime.UtcNow.AddDays(-20), Client = "Enbridge", HasCampOrHotel = true, StatusId = 2 },
+        new() { Name = "Vegreville Tank Install", Location = "Vegreville, AB", StartDate = DateTime.UtcNow.AddDays(-60), EndDate = DateTime.UtcNow.AddDays(5), Client = "AltaGas", HasCampOrHotel = false, StatusId = 1 },
+        new() { Name = "Bonnyville Site Reclamation", Location = "Bonnyville, AB", StartDate = DateTime.UtcNow.AddDays(-150), EndDate = null, Client = "Orphan Well Association", HasCampOrHotel = false, StatusId = 1 }
+    };
 
                 context.Projects.AddRange(projects);
-
             }
 
             if (!await context.ProjectGroups.AnyAsync())

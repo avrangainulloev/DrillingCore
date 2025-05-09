@@ -157,7 +157,6 @@ class DrillingLogViewModel extends StateNotifier<DrillingLogFormModel> {
   int? formId;
   if (_params.formId == 0) {
     formId = await _drillingLogFormService.saveDrillingLogForm(dto);
-    if (formId == null) throw Exception('Save failed');
   } else {
     formId = _params.formId;
     await _drillingLogFormService.updateDrillingLogForm(formId, dto);
@@ -170,7 +169,7 @@ class DrillingLogViewModel extends StateNotifier<DrillingLogFormModel> {
 
   for (final photo in state.photos) {
     if (photo.file != null) {
-      await _formService.uploadFormPhoto(formId, photo.file);
+      await _formService.uploadFormPhoto(formId!, photo.file);
     }
   }
 
@@ -184,7 +183,7 @@ class DrillingLogViewModel extends StateNotifier<DrillingLogFormModel> {
     if (dataUrl.startsWith('data:image')) {
       final base64Str = dataUrl.split(',').last;
       final bytes = base64Decode(base64Str);
-      await _formService.uploadFormSignature(formId, participantId, bytes);
+      await _formService.uploadFormSignature(formId!, participantId, bytes);
     }
   }
 }
