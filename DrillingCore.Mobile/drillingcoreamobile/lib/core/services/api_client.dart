@@ -10,7 +10,7 @@ class ApiClient {
   ApiClient()
   : dio = Dio(
       BaseOptions(
-        baseUrl: 'http://10.0.0.80:5000/api/',
+        baseUrl: 'http://51.222.205.161:5000/api/',
         connectTimeout: const Duration(seconds: 25),
         receiveTimeout: const Duration(seconds: 25),
         validateStatus: (status) {

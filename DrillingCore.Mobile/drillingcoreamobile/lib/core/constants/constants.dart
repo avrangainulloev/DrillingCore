@@ -1,1 +1,1 @@
-const String kApiBaseUrl = 'http://10.0.0.80:5000/'; // без /api
+const String kApiBaseUrl = 'http://51.222.205.161:5000/'; // без /api

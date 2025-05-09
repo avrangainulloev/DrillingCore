@@ -29,8 +29,8 @@ namespace DrillingCore.Application.FLHA.Commands
                 CreatedAt = DateTime.UtcNow,
                 UpdateAt = DateTime.UtcNow,
                 OtherComments = dto.OtherComments,
-                CrewName = "",        // optional
-                UnitNumber = "",      // optional
+                CrewName = dto.CrewName,
+                
                 Status = "Pending",
 
                 FormParticipants = dto.Participants

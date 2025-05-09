@@ -500,7 +500,13 @@ Widget _buildSaveAndCloseButtons(DrillingLogViewModel notifier) {
       const SizedBox(width: 10),
       Expanded(
         child: ElevatedButton.icon(
-          onPressed: () => context.pop(),
+            onPressed: () {
+  if (Navigator.of(context).canPop()) {
+    context.pop(true);
+  } else {
+    context.go('/home');
+  }
+},
           icon: const Icon(Icons.close),
           label: const Text('Close'),
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),

@@ -19,11 +19,15 @@ class LoginView extends ConsumerWidget {
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
             child: Image.asset(
-              'assets/images/login_drilling_without_text.png',
+              'assets/images/loginpageback.png',
               fit: BoxFit.cover,
             ),
           ),
-
+Container(
+  height: 1,
+  width: double.infinity,
+  color: Color(0xFFF9D65D),
+),
           // 🧾 Login Form
           Expanded(
             child: SingleChildScrollView(

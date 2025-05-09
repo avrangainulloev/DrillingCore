@@ -315,6 +315,12 @@ export default defineComponent({
   background-color: #7b1fa2;
 }
 
+.desktop-buttons {
+  display: flex;
+  flex-direction: row; /* по горизонтали */
+  gap: 0.5rem; /* отступы между кнопками */
+  flex-wrap: wrap; /* если места мало, перенос на новую строку */
+}
 /* Responsive styles */
 @media (max-width: 768px) {
   .filters {
@@ -347,9 +353,7 @@ export default defineComponent({
     margin-bottom: 0.25rem;
   }
 
-  .desktop-buttons {
-    display: block;
-  }
+
 
   .mobile-actions {
     display: none;
