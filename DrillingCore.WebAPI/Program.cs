@@ -84,7 +84,7 @@ builder.Services.AddCors(options =>
         policy => policy
             .WithOrigins("http://localhost:8080",
                 "http://127.0.0.1:8080",
-                "http://10.0.0.80:8080")
+                "http://51.222.205.161:8080")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -119,7 +119,7 @@ app.UseStaticFiles(new StaticFileOptions
         {
 
             var origin = ctx.Context.Request.Headers["Origin"].ToString();
-            if (origin == "http://localhost:8080" || origin == "http://10.0.0.80:8080")
+            if (origin == "http://localhost:8080" || origin == "http://51.222.205.161:8080")
             {
                 ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = origin;
                 ctx.Context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
