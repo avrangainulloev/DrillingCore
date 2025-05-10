@@ -4,35 +4,54 @@ import 'package:go_router/go_router.dart';
 import '../viewmodel/todo_view_model.dart';
 import '../models/unsigned_form_dto.dart';
 
-class ToDoPage extends ConsumerWidget {
+class ToDoPage extends ConsumerStatefulWidget {
   const ToDoPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final forms = ref.watch(todoViewModelProvider);
+  ConsumerState<ToDoPage> createState() => _ToDoPageState();
+}
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('To Do'),
-        backgroundColor: Colors.teal.shade700,
-        foregroundColor: Colors.white,
-      ),
-     body: forms.isEmpty
-    ? const Center(child: Text('No forms to sign 🎉'))
-    : RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(todoViewModelProvider.notifier).refreshAsync();
-        },
-        child: ListView.builder(
-          itemCount: forms.length,
-          itemBuilder: (_, index) {
-            final form = forms[index];
-            return _FormListTile(form: form);
-          },
-        ),
-      ),
-    );
+class _ToDoPageState extends ConsumerState<ToDoPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(todoViewModelProvider.notifier).loadAsync());
   }
+
+  @override
+Widget build(BuildContext context) {
+  final forms = ref.watch(todoViewModelProvider);
+
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('To Do'),
+      backgroundColor: Colors.teal.shade700,
+      foregroundColor: Colors.white,
+    ),
+    body: RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(todoViewModelProvider.notifier).refreshAsync();
+      },
+      child: forms.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: const [
+                SizedBox(height: 200),
+                Center(child: Text('No forms to sign 🎉')),
+              ],
+            )
+          : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: forms.length,
+              itemBuilder: (_, index) {
+                final form = forms[index];
+                return _FormListTile(form: form);
+              },
+            ),
+    ),
+  );
+}
+
 }
 
 class _FormListTile extends StatelessWidget {
@@ -60,7 +79,7 @@ class _FormListTile extends StatelessWidget {
       case 4:
         return '🏍️';
       case 5:
-        return '🛠️';
+        return '🚰';
       default:
         return '📄';
     }
@@ -69,15 +88,15 @@ class _FormListTile extends StatelessWidget {
   Color _getTextColor(int typeId) {
     switch (typeId) {
       case 1:
-        return const Color(0xFF1E88E5); // blue
+        return const Color(0xFF1E88E5);
       case 2:
-        return const Color(0xFFD81B60); // pink
+        return const Color(0xFFD81B60);
       case 3:
-        return const Color(0xFF43A047); // green
+        return const Color(0xFF43A047);
       case 4:
-        return const Color(0xFFFB8C00); // orange
+        return const Color(0xFFFB8C00);
       case 5:
-        return const Color(0xFF8E24AA); // purple
+        return const Color(0xFF8E24AA);
       default:
         return Colors.teal;
     }
@@ -98,12 +117,12 @@ class _FormListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Stack(
           children: [
-            // 🔔 Required to sign (top-right)
             Positioned(
               right: 0,
               top: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFfdecea),
                   borderRadius: BorderRadius.circular(12),
@@ -118,14 +137,10 @@ class _FormListTile extends StatelessWidget {
                 ),
               ),
             ),
-
-            // 📄 Main content
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-
-                // 🎨 Form name
                 Text(
                   '$emoji ${form.formTypeName}',
                   style: TextStyle(
@@ -134,10 +149,7 @@ class _FormListTile extends StatelessWidget {
                     color: color,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
-                // 📁 Project
                 Text(
                   form.projectName,
                   style: const TextStyle(
@@ -145,10 +157,7 @@ class _FormListTile extends StatelessWidget {
                     color: Colors.black87,
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                // 👤 Creator & 🕒 UpdatedAt
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -168,7 +177,6 @@ class _FormListTile extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 8),
                 const Divider(height: 1, thickness: 1),
               ],

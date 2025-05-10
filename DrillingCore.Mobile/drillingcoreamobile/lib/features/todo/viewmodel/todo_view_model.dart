@@ -13,17 +13,17 @@ class ToDoViewModel extends StateNotifier<List<UnsignedFormDto>> {
   final _session = UserSession();
 
   ToDoViewModel(this._service) : super([]) {
-    _loadForms();
+     loadAsync();
   }
 
-  Future<void> _loadForms() async {
-    final session = await _session.getSession();
-    if (session == null) return;
+Future<void> loadAsync() async {
+  final session = await _session.getSession();
+  if (session == null) return;
 
-    final userId = session['userId'] as int;
-    final forms = await _service.getUnsignedForms(userId);
-    state = forms;
-  }
+  final userId = session['userId'] as int;
+  final forms = await _service.getUnsignedForms(userId);
+  state = forms;
+}
 
   Future<void> refreshAsync() async {
     final session = await _session.getSession();
