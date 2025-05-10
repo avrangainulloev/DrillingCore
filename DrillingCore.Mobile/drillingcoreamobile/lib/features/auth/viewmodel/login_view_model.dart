@@ -53,9 +53,8 @@ class LoginViewModel extends StateNotifier<LoginState> {
   Future<void> login() async {
     state = state.copyWith(isLoading: true);
 
-     // ✅ Если пусто — установить admin/admin
-  final username = state.username.trim().isEmpty ? 'admin' : state.username;
-  final password = state.password.trim().isEmpty ? 'admin' : state.password;
+  final username = state.username.trim();
+  final password = state.password.trim();
 
   final result = await _authService.login(username, password);
     state = state.copyWith(isLoading: false);
