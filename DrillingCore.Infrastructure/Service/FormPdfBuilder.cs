@@ -17,6 +17,13 @@ namespace DrillingCore.Infrastructure.Service
     {
         private readonly IWebHostEnvironment _env;
 
+
+        static FormPdfBuilder()
+        {
+            // Один раз при первом использовании класса
+            FontManager.RegisterFont(File.OpenRead(Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansSymbols-VariableFont_wght.ttf")));
+        }
+
         public FormPdfBuilder(IWebHostEnvironment env)
         {
             _env = env;
@@ -26,7 +33,7 @@ namespace DrillingCore.Infrastructure.Service
         {
             try
             {
-                FontManager.RegisterFont(File.OpenRead(Path.Combine(_env.ContentRootPath, "fonts", "DejaVuSans.ttf")));
+                FontManager.RegisterFont(File.OpenRead(Path.Combine(_env.ContentRootPath, "fonts", "NotoSansSymbols-VariableFont_wght.ttf")));
                 var checklistMap = form.FormChecklistResponses
                     .ToDictionary(r => r.ChecklistItemId, r => r.Response ? "true" : "false");
 
@@ -43,7 +50,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text(form.FormType?.Name ?? "Inspection Form")
@@ -188,7 +195,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Field Level Hazard Assessment (FLHA)")
@@ -315,7 +322,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Field Level Hazard Assessment (FLHA)")
@@ -443,7 +450,7 @@ namespace DrillingCore.Infrastructure.Service
                         {
                             page.Margin(40);
                             page.Size(PageSizes.A4);
-                            page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
+                            page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
                             page.PageColor(Colors.White);
 
                             page.Header().Text(form.FormType?.Name ?? "Inspection Form")
@@ -588,7 +595,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Drilling Report")
@@ -698,7 +705,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text($"Drilling Report for {date}")
