@@ -80,7 +80,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text(form.FormType?.Name ?? "Inspection Form")
@@ -97,13 +97,23 @@ namespace DrillingCore.Infrastructure.Service
                                 info.Item().Text($"Crew Name: {form.CrewName}").Bold();
                                 info.Item().Text($"Date Filled: {form.DateFilled:yyyy-MM-dd}");
                                 info.Item().Text($"Unit Number: {form.UnitNumber}");
-                                info.Item().Text("☑ Check").FontFamily("Noto Sans Symbols");
-                                info.Item().Text("✔ Done").FontFamily("Noto Sans Symbols");
-                                info.Item().Text("✅ Unicode Check").FontFamily("Noto Sans Symbols");
+                                info.Item().Text("☑ Check").FontFamily("Noto Sans Symbols Thin");
+                                info.Item().Text("✔ Done").FontFamily("Noto Sans Symbols Thins");
+                                info.Item().Text("✅ Unicode Check NOTO").FontFamily("Noto Sans Symbols Thin");
 
                                 info.Item().Text("☑ Check").FontFamily("DejaVu Sans");
+                                info.Item().Text("☐ Unchecked").FontFamily("DejaVu Sans");
                                 info.Item().Text("✔ Done").FontFamily("DejaVu Sans");
                                 info.Item().Text("✅ Unicode Check").FontFamily("DejaVu Sans");
+
+
+                                info.Item().Text("⚠ Hazard Check").FontFamily("DejaVu Sans");
+                                info.Item().Text("✔ Unicode Check").FontFamily("DejaVu Sans");
+
+                              
+
+
+
                             });
 
                             // ✅ Checklist block
@@ -232,7 +242,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Field Level Hazard Assessment (FLHA)")
@@ -359,7 +369,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Field Level Hazard Assessment (FLHA)")
@@ -487,7 +497,7 @@ namespace DrillingCore.Infrastructure.Service
                         {
                             page.Margin(40);
                             page.Size(PageSizes.A4);
-                            page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
+                            page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(11));
                             page.PageColor(Colors.White);
 
                             page.Header().Text(form.FormType?.Name ?? "Inspection Form")
@@ -632,7 +642,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Drilling Report")
@@ -742,7 +752,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontFamily("Noto Sans Symbols Thin").FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text($"Drilling Report for {date}")
