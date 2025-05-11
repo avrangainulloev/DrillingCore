@@ -18,15 +18,45 @@ namespace DrillingCore.Infrastructure.Service
         private readonly IWebHostEnvironment _env;
 
 
-        static FormPdfBuilder()
-        {
-            // Один раз при первом использовании класса
-            FontManager.RegisterFont(File.OpenRead(Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansSymbols-VariableFont_wght.ttf")));
-        }
+        //static FormPdfBuilder()
+        //{
+ 
+        //    FontManager.RegisterFont(File.OpenRead(Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansSymbols-VariableFont_wght.ttf")));
+        //}
 
         public FormPdfBuilder(IWebHostEnvironment env)
         {
             _env = env;
+
+            try
+            {
+                string fontPath1 = Path.Combine(_env.ContentRootPath, "fonts", "DejaVuSans.ttf");
+                string fontPath2 = Path.Combine(_env.ContentRootPath, "fonts", "NotoSansSymbols-VariableFont_wght.ttf");
+
+                if (File.Exists(fontPath1))
+                {
+                    FontManager.RegisterFont(File.OpenRead(fontPath1));
+                    Console.WriteLine($"✅ Registered: {fontPath1}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Not found: {fontPath1}");
+                }
+
+                if (File.Exists(fontPath2))
+                {
+                    FontManager.RegisterFont(File.OpenRead(fontPath2));
+                    Console.WriteLine($"✅ Registered: {fontPath2}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Not found: {fontPath2}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Font registration failed: " + ex.Message);
+            }
         }
 
         public byte[] BuildDrillInspectionPdf(ProjectForm form, List<ChecklistItem> checklistItems)
