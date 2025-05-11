@@ -97,6 +97,13 @@ namespace DrillingCore.Infrastructure.Service
                                 info.Item().Text($"Crew Name: {form.CrewName}").Bold();
                                 info.Item().Text($"Date Filled: {form.DateFilled:yyyy-MM-dd}");
                                 info.Item().Text($"Unit Number: {form.UnitNumber}");
+                                info.Item().Text("☑ Check").FontFamily("Noto Sans Symbols");
+                                info.Item().Text("✔ Done").FontFamily("Noto Sans Symbols");
+                                info.Item().Text("✅ Unicode Check").FontFamily("Noto Sans Symbols");
+
+                                info.Item().Text("☑ Check").FontFamily("DejaVu Sans");
+                                info.Item().Text("✔ Done").FontFamily("DejaVu Sans");
+                                info.Item().Text("✅ Unicode Check").FontFamily("DejaVu Sans");
                             });
 
                             // ✅ Checklist block
