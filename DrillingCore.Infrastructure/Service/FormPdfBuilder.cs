@@ -33,7 +33,7 @@ namespace DrillingCore.Infrastructure.Service
         {
             try
             {
-                FontManager.RegisterFont(File.OpenRead(Path.Combine(_env.ContentRootPath, "fonts", "NotoSansSymbols-VariableFont_wght.ttf")));
+                
                 var checklistMap = form.FormChecklistResponses
                     .ToDictionary(r => r.ChecklistItemId, r => r.Response ? "true" : "false");
 
