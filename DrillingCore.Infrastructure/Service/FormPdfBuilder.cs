@@ -31,7 +31,7 @@ namespace DrillingCore.Infrastructure.Service
             try
             {
                 string fontPath1 = Path.Combine(_env.ContentRootPath, "fonts", "DejaVuSans.ttf");
-                string fontPath2 = Path.Combine(_env.ContentRootPath, "fonts", "NotoSansSymbols-VariableFont_wght.ttf");
+                
 
                 if (File.Exists(fontPath1))
                 {
@@ -41,17 +41,7 @@ namespace DrillingCore.Infrastructure.Service
                 else
                 {
                     Console.WriteLine($"❌ Not found: {fontPath1}");
-                }
-
-                if (File.Exists(fontPath2))
-                {
-                    FontManager.RegisterFont(File.OpenRead(fontPath2));
-                    Console.WriteLine($"✅ Registered: {fontPath2}");
-                }
-                else
-                {
-                    Console.WriteLine($"❌ Not found: {fontPath2}");
-                }
+                }                
             }
             catch (Exception ex)
             {
@@ -97,23 +87,6 @@ namespace DrillingCore.Infrastructure.Service
                                 info.Item().Text($"Crew Name: {form.CrewName}").Bold();
                                 info.Item().Text($"Date Filled: {form.DateFilled:yyyy-MM-dd}");
                                 info.Item().Text($"Unit Number: {form.UnitNumber}");
-                                info.Item().Text("☑ Check").FontFamily("Noto Sans Symbols Thin");
-                                info.Item().Text("✔ Done").FontFamily("Noto Sans Symbols Thins");
-                                info.Item().Text("✅ Unicode Check NOTO").FontFamily("Noto Sans Symbols Thin");
-
-                                info.Item().Text("☑ Check").FontFamily("DejaVu Sans");
-                                info.Item().Text("☐ Unchecked").FontFamily("DejaVu Sans");
-                                info.Item().Text("✔ Done").FontFamily("DejaVu Sans");
-                                info.Item().Text("✅ Unicode Check").FontFamily("DejaVu Sans");
-
-
-                                info.Item().Text("⚠ Hazard Check").FontFamily("DejaVu Sans");
-                                info.Item().Text("✔ Unicode Check").FontFamily("DejaVu Sans");
-
-                              
-
-
-
                             });
 
                             // ✅ Checklist block
@@ -256,7 +229,7 @@ namespace DrillingCore.Infrastructure.Service
                             col.Item().Border(1).Background(Colors.Grey.Lighten3).Padding(10).Column(info =>
                             {
                                 info.Spacing(4);
-                                info.Item().Text($"Crew Name: {form.Creator.FullName}").Bold();
+                                info.Item().Text($"Crew Name: {form.CrewName}").Bold();
                                 info.Item().Text($"Date Filled: {form.DateFilled:yyyy-MM-dd}");                                
                                 info.Item().Text($"Task: {flhaForm.TaskDescription}");
                             });

@@ -108,11 +108,18 @@ class _FormListTile extends StatelessWidget {
     final color = _getTextColor(form.formTypeId);
 
     return InkWell(
-      onTap: () {
-        context.go(
-          '/form?formId=${form.formId}&formTypeId=${form.formTypeId}&projectId=${form.projectId}',
-        );
-      },
+     onTap: () async {
+  final result = await context.push(
+    '/form?formId=${form.formId}&formTypeId=${form.formTypeId}&projectId=${form.projectId}',
+  );
+
+  // Вызов обновления, если форма была подписана
+  if (result == true) {
+    // Найдём nearest ConsumerState для вызова refresh
+    final state = context.findAncestorStateOfType<_ToDoPageState>();
+    state?.ref.read(todoViewModelProvider.notifier).refreshAsync();
+  }
+},
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Stack(
