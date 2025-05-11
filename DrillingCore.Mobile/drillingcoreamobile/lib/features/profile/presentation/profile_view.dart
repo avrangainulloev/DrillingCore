@@ -1,10 +1,13 @@
-import 'package:drillingcoreamobile/features/projects/viewmodel/project_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/user_session.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+import '../../../core/services/user_session.dart';
+import '../../../features/projects/viewmodel/project_view_model.dart';
 import '../../../features/todo/viewmodel/todo_view_model.dart';
 import '../../../features/auth/viewmodel/login_view_model.dart';
+
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
 
@@ -16,6 +19,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   String fullName = '';
   String username = '';
   String language = 'en'; // ru or en
+  String appVersion = '';
 
   @override
   void initState() {
@@ -25,9 +29,11 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
   Future<void> _loadUserInfo() async {
     final session = await UserSession().getSession();
+    final info = await PackageInfo.fromPlatform();
     setState(() {
       fullName = session?['fullName'] ?? '';
       username = session?['username'] ?? '';
+      appVersion = '${info.version} (${info.buildNumber})';
     });
   }
 
@@ -58,28 +64,36 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               ),
             ),
             const SizedBox(height: 16),
-            Center(child: Text(fullName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-            Center(child: Text(username, style: const TextStyle(fontSize: 16, color: Colors.grey))),
+            Center(
+              child: Text(
+                fullName,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Center(
+              child: Text(
+                username,
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
             const SizedBox(height: 30),
 
             const Divider(),
 
-           ListTile(
-  leading: const Icon(Icons.language),
-  title: const Text('Language'),
-  trailing: DropdownButton<String>(
-    value: language,
-    onChanged: (value) {
-  if (value != null) {
-    _changeLanguage(value);
-  }
-},
-    items: const [
-      DropdownMenuItem(value: 'en', child: Text('English')),
-      DropdownMenuItem(value: 'fr', child: Text('Français')),
-    ],
-  ),
-),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: const Text('Language'),
+              trailing: DropdownButton<String>(
+                value: language,
+                onChanged: (value) {
+                  if (value != null) _changeLanguage(value);
+                },
+                items: const [
+                  DropdownMenuItem(value: 'en', child: Text('English')),
+                  DropdownMenuItem(value: 'fr', child: Text('Français')),
+                ],
+              ),
+            ),
 
             const Divider(),
 
@@ -87,7 +101,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               leading: const Icon(Icons.lock_outline),
               title: const Text('Change Password'),
               onTap: () {
-                // TODO: реализовать переход на смену пароля
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Change Password - coming soon')),
                 );
@@ -102,12 +115,22 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               onTap: () async {
                 await UserSession().logout();
 
-                 // 🧹 сбрасываем все провайдеры
-                 ref.invalidate(todoViewModelProvider);
-                  ref.invalidate(loginViewModelProvider);
-                  ref.invalidate(projectViewModelProvider);
+                // 🧹 сбрасываем все провайдеры
+                ref.invalidate(todoViewModelProvider);
+                ref.invalidate(loginViewModelProvider);
+                ref.invalidate(projectViewModelProvider);
+
                 if (mounted) context.go('/login');
               },
+            ),
+
+            const Divider(),
+
+            Center(
+              child: Text(
+                'Version $appVersion',
+                style: const TextStyle(color: Colors.grey),
+              ),
             ),
           ],
         ),

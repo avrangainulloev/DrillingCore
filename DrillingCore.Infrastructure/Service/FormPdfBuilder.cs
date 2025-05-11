@@ -1,5 +1,6 @@
 ﻿using DrillingCore.Core.Entities;
 using Microsoft.AspNetCore.Hosting;
+using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -25,6 +26,7 @@ namespace DrillingCore.Infrastructure.Service
         {
             try
             {
+                FontManager.RegisterFont(File.OpenRead(Path.Combine(_env.ContentRootPath, "fonts", "DejaVuSans.ttf")));
                 var checklistMap = form.FormChecklistResponses
                     .ToDictionary(r => r.ChecklistItemId, r => r.Response ? "true" : "false");
 
@@ -41,7 +43,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text(form.FormType?.Name ?? "Inspection Form")
@@ -186,7 +188,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Field Level Hazard Assessment (FLHA)")
@@ -313,7 +315,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Field Level Hazard Assessment (FLHA)")
@@ -441,7 +443,7 @@ namespace DrillingCore.Infrastructure.Service
                         {
                             page.Margin(40);
                             page.Size(PageSizes.A4);
-                            page.DefaultTextStyle(x => x.FontSize(11));
+                            page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
                             page.PageColor(Colors.White);
 
                             page.Header().Text(form.FormType?.Name ?? "Inspection Form")
@@ -586,7 +588,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text("Drilling Report")
@@ -696,7 +698,7 @@ namespace DrillingCore.Infrastructure.Service
                     {
                         page.Margin(40);
                         page.Size(PageSizes.A4);
-                        page.DefaultTextStyle(x => x.FontSize(11));
+                        page.DefaultTextStyle(x => x.FontFamily("DejaVuSans").FontSize(11));
                         page.PageColor(Colors.White);
 
                         page.Header().Text($"Drilling Report for {date}")
