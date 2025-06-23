@@ -26,6 +26,8 @@ namespace DrillingCore.Infrastructure.Repositories
          .Include(u => u.Role)
          .FirstOrDefaultAsync(u =>
              u.Username == request.Username && u.PasswordHash == request.Password);
+
+
         }
 
         public async Task<User?> GetByIdAsync(int id)

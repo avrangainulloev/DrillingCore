@@ -79,7 +79,7 @@ namespace DrillingCore.Infrastructure.Service
                         return;
 
                     pdfBytes = _formPdfBuilder.BuildDrillingFormPdf(form, drillingForm);
-                    fileName = $"Drilling_{form.DateFilled:yyyyMMdd}_{form.Project?.Name}.pdf";
+                    fileName = $"Drilling_{form.DateFilled:yyyyMMdd}_{form.Project?.Name}_{form.CrewName}.pdf";
                     break;
 
                 default:
