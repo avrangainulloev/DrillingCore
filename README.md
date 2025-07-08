@@ -22,6 +22,12 @@ Watch the video demonstration here:
 
 ---
 
+## 🌐 Live Web Demo
+You can access the live deployed version of the project here:  
+[http://51.222.205.161:8080/](http://51.222.205.161:8080/)
+
+---
+
 ## 💡 Want to contribute?
 
 We are looking for help with adding **dynamic form creation**  
